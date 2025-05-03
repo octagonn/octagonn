@@ -121,6 +121,22 @@ header .container {
     width: auto;
 }
 
+.logo-container {
+    display: flex;
+    align-items: center;
+}
+
+.logo-spider {
+    height: 50px;
+    width: auto;
+    margin-right: 8px;
+}
+
+.logo-text {
+    height: 40px;
+    width: auto;
+}
+
 nav ul {
     display: flex;
 }
