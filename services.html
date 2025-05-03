@@ -6,7 +6,43 @@
     <title>Services - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script type="text/javascript">
+        var recaptchaWidgets = [];
+        
+        var recaptchaCallback = function() {
+            var contactForms = document.querySelectorAll('.contact-form-section form');
+            for (var i = 0; i < contactForms.length; i++) {
+                var divId = 'recaptcha-' + i;
+                var div = contactForms[i].querySelector('.recaptcha-container');
+                if (div) {
+                    div.id = divId;
+                    recaptchaWidgets.push(
+                        grecaptcha.render(divId, {
+                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
+                            'theme': 'dark'
+                        })
+                    );
+                }
+            }
+            
+            var newsletterForms = document.querySelectorAll('.newsletter-form');
+            for (var i = 0; i < newsletterForms.length; i++) {
+                var divId = 'recaptcha-newsletter-' + i;
+                var div = newsletterForms[i].querySelector('.recaptcha-container');
+                if (div) {
+                    div.id = divId;
+                    recaptchaWidgets.push(
+                        grecaptcha.render(divId, {
+                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
+                            'theme': 'dark',
+                            'size': 'compact'
+                        })
+                    );
+                }
+            }
+        };
+    </script>
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -151,6 +187,7 @@
                 <input type="hidden" name="_subject" value="New newsletter signup">
                 <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
                 <input type="hidden" name="_captcha" value="false">
+                <div class="recaptcha-container"></div>
                 <button type="submit">Sign up</button>
             </form>
             <p class="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
@@ -178,7 +215,7 @@
                         <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
                         <input type="hidden" name="_captcha" value="false">
                         
-                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
+                        <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
                         <button type="submit">Send a Quick Message</button>
                     </form>
                 </div>
