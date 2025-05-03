@@ -43,6 +43,21 @@
         };
     </script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <script>
+        window.onload = function() {
+            var forms = document.getElementsByTagName('form');
+            for (var i = 0; i < forms.length; i++) {
+                forms[i].addEventListener('submit', function(event) {
+                    var response = grecaptcha.getResponse();
+                    if (response.length === 0) {
+                        event.preventDefault();
+                        alert('Please check the reCAPTCHA box to verify you are not a robot.');
+                        return false;
+                    }
+                });
+            }
+        };
+    </script>
 </head>
 <body>
     <header>
@@ -84,7 +99,7 @@
                         <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
                         <input type="hidden" name="_captcha" value="false">
                         
-                        <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
                         <button type="submit">Send Message</button>
                     </form>
                 </div>
