@@ -397,13 +397,48 @@ form textarea:focus::placeholder {
 
 .reviews h2 {
     font-size: 28px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.review-text {
+    font-size: 18px;
+    color: #555;
     margin-bottom: 30px;
 }
 
 .reviews .yelp-icon {
-    max-width: 80px;
-    margin: 0 auto;
+    max-width: 120px;
+    margin: 0 auto 20px;
     display: block;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-link {
+    display: inline-block;
+    transition: all 0.3s ease;
+    transform: scale(1);
+}
+
+.review-link:hover {
+    transform: scale(1.05);
+}
+
+.review-button {
+    display: inline-block;
+    background: #d32323;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: bold;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.review-button:hover {
+    background: #af1d1d;
+    box-shadow: 0 4px 10px rgba(211, 35, 35, 0.3);
 }
 
 /* Newsletter Section */
@@ -415,28 +450,36 @@ form textarea:focus::placeholder {
 
 .newsletter h2 {
     font-size: 28px;
-    margin-bottom: 30px;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.newsletter-text {
+    font-size: 18px;
+    color: #ccc;
+    max-width: 600px;
+    margin: 0 auto 30px;
 }
 
 .newsletter-form {
     display: flex;
-    max-width: 600px;
-    margin: 0 auto;
+    max-width: 500px;
+    margin: 0 auto 15px;
 }
 
 .newsletter-form input {
     flex: 1;
-    padding: 12px;
+    padding: 15px;
     border: none;
     background: #1a1a1a;
     color: #fff;
-    border-bottom: 2px solid #333;
-    transition: all 0.3s ease;
+    border-radius: 5px 0 0 5px;
+    border-bottom: 2px solid #0056b3;
 }
 
 .newsletter-form input:focus {
     outline: none;
-    border-bottom: 2px solid #0056b3;
+    background: #222;
     box-shadow: 0 5px 15px rgba(0, 86, 179, 0.2);
 }
 
@@ -448,14 +491,20 @@ form textarea:focus::placeholder {
     cursor: pointer;
     border-radius: 0 5px 5px 0;
     font-weight: bold;
-    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     transition: all 0.3s ease;
 }
 
 .newsletter-form button:hover {
-    background: #fff;
-    color: #000;
-    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+    background: #0069d9;
+    box-shadow: 0 5px 15px rgba(0, 86, 179, 0.5);
+}
+
+.newsletter-privacy {
+    font-size: 14px;
+    color: #888;
+    margin-top: 15px;
 }
 
 /* Footer */

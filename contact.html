@@ -75,20 +75,25 @@
 
     <section class="reviews">
         <div class="container">
-            <h2>Leave A Yelp Review!</h2>
-            <a href="https://www.yelp.com" target="_blank">
-                <img src="img/yelp-logo.png" alt="Yelp" class="yelp-icon">
+            <h2><span class="icon-yellow">⭐</span> Leave A Yelp Review!</h2>
+            <p class="review-text">Help us grow by sharing your experience with others.</p>
+            <a href="https://www.yelp.com" target="_blank" class="review-link">
+                <img src="https://s3-media0.fl.yelpcdn.com/assets/public/default.yji-860x460.yji-674bc5a7d86da8f8804f59339e318da9.png" alt="Yelp" class="yelp-icon">
+                <span class="review-button">Write a Review</span>
             </a>
         </div>
     </section>
 
     <section class="newsletter">
         <div class="container">
-            <h2>Join Our Mailing List</h2>
-            <div class="newsletter-form">
-                <input type="email" placeholder="Email">
+            <h2><span class="icon-blue">📬</span> Join Our Mailing List</h2>
+            <p class="newsletter-text">Get tech tips, exclusive offers, and updates delivered to your inbox.</p>
+            <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST" class="newsletter-form">
+                <input type="email" name="email" placeholder="Your email address" required>
+                <input type="hidden" name="_subject" value="New newsletter signup">
                 <button type="submit">Sign up</button>
-            </div>
+            </form>
+            <p class="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
         </div>
     </section>
 
