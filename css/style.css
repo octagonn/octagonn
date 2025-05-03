@@ -407,12 +407,18 @@ form textarea:focus::placeholder {
     margin-bottom: 30px;
 }
 
-.reviews .yelp-icon {
+.yelp-icon {
     max-width: 120px;
     margin: 0 auto 20px;
     display: block;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.review-logo {
+    max-width: 120px;
+    margin: 0 auto 20px;
+    display: block;
 }
 
 .review-link {
