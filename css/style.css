@@ -76,11 +76,11 @@ img {
 }
 
 .icon-teal {
-    color: #20c997;
+    color: #0056b3;
 }
 
 .icon-blue {
-    color: #17a2b8;
+    color: #0056b3;
 }
 
 .icon-wrench {
@@ -127,7 +127,7 @@ nav ul li a {
 
 nav ul li a:hover,
 nav ul li a.active {
-    color: #20c997;
+    color: #0056b3;
 }
 
 /* Hero Section */
@@ -349,15 +349,15 @@ form textarea {
 form input:focus,
 form textarea:focus {
     outline: none;
-    border-bottom: 2px solid #20c997;
-    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.2);
+    border-bottom: 2px solid #0056b3;
+    box-shadow: 0 5px 15px rgba(0, 86, 179, 0.2);
 }
 
 .contact-form form button,
 form button[type="submit"] {
     background: transparent;
     color: #fff;
-    border: 2px solid #20c997;
+    border: 2px solid #0056b3;
     padding: 12px 30px;
     border-radius: 25px;
     cursor: pointer;
@@ -369,10 +369,10 @@ form button[type="submit"] {
 
 .contact-form form button:hover,
 form button[type="submit"]:hover {
-    background: #20c997;
-    color: #000;
+    background: #0056b3;
+    color: #fff;
     transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.5);
+    box-shadow: 0 5px 15px rgba(0, 86, 179, 0.5);
 }
 
 form ::placeholder {
@@ -436,13 +436,13 @@ form textarea:focus::placeholder {
 
 .newsletter-form input:focus {
     outline: none;
-    border-bottom: 2px solid #20c997;
-    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.2);
+    border-bottom: 2px solid #0056b3;
+    box-shadow: 0 5px 15px rgba(0, 86, 179, 0.2);
 }
 
 .newsletter-form button {
-    background: #20c997;
-    color: #000;
+    background: #0056b3;
+    color: #fff;
     border: none;
     padding: 0 30px;
     cursor: pointer;
