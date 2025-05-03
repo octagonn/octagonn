@@ -427,7 +427,7 @@ form textarea:focus::placeholder {
 
 .review-button {
     display: inline-block;
-    background: #d32323;
+    background: #4285F4;
     color: #fff;
     padding: 12px 25px;
     border-radius: 25px;
@@ -437,8 +437,8 @@ form textarea:focus::placeholder {
 }
 
 .review-button:hover {
-    background: #af1d1d;
-    box-shadow: 0 4px 10px rgba(211, 35, 35, 0.3);
+    background: #3367d6;
+    box-shadow: 0 4px 10px rgba(66, 133, 244, 0.3);
 }
 
 /* Newsletter Section */

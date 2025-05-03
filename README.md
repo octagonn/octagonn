@@ -76,4 +76,53 @@ To customize the website:
 
 ## License
 
-All rights reserved. This is a proprietary website for SpyderNet IT. 
+All rights reserved. This is a proprietary website for SpyderNet IT.
+
+This website uses a PHP component-based architecture to improve maintainability and reduce code duplication.
+
+## Component Structure
+
+The website is organized with reusable components in the `components` directory:
+
+- `header.php` - Contains the common header, navigation and initial HTML structure
+- `footer.php` - Contains the common footer and closing HTML tags
+- `reviews.php` - Contains the Google review section
+- `contact-form.php` - Contains the contact form
+
+## How to Make Changes
+
+### To change something that appears on multiple pages:
+
+1. Edit the component file in the `components` directory
+2. For example, to update the Google review link, simply edit `components/reviews.php`
+
+### To change page-specific content:
+
+1. Edit the specific page file (index.php, about.php, etc.)
+
+## Prerequisites
+
+- A web server with PHP support (such as Apache or Nginx)
+- PHP 7.0 or higher
+
+## Local Development
+
+To test the site locally, you'll need a PHP server. You can use:
+
+- PHP's built-in server: `php -S localhost:8000`
+- XAMPP, WAMP, MAMP, or similar local server packages
+
+## Deployment
+
+When deploying to production:
+
+1. Ensure your web host supports PHP
+2. Upload all files including the `components` directory
+3. Make sure file permissions are set correctly
+
+## Benefits of Component-Based Architecture
+
+- **Easier Maintenance**: Make changes in one place that affect multiple pages
+- **Consistency**: Ensures consistent appearance across the site
+- **Faster Development**: Reuse components rather than duplicating code
+- **Reduced Errors**: Less chance of inconsistencies between pages 
