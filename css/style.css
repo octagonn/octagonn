@@ -330,7 +330,9 @@ nav ul li a.active {
 }
 
 .contact-form form input,
-.contact-form form textarea {
+.contact-form form textarea,
+form input, 
+form textarea {
     width: 100%;
     padding: 12px;
     margin-bottom: 20px;
@@ -338,21 +340,51 @@ nav ul li a.active {
     background: #1a1a1a;
     color: #fff;
     border-radius: 5px;
+    border-bottom: 2px solid #333;
+    transition: all 0.3s ease;
 }
 
-.contact-form form button {
+.contact-form form input:focus,
+.contact-form form textarea:focus,
+form input:focus,
+form textarea:focus {
+    outline: none;
+    border-bottom: 2px solid #20c997;
+    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.2);
+}
+
+.contact-form form button,
+form button[type="submit"] {
     background: transparent;
     color: #fff;
-    border: 2px solid #fff;
+    border: 2px solid #20c997;
     padding: 12px 30px;
     border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-.contact-form form button:hover {
-    background: #fff;
+.contact-form form button:hover,
+form button[type="submit"]:hover {
+    background: #20c997;
     color: #000;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.5);
+}
+
+form ::placeholder {
+    color: #999;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+form input:focus::placeholder,
+form textarea:focus::placeholder {
+    opacity: 0.5;
+    transform: translateX(10px);
 }
 
 /* Reviews Section */
@@ -398,15 +430,32 @@ nav ul li a.active {
     border: none;
     background: #1a1a1a;
     color: #fff;
+    border-bottom: 2px solid #333;
+    transition: all 0.3s ease;
+}
+
+.newsletter-form input:focus {
+    outline: none;
+    border-bottom: 2px solid #20c997;
+    box-shadow: 0 5px 15px rgba(32, 201, 151, 0.2);
 }
 
 .newsletter-form button {
-    background: #fff;
+    background: #20c997;
     color: #000;
     border: none;
     padding: 0 30px;
     cursor: pointer;
     border-radius: 0 5px 5px 0;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.newsletter-form button:hover {
+    background: #fff;
+    color: #000;
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
 }
 
 /* Footer */
