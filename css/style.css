@@ -729,6 +729,18 @@ footer {
     height: 150px;
 }
 
+/* reCAPTCHA styling */
+.g-recaptcha {
+    margin-bottom: 15px;
+}
+
+@media (max-width: 320px) {
+    .g-recaptcha {
+        transform: scale(0.85);
+        transform-origin: 0 0;
+    }
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     header .container {

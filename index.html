@@ -6,83 +6,7 @@
     <title>SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script src="https://www.google.com/recaptcha/api.js?render=6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN"></script>
-    <script>
-        function submitContactForm(event) {
-            event.preventDefault();
-            const form = document.getElementById('contactForm');
-            
-            grecaptcha.ready(function() {
-                grecaptcha.execute('6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN', {action: 'submit'})
-                .then(function(token) {
-                    // Check if there's already a token input
-                    let tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
-                    if (!tokenInput) {
-                        // Create token input if it doesn't exist
-                        tokenInput = document.createElement('input');
-                        tokenInput.type = 'hidden';
-                        tokenInput.name = 'g-recaptcha-response';
-                        form.appendChild(tokenInput);
-                    }
-                    
-                    // Set the token value
-                    tokenInput.value = token;
-                    
-                    // Submit the form
-                    form.submit();
-                })
-                .catch(function(error) {
-                    console.error('reCAPTCHA error:', error);
-                    // Submit the form anyway if reCAPTCHA fails
-                    form.submit();
-                });
-            });
-        }
-        
-        function submitNewsletterForm(event) {
-            event.preventDefault();
-            const form = document.getElementById('newsletterForm');
-            
-            grecaptcha.ready(function() {
-                grecaptcha.execute('6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN', {action: 'submit'})
-                .then(function(token) {
-                    // Check if there's already a token input
-                    let tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
-                    if (!tokenInput) {
-                        // Create token input if it doesn't exist
-                        tokenInput = document.createElement('input');
-                        tokenInput.type = 'hidden';
-                        tokenInput.name = 'g-recaptcha-response';
-                        form.appendChild(tokenInput);
-                    }
-                    
-                    // Set the token value
-                    tokenInput.value = token;
-                    
-                    // Submit the form
-                    form.submit();
-                })
-                .catch(function(error) {
-                    console.error('reCAPTCHA error:', error);
-                    // Submit the form anyway if reCAPTCHA fails
-                    form.submit();
-                });
-            });
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add event listeners once the DOM is fully loaded
-            const contactForm = document.getElementById('contactForm');
-            if (contactForm) {
-                contactForm.addEventListener('submit', submitContactForm);
-            }
-            
-            const newsletterForm = document.getElementById('newsletterForm');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', submitNewsletterForm);
-            }
-        });
-    </script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -157,6 +81,8 @@
                         <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
                         <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
                         <input type="hidden" name="_captcha" value="false">
+                        
+                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
                         <button type="submit">Send a Quick Message</button>
                     </form>
                 </div>
