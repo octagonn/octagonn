@@ -6,42 +6,6 @@
     <title>SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script type="text/javascript">
-        var recaptchaWidgets = [];
-        
-        var recaptchaCallback = function() {
-            var contactForms = document.querySelectorAll('.contact-form-section form');
-            for (var i = 0; i < contactForms.length; i++) {
-                var divId = 'recaptcha-' + i;
-                var div = contactForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark'
-                        })
-                    );
-                }
-            }
-            
-            var newsletterForms = document.querySelectorAll('.newsletter-form');
-            for (var i = 0; i < newsletterForms.length; i++) {
-                var divId = 'recaptcha-newsletter-' + i;
-                var div = newsletterForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark',
-                            'size': 'compact'
-                        })
-                    );
-                }
-            }
-        };
-    </script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
     <script>
         window.onload = function() {
@@ -156,8 +120,8 @@
             <h2><span class="icon-yellow">⭐</span> Leave A Google Review!</h2>
             <p class="review-text">Help us grow by sharing your experience with others.</p>
             <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
-                <img src="https://www.freepngimg.com/thumb/google/66530-engine-web-search-google-now-voice.png" alt="Google" class="yelp-icon">
-                <span class="review-button" style="background-color: #4285F4;">Write a Review</span>
+                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 150px; height: auto;">
+                <span class="review-button">Write a Review</span>
             </a>
         </div>
     </section>

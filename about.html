@@ -6,42 +6,6 @@
     <title>About Us - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script type="text/javascript">
-        var recaptchaWidgets = [];
-        
-        var recaptchaCallback = function() {
-            var contactForms = document.querySelectorAll('.contact-form-section form');
-            for (var i = 0; i < contactForms.length; i++) {
-                var divId = 'recaptcha-' + i;
-                var div = contactForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark'
-                        })
-                    );
-                }
-            }
-            
-            var newsletterForms = document.querySelectorAll('.newsletter-form');
-            for (var i = 0; i < newsletterForms.length; i++) {
-                var divId = 'recaptcha-newsletter-' + i;
-                var div = newsletterForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark',
-                            'size': 'compact'
-                        })
-                    );
-                }
-            }
-        };
-    </script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
     <script>
         window.onload = function() {
@@ -78,10 +42,9 @@
         </div>
     </header>
 
-    <section class="hero">
+    <section class="page-title">
         <div class="container">
-            <h2>About SpyderNet IT</h2>
-            <p>Your trusted partner for comprehensive IT solutions</p>
+            <h1>About Us</h1>
         </div>
     </section>
 
@@ -89,62 +52,71 @@
         <div class="container">
             <div class="about-content">
                 <div class="about-text">
-                    <h3>Our Story</h3>
-                    <p>SpyderNet IT was founded with a clear mission: to provide businesses and individuals with reliable, efficient, and secure IT solutions that enable growth and success. We've evolved from a small local IT support company to a comprehensive technology service provider serving clients across multiple industries.</p>
-                    <p>Our journey has been driven by a commitment to excellence, innovation, and exceptional customer service. We understand that technology is constantly changing, and we stay at the forefront of industry trends to ensure our clients receive the most advanced solutions available.</p>
-                    <h3>Our Approach</h3>
-                    <p>At SpyderNet IT, we believe that technology should work for you, not against you. Our approach is centered around understanding your unique needs and challenges, then developing customized solutions that align with your goals.</p>
-                    <p>We don't just fix IT problems – we prevent them from happening in the first place. Our proactive approach to IT management ensures your systems are always running optimally, minimizing downtime and maximizing productivity.</p>
+                    <h2>Our Mission</h2>
+                    <p>At SpyderNet IT, we believe everyone deserves reliable technology that just works. Our mission is simple: deliver honest, efficient IT support without the technical jargon or surprise bills.</p>
+                    <p>Whether you're a homeowner frustrated with WiFi issues, a small business needing network setup, or just someone who wants their printer to stop giving error messages – we're here to help with clear explanations and permanent solutions.</p>
+                    <h2>Our Approach</h2>
+                    <p>We take a different approach to tech support:</p>
+                    <ul>
+                        <li><strong>No Geek Speak:</strong> We explain everything in plain English</li>
+                        <li><strong>Transparent Pricing:</strong> No hidden fees or surprise charges</li>
+                        <li><strong>Preventative Solutions:</strong> We fix the root cause, not just symptoms</li>
+                        <li><strong>Education:</strong> We teach you how to avoid future issues</li>
+                    </ul>
+                    <p>Whether it's a simple fix or a complex network solution, we treat each client with the same respect and attention to detail.</p>
                 </div>
                 <div class="about-image">
-                    <img src="img/about-main.jpg" alt="SpyderNet IT Office">
+                    <img src="img/tech-support-about.jpg" alt="SpyderNet IT Support">
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="team-section">
+    <section class="section-title">
         <div class="container">
-            <h2>Our Technology Services</h2>
-            <div class="team-grid">
-                <div class="team-member">
-                    <img src="img/network.jpg" alt="Network Infrastructure">
-                    <h3>Network Infrastructure</h3>
-                    <p>We design, implement, and maintain robust network solutions that ensure optimal performance, scalability, and security for your business.</p>
+            <h2>Why Choose Us?</h2>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <img src="img/experience.png" alt="Experience Icon" class="feature-icon">
+                    <h3>Experience</h3>
+                    <p>Over a decade of professional IT experience across home and business systems.</p>
                 </div>
-                <div class="team-member">
-                    <img src="img/security.jpg" alt="Cybersecurity">
-                    <h3>Cybersecurity</h3>
-                    <p>Protect your business with our advanced security solutions, including threat detection, prevention, and rapid response to security incidents.</p>
+                <div class="feature-card">
+                    <img src="img/personalized.png" alt="Personalized Icon" class="feature-icon">
+                    <h3>Personalized</h3>
+                    <p>Custom solutions tailored to your specific needs, not one-size-fits-all fixes.</p>
                 </div>
-                <div class="team-member">
-                    <img src="img/cloud.jpg" alt="Cloud Services">
-                    <h3>Cloud Services</h3>
-                    <p>Transform your business with our cloud solutions that improve collaboration, reduce costs, and enhance data accessibility.</p>
+                <div class="feature-card">
+                    <img src="img/reliable.png" alt="Reliable Icon" class="feature-icon">
+                    <h3>Reliable</h3>
+                    <p>Prompt, dependable service with clear communication every step of the way.</p>
                 </div>
-                <div class="team-member">
-                    <img src="img/support.jpg" alt="Technical Support">
-                    <h3>Technical Support</h3>
-                    <p>Get reliable help when you need it with our responsive support team, ready to solve your IT challenges quickly and efficiently.</p>
+                <div class="feature-card">
+                    <img src="img/affordable.png" alt="Affordable Icon" class="feature-icon">
+                    <h3>Affordable</h3>
+                    <p>Competitive pricing with no hidden fees or unnecessary upsells.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="second-cta">
+    <section class="section-title">
         <div class="container">
-            <h2>Ready to Work With Us?</h2>
-            <p>Contact our team today to learn how we can help</p>
-            <a href="contact.html" class="btn">Get in Touch</a>
+            <h2>Contact Us</h2>
         </div>
     </section>
 
-    <section id="contact" class="contact-form-section">
+    <section class="contact-form-section">
         <div class="container">
             <div class="contact-columns">
                 <div class="contact-info">
                     <h3><span class="icon-teal">📞</span> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                    <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
                         <input type="text" name="name" placeholder="Name" required>
                         <input type="email" name="email" placeholder="Email*" required>
                         <textarea name="message" placeholder="Message" rows="6" required></textarea>
@@ -175,8 +147,8 @@
             <h2><span class="icon-yellow">⭐</span> Leave A Google Review!</h2>
             <p class="review-text">Help us grow by sharing your experience with others.</p>
             <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
-                <img src="https://www.freepngimg.com/thumb/google/66530-engine-web-search-google-now-voice.png" alt="Google" class="yelp-icon">
-                <span class="review-button" style="background-color: #4285F4;">Write a Review</span>
+                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 150px; height: auto;">
+                <span class="review-button">Write a Review</span>
             </a>
         </div>
     </section>
@@ -195,4 +167,5 @@
 
     <script src="js/script.js"></script>
 </body>
+</html> 
 </html> 

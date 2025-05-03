@@ -6,42 +6,6 @@
     <title>Services - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script type="text/javascript">
-        var recaptchaWidgets = [];
-        
-        var recaptchaCallback = function() {
-            var contactForms = document.querySelectorAll('.contact-form-section form');
-            for (var i = 0; i < contactForms.length; i++) {
-                var divId = 'recaptcha-' + i;
-                var div = contactForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark'
-                        })
-                    );
-                }
-            }
-            
-            var newsletterForms = document.querySelectorAll('.newsletter-form');
-            for (var i = 0; i < newsletterForms.length; i++) {
-                var divId = 'recaptcha-newsletter-' + i;
-                var div = newsletterForms[i].querySelector('.recaptcha-container');
-                if (div) {
-                    div.id = divId;
-                    recaptchaWidgets.push(
-                        grecaptcha.render(divId, {
-                            'sitekey': '6LcTrSwrAAAALxxoSmmbopp3LUbG2zKAy8f0CiT',
-                            'theme': 'dark',
-                            'size': 'compact'
-                        })
-                    );
-                }
-            }
-        };
-    </script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
     <script>
         window.onload = function() {
@@ -78,126 +42,121 @@
         </div>
     </header>
 
-    <section class="hero">
+    <section class="page-title">
         <div class="container">
-            <h2>Our IT Services</h2>
-            <p>Comprehensive solutions tailored to your business needs</p>
+            <h1>Our Services</h1>
         </div>
     </section>
 
     <section class="services-section">
         <div class="container">
-            <div id="managed-it" class="service-item">
-                <h3>Managed IT Services</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/managed-it.jpg" alt="Managed IT Services">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Our comprehensive Managed IT Services provide proactive monitoring, maintenance, and support for your entire IT infrastructure. We handle everything from routine updates to complex troubleshooting, allowing you to focus on your core business operations.</p>
-                        <p>Our services include:</p>
-                        <ul>
-                            <li>24/7 Network Monitoring</li>
-                            <li>Help Desk Support</li>
-                            <li>Server Management</li>
-                            <li>Desktop Support</li>
-                            <li>Software Updates and Patch Management</li>
-                            <li>Data Backup and Recovery</li>
-                            <li>IT Strategy Planning</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Get a Quote</a>
-                    </div>
-                </div>
+            <div class="services-intro">
+                <h2>Comprehensive IT Solutions for Home and Business</h2>
+                <p>At SpyderNet IT, we offer a wide range of technology services designed to keep your systems running smoothly. From troubleshooting and repairs to setup and security, our expert technicians provide reliable solutions for all your tech needs.</p>
             </div>
-
-            <div id="cybersecurity" class="service-item">
-                <h3>Cybersecurity Solutions</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/cybersecurity.jpg" alt="Cybersecurity Solutions">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Protect your business from evolving cyber threats with our comprehensive security solutions. We implement multiple layers of protection to safeguard your valuable data and systems from unauthorized access, malware, and other security breaches.</p>
-                        <p>Our cybersecurity services include:</p>
-                        <ul>
-                            <li>Network Security Assessment</li>
-                            <li>Endpoint Protection</li>
-                            <li>Firewall Management</li>
-                            <li>Email Security</li>
-                            <li>Security Awareness Training</li>
-                            <li>Data Encryption</li>
-                            <li>Incident Response Planning</li>
-                            <li>Compliance Management</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Secure Your Business</a>
-                    </div>
+            
+            <div class="service-categories">
+                <div class="service-category">
+                    <h3><span class="icon-blue">🏠</span> Home IT Services</h3>
+                    <ul class="service-list">
+                        <li>
+                            <h4>Computer Repair & Troubleshooting</h4>
+                            <p>Fix slow performance, remove viruses, repair hardware issues, and resolve software problems for Windows, Mac, and Linux systems.</p>
+                        </li>
+                        <li>
+                            <h4>Home Network Setup & WiFi Optimization</h4>
+                            <p>Install and configure routers, extend WiFi coverage, eliminate dead zones, and secure your home network against unauthorized access.</p>
+                        </li>
+                        <li>
+                            <h4>Smart Home Installation & Support</h4>
+                            <p>Setup and configure smart devices, integrate with voice assistants, and create automation routines for convenience and security.</p>
+                        </li>
+                        <li>
+                            <h4>Data Recovery & Backup Solutions</h4>
+                            <p>Recover lost files, set up automatic backups, and ensure your important documents, photos, and videos are protected.</p>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-
-            <div id="cloud-services" class="service-item">
-                <h3>Cloud Services</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/cloud-services.jpg" alt="Cloud Services">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Harness the power of cloud technology to transform your business operations. Our cloud services provide scalable, flexible solutions that improve collaboration, reduce costs, and enhance data accessibility from anywhere in the world.</p>
-                        <p>Our cloud services include:</p>
-                        <ul>
-                            <li>Cloud Migration Strategy</li>
-                            <li>Microsoft 365 Implementation and Support</li>
-                            <li>Google Workspace Solutions</li>
-                            <li>AWS and Azure Cloud Management</li>
-                            <li>Cloud Backup and Disaster Recovery</li>
-                            <li>Virtual Desktop Infrastructure (VDI)</li>
-                            <li>Cloud Security</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Cloud Consultation</a>
-                    </div>
-                </div>
-            </div>
-
-            <div id="network-infrastructure" class="service-item">
-                <h3>Network Infrastructure</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/network-infrastructure.jpg" alt="Network Infrastructure">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Build a robust, reliable network infrastructure that supports your business operations. We design, implement, and maintain network solutions that ensure optimal performance, scalability, and security for your organization.</p>
-                        <p>Our network services include:</p>
-                        <ul>
-                            <li>Network Design and Implementation</li>
-                            <li>Wireless Network Solutions</li>
-                            <li>VPN Setup and Management</li>
-                            <li>Network Troubleshooting</li>
-                            <li>Performance Optimization</li>
-                            <li>Network Security</li>
-                            <li>Cabling and Hardware Installation</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Network Consultation</a>
-                    </div>
+                
+                <div class="service-category">
+                    <h3><span class="icon-teal">🏢</span> Business IT Services</h3>
+                    <ul class="service-list">
+                        <li>
+                            <h4>Network Design & Implementation</h4>
+                            <p>Create reliable, scalable networks for businesses of all sizes, including wired and wireless solutions, VPNs, and secure remote access.</p>
+                        </li>
+                        <li>
+                            <h4>Cybersecurity & Data Protection</h4>
+                            <p>Implement robust security measures including firewalls, antivirus, employee training, vulnerability assessments, and compliance support.</p>
+                        </li>
+                        <li>
+                            <h4>Cloud Services & Migration</h4>
+                            <p>Migrate to cloud platforms like Microsoft 365, Google Workspace, or custom solutions for improved accessibility and collaboration.</p>
+                        </li>
+                        <li>
+                            <h4>IT Consulting & Support</h4>
+                            <p>Ongoing technical support, strategic IT planning, and technology recommendations aligned with your business goals and budget.</p>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="reviews">
+    <section class="pricing-section">
         <div class="container">
-            <h2><span class="icon-yellow">⭐</span> Leave A Google Review!</h2>
-            <p class="review-text">Help us grow by sharing your experience with others.</p>
-            <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
-                <img src="https://www.freepngimg.com/thumb/google/66530-engine-web-search-google-now-voice.png" alt="Google" class="yelp-icon">
-                <span class="review-button" style="background-color: #4285F4;">Write a Review</span>
-            </a>
-        </div>
-    </section>
-
-    <section class="second-cta">
-        <div class="container">
-            <h2>Need Customized IT Solutions?</h2>
-            <p>Contact us today for a free consultation</p>
-            <a href="#contact" class="btn">Get in Touch</a>
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>One-Time Fix</h3>
+                        <p class="price">$99</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Single issue resolution</li>
+                            <li>Remote or on-site support</li>
+                            <li>No recurring fees</li>
+                            <li>30-day fix guarantee</li>
+                        </ul>
+                    </div>
+                    <a href="#contact" class="btn">Get Started</a>
+                </div>
+                <div class="pricing-card popular">
+                    <div class="popular-tag">Most Popular</div>
+                    <div class="pricing-header">
+                        <h3>Tech Tune-Up</h3>
+                        <p class="price">$149</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Complete system optimization</li>
+                            <li>Virus & malware removal</li>
+                            <li>Software updates</li>
+                            <li>Basic security setup</li>
+                            <li>90-day guarantee</li>
+                        </ul>
+                    </div>
+                    <a href="#contact" class="btn">Get Started</a>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Business Support</h3>
+                        <p class="price">Custom</p>
+                    </div>
+                    <div class="pricing-features">
+                        <ul>
+                            <li>Tailored IT solutions</li>
+                            <li>Priority support</li>
+                            <li>Network management</li>
+                            <li>Security monitoring</li>
+                            <li>Strategic IT planning</li>
+                        </ul>
+                    </div>
+                    <a href="#contact" class="btn">Contact Us</a>
+                </div>
+            </div>
+            <p class="pricing-note">* All prices are starting points and may vary based on complexity. We'll provide a clear quote before any work begins.</p>
         </div>
     </section>
 
@@ -206,7 +165,7 @@
             <div class="contact-columns">
                 <div class="contact-info">
                     <h3><span class="icon-teal">📞</span> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                    <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
                         <input type="text" name="name" placeholder="Name" required>
                         <input type="email" name="email" placeholder="Email*" required>
                         <textarea name="message" placeholder="Message" rows="6" required></textarea>
@@ -229,6 +188,17 @@
                     <p style="margin-top: 30px;"><span class="icon-yellow">🔒</span> Your info is safe with us — we never spam.</p>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <section class="reviews">
+        <div class="container">
+            <h2><span class="icon-yellow">⭐</span> Leave A Google Review!</h2>
+            <p class="review-text">Help us grow by sharing your experience with others.</p>
+            <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
+                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 150px; height: auto;">
+                <span class="review-button">Write a Review</span>
+            </a>
         </div>
     </section>
 

@@ -25,26 +25,47 @@ document.addEventListener('DOMContentLoaded', function() {
             const style = document.createElement('style');
             style.textContent = `
                 @media (max-width: 768px) {
+                    header .container {
+                        flex-direction: row;
+                        justify-content: space-between;
+                        align-items: center;
+                    }
+                    
                     nav {
                         display: none;
                         width: 100%;
+                        position: absolute;
+                        top: 80px;
+                        left: 0;
+                        background-color: #111;
+                        padding: 20px;
+                        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
                     }
                     
                     nav.active {
                         display: block;
                     }
                     
+                    nav ul {
+                        flex-direction: column;
+                    }
+                    
+                    nav ul li {
+                        margin: 15px 0;
+                    }
+                    
                     .mobile-toggle {
                         display: block;
                         cursor: pointer;
                         padding: 10px;
+                        z-index: 100;
                     }
                     
                     .mobile-toggle span {
                         display: block;
                         width: 25px;
                         height: 3px;
-                        background-color: #0056b3;
+                        background-color: #4285F4;
                         margin: 5px 0;
                         transition: transform 0.3s ease;
                     }
@@ -88,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 z-index: 99;
                 border: none;
                 outline: none;
-                background-color: #0056b3;
+                background-color: #4285F4;
                 color: white;
                 cursor: pointer;
                 padding: 15px;
@@ -99,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             #scrollTop:hover {
-                background-color: #003d82;
+                background-color: #0F9D58;
             }
         `;
         document.head.appendChild(style);
@@ -137,6 +158,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.querySelector(targetId).scrollIntoView({
                     behavior: 'smooth'
                 });
+                
+                // Close mobile menu if open
+                const mobileMenu = document.querySelector('nav');
+                const mobileToggle = document.querySelector('.mobile-toggle');
+                if (mobileMenu.classList.contains('active')) {
+                    mobileMenu.classList.remove('active');
+                    mobileToggle.classList.remove('active');
+                }
             }
         });
     });
