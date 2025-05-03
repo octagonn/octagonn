@@ -418,6 +418,17 @@ footer {
     border-top: 1px solid #333;
 }
 
+.footer-links {
+    margin-top: 20px;
+}
+
+.footer-links a {
+    display: block;
+    margin: 5px 0;
+    color: #fff;
+    text-decoration: none;
+}
+
 /* Services Page Specific Styles */
 .services-section {
     padding: 80px 0;
