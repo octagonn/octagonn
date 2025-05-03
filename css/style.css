@@ -137,6 +137,13 @@ header .container {
     width: auto;
 }
 
+.logo-video {
+    height: 50px;
+    width: auto;
+    max-width: 100%;
+    display: block;
+}
+
 nav ul {
     display: flex;
 }
