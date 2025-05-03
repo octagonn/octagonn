@@ -174,7 +174,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Hero Section */
 .hero {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../img/hero-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../img/hero-bg.png');
     background-size: cover;
     background-position: center;
     text-align: center;
@@ -198,7 +198,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
 /* Page Title Section */
 .page-title {
     background-color: #1a1a1a;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../img/hero-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('../img/hero-bg.png');
     background-size: cover;
     background-position: center;
     text-align: center;
@@ -313,7 +313,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Second CTA Section */
 .second-cta {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../img/datacenter-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../img/datacenter-bg.png');
     background-size: cover;
     background-position: center;
     text-align: center;
