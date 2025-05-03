@@ -262,6 +262,35 @@ nav ul li a:hover:before, nav ul li a.active:before {
     color: #bbb;
 }
 
+.highlight-service {
+    border: 2px solid #E91E63;
+    background-color: rgba(34, 34, 34, 0.95);
+    transform: scale(1.02);
+    position: relative;
+}
+
+.highlight-service:before {
+    content: "Featured Service";
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #E91E63;
+    color: white;
+    padding: 5px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    border-bottom-left-radius: 8px;
+}
+
+.highlight-service:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(233, 30, 99, 0.2);
+}
+
+.highlight-service h3 span {
+    color: #E91E63;
+}
+
 /* Second CTA Section */
 .second-cta {
     background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('../img/second-cta-bg.jpg');
