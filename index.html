@@ -73,10 +73,11 @@
             <div class="contact-columns">
                 <div class="contact-info">
                     <h3><span class="icon-teal">📞</span> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form>
-                        <input type="text" placeholder="Name" required>
-                        <input type="email" placeholder="Email*" required>
-                        <textarea placeholder="Message" rows="6" required></textarea>
+                    <form action="https://formspree.io/f/xovdeloo" method="POST">
+                        <input type="hidden" name="page" value="home">
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="email" name="email" placeholder="Email*" required>
+                        <textarea name="message" placeholder="Message" rows="6" required></textarea>
                         <button type="submit">Send a Quick Message</button>
                     </form>
                 </div>
@@ -107,8 +108,11 @@
         <div class="container">
             <h2>Join Our Mailing List</h2>
             <div class="newsletter-form">
-                <input type="email" placeholder="Email">
-                <button type="submit">Sign up</button>
+                <form action="https://formspree.io/f/xovdeloo" method="POST">
+                    <input type="hidden" name="form-type" value="newsletter">
+                    <input type="email" name="email" placeholder="Email" required>
+                    <button type="submit">Sign up</button>
+                </form>
             </div>
         </div>
     </section>
