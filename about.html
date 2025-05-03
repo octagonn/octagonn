@@ -6,61 +6,6 @@
     <title>About Us - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <script src="https://www.google.com/recaptcha/api.js?render=6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN"></script>
-    <script>
-        function submitContactForm(event) {
-            event.preventDefault();
-            const form = document.getElementById("contactForm");
-            
-            grecaptcha.ready(function() {
-                grecaptcha.execute('6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN', {action: 'submit'})
-                .then(function(token) {
-                    // Create a hidden input field for the reCAPTCHA token
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'g-recaptcha-response';
-                    input.value = token;
-                    form.appendChild(input);
-                    
-                    // Submit the form
-                    form.submit();
-                });
-            });
-        }
-        
-        function submitNewsletterForm(event) {
-            event.preventDefault();
-            const form = document.getElementById("newsletterForm");
-            
-            grecaptcha.ready(function() {
-                grecaptcha.execute('6LdYoiwrAAAAANBqNRsJYN8FnGTgqnmHe8qZ4zAN', {action: 'newsletter'})
-                .then(function(token) {
-                    // Create a hidden input field for the reCAPTCHA token
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'g-recaptcha-response';
-                    input.value = token;
-                    form.appendChild(input);
-                    
-                    // Submit the form
-                    form.submit();
-                });
-            });
-        }
-        
-        // Add event listeners when the DOM is fully loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            const contactForm = document.getElementById('contactForm');
-            if (contactForm) {
-                contactForm.addEventListener('submit', submitContactForm);
-            }
-            
-            const newsletterForm = document.getElementById('newsletterForm');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', submitNewsletterForm);
-            }
-        });
-    </script>
 </head>
 <body>
     <header>
@@ -147,14 +92,12 @@
             <div class="contact-columns">
                 <div class="contact-info">
                     <h3><span class="icon-teal">📞</span> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                    <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
                         <input type="text" name="name" placeholder="Name" required>
                         <input type="email" name="email" placeholder="Email*" required>
                         <textarea name="message" placeholder="Message" rows="6" required></textarea>
                         <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
                         <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
-                        <input type="hidden" name="_captcha" value="false">
-                        
                         <button type="submit">Send a Quick Message</button>
                     </form>
                 </div>
@@ -187,11 +130,10 @@
         <div class="container">
             <h2><span class="icon-blue">📬</span> Join Our Mailing List</h2>
             <p class="newsletter-text">Get tech tips, exclusive offers, and updates delivered to your inbox.</p>
-            <form id="newsletterForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST" class="newsletter-form">
+            <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST" class="newsletter-form">
                 <input type="email" name="email" placeholder="Your email address" required>
                 <input type="hidden" name="_subject" value="New newsletter signup">
                 <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
-                <input type="hidden" name="_captcha" value="false">
                 <button type="submit">Sign up</button>
             </form>
             <p class="newsletter-privacy">We respect your privacy. Unsubscribe at any time.</p>
