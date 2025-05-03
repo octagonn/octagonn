@@ -29,6 +29,7 @@ ul {
 
 img {
     max-width: 100%;
+    display: block; /* Ensure images display properly */
 }
 
 .btn {
@@ -65,6 +66,27 @@ img {
     color: #000;
 }
 
+/* Colored Icon Styles */
+.icon-yellow {
+    color: #ffc107;
+}
+
+.icon-pink {
+    color: #e83e8c;
+}
+
+.icon-teal {
+    color: #20c997;
+}
+
+.icon-blue {
+    color: #17a2b8;
+}
+
+.icon-wrench {
+    color: #fff;
+}
+
 /* Header Styles */
 header {
     background: #000;
@@ -75,6 +97,7 @@ header {
 .logo img {
     max-width: 100px;
     height: auto;
+    margin: 0 auto; /* Center the logo */
 }
 
 .logo h1 {
@@ -99,11 +122,12 @@ nav ul li a {
     padding: 5px 10px;
     border-radius: 3px;
     transition: all 0.3s ease;
+    color: #fff;
 }
 
 nav ul li a:hover,
 nav ul li a.active {
-    color: #ccc;
+    color: #20c997;
 }
 
 /* Hero Section */
@@ -222,6 +246,9 @@ nav ul li a.active {
     max-width: 100%;
     border-radius: 5px;
     margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .about-card h3 {
@@ -344,6 +371,7 @@ nav ul li a.active {
 .reviews .yelp-icon {
     max-width: 80px;
     margin: 0 auto;
+    display: block;
 }
 
 /* Newsletter Section */
@@ -469,6 +497,8 @@ footer {
 
 .service-item-image img {
     border-radius: 5px;
+    display: block;
+    width: 100%;
 }
 
 .service-item-text {
@@ -515,6 +545,9 @@ footer {
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 20px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .team-member h3 {
