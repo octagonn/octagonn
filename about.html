@@ -51,7 +51,7 @@
     <section class="about-section">
         <div class="container">
             <div class="about-content">
-                <div class="about-text">
+                <div class="about-text fullwidth">
                     <h2 class="about-main-heading">About Us</h2>
                     <p class="about-intro">SpyderNet IT is your friendly, hometown tech partner—run by a passionate computer science student who's spent years helping friends, family, and local businesses tackle their toughest tech challenges. We know how unsettling it can be when computers run slow, networks drop offline, or malware strikes, so our mission is simple: provide clear, honest, and reliable solutions that put you back in control.</p>
                     
@@ -93,20 +93,29 @@
                         <p class="closing-statement">At SpyderNet IT, you're never just a "ticket number." You're part of our community. Let us take the stress out of technology so you can focus on what matters most.</p>
                     </div>
                 </div>
-                <div class="about-image">
-                    <img src="img/tech-support-about.jpg" alt="SpyderNet IT Support">
-                </div>
             </div>
         </div>
     </section>
 
     <style>
+        .about-content {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .fullwidth {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
         .about-main-heading {
             font-size: 32px;
             margin-bottom: 20px;
             color: #fff;
             position: relative;
             display: inline-block;
+            text-align: left;
         }
         
         .about-main-heading:after {
@@ -227,6 +236,10 @@
                 padding: 0;
             }
         }
+        
+        .features .container {
+            max-width: 900px;
+        }
     </style>
 
     <section class="section-title">
@@ -237,26 +250,45 @@
 
     <section class="features">
         <div class="container">
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <img src="img/experience.png" alt="Experience Icon" class="feature-icon">
-                    <h3>Experience</h3>
-                    <p>Elite level experience with a focus on customer service and satisfaction.</p>
+            <div class="about-features">
+                <div class="about-feature-card">
+                    <div class="feature-icon-container" style="background: linear-gradient(145deg, #4285F4, #01BDD5);">
+                        <span class="feature-icon">🏆</span>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Experience</h3>
+                        <p>Elite level experience with a focus on customer service and satisfaction.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <img src="img/personalized.png" alt="Personalized Icon" class="feature-icon">
-                    <h3>Personalized</h3>
-                    <p>Custom solutions tailored to your specific needs, not one-size-fits-all fixes.</p>
+                
+                <div class="about-feature-card">
+                    <div class="feature-icon-container" style="background: linear-gradient(145deg, #DB4437, #F4B400);">
+                        <span class="feature-icon">🎯</span>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Personalized</h3>
+                        <p>Custom solutions tailored to your specific needs, not one-size-fits-all fixes.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <img src="img/reliable.png" alt="Reliable Icon" class="feature-icon">
-                    <h3>Reliable</h3>
-                    <p>Prompt, dependable service with clear communication every step of the way.</p>
+                
+                <div class="about-feature-card">
+                    <div class="feature-icon-container" style="background: linear-gradient(145deg, #0F9D58, #4285F4);">
+                        <span class="feature-icon">🔄</span>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Reliable</h3>
+                        <p>Prompt, dependable service with clear communication every step of the way.</p>
+                    </div>
                 </div>
-                <div class="feature-card">
-                    <img src="img/affordable.png" alt="Affordable Icon" class="feature-icon">
-                    <h3>Affordable</h3>
-                    <p>Competitive pricing with no hidden fees or unnecessary upsells.</p>
+                
+                <div class="about-feature-card">
+                    <div class="feature-icon-container" style="background: linear-gradient(145deg, #F4B400, #0F9D58);">
+                        <span class="feature-icon">💰</span>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Affordable</h3>
+                        <p>Competitive pricing with no hidden fees or unnecessary upsells.</p>
+                    </div>
                 </div>
             </div>
         </div>
