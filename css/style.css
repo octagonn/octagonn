@@ -14,13 +14,14 @@ body {
 
 /* Global Spline Background */
 .spline-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -10;
-    pointer-events: none;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: -10 !important;
+    pointer-events: none !important;
+    opacity: 0.8 !important;
 }
 
 .container {
@@ -118,7 +119,7 @@ header {
     background-color: rgba(17, 17, 17, 0.95);
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 1000 !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -194,11 +195,12 @@ nav ul li a:hover:before, nav ul li a.active:before {
     height: 80vh;
     min-height: 600px;
     overflow: hidden;
+    z-index: 1 !important;
 }
 
 .hero-content {
     position: relative;
-    z-index: 2;
+    z-index: 10 !important;
     height: 100%;
     display: flex;
     align-items: center;
@@ -245,6 +247,8 @@ nav ul li a:hover:before, nav ul li a.active:before {
 .section-title {
     text-align: center;
     margin: 40px 0;
+    position: relative;
+    z-index: 1 !important;
 }
 
 .section-title h2 {
@@ -269,6 +273,8 @@ nav ul li a:hover:before, nav ul li a.active:before {
     padding: 40px 0;
     background-color: rgba(26, 26, 26, 0.9);
     margin-bottom: 40px;
+    position: relative;
+    z-index: 1 !important;
 }
 
 .about-content {
@@ -369,6 +375,8 @@ nav ul li a:hover:before, nav ul li a.active:before {
     background-color: rgba(26, 26, 26, 0.9);
     padding: 60px 0;
     margin-bottom: 40px;
+    position: relative;
+    z-index: 1 !important;
 }
 
 .contact-columns {
@@ -438,6 +446,8 @@ form button:hover {
     padding: 40px 0;
     background-color: rgba(26, 26, 26, 0.9);
     margin-bottom: 40px;
+    position: relative;
+    z-index: 1 !important;
 }
 
 .reviews h2 {
@@ -484,6 +494,8 @@ footer {
     background-color: #0a0a0a;
     padding: 30px 0;
     text-align: center;
+    position: relative;
+    z-index: 1 !important;
 }
 
 .footer-bottom {
@@ -1082,4 +1094,15 @@ footer {
 
 .thankyou-actions {
     margin-top: 30px;
+}
+
+/* Force Spline viewer to stay in background */
+spline-viewer {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: -10 !important;
+    pointer-events: none !important;
 } 
