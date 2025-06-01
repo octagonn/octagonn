@@ -5,14 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Services - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <script>
+        window.onload = function() {
+            var forms = document.getElementsByTagName('form');
+            for (var i = 0; i < forms.length; i++) {
+                forms[i].addEventListener('submit', function(event) {
+                    var response = grecaptcha.getResponse();
+                    if (response.length === 0) {
+                        event.preventDefault();
+                        alert('Please check the reCAPTCHA box to verify you are not a robot.');
+                        return false;
+                    }
+                });
+            }
+        };
+    </script>
 </head>
 <body>
     <header>
         <div class="container">
             <div class="logo">
-                <a href="index.html">
-                    <img src="img/spydernet-logo.png" alt="SpyderNet IT Logo">
+                <a href="index.html" class="logo-container">
+                    <img src="img/spydernet-logo-transparent-spideronly.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <img src="img/spydernet-logo-transparent-lettersonly.png" alt="SpyderNet Text" class="logo-text">
                 </a>
             </div>
             <nav>
@@ -26,158 +43,131 @@
         </div>
     </header>
 
-    <section class="hero">
+    <section class="page-title scroll-element">
         <div class="container">
-            <h2>Our IT Services</h2>
-            <p>Comprehensive solutions tailored to your business needs</p>
+            <h1>Our Services</h1>
         </div>
     </section>
 
     <section class="services-section">
         <div class="container">
-            <div id="managed-it" class="service-item">
-                <h3>Managed IT Services</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/managed-it.jpg" alt="Managed IT Services">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Our comprehensive Managed IT Services provide proactive monitoring, maintenance, and support for your entire IT infrastructure. We handle everything from routine updates to complex troubleshooting, allowing you to focus on your core business operations.</p>
-                        <p>Our services include:</p>
-                        <ul>
-                            <li>24/7 Network Monitoring</li>
-                            <li>Help Desk Support</li>
-                            <li>Server Management</li>
-                            <li>Desktop Support</li>
-                            <li>Software Updates and Patch Management</li>
-                            <li>Data Backup and Recovery</li>
-                            <li>IT Strategy Planning</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Get a Quote</a>
-                    </div>
+            <div class="services-intro scroll-element">
+                <h2>Comprehensive IT Solutions for Home and Business</h2>
+                <p>At SpyderNet IT, we offer a wide range of technology services designed to keep your systems running smoothly. From troubleshooting and repairs to setup and security, our expert technicians provide reliable solutions for all your tech needs.</p>
+            </div>
+            
+            <div class="about-content">
+                <div class="about-card glass-card scroll-element" style="border: 2px solid var(--primary-purple); background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(0, 168, 255, 0.1));">
+                    <h3><i class="ph-light ph-brain icon-gradient"></i> AI Consulting & Training</h3>
+                    <p><strong>Personalized Workshops:</strong> One-on-one needs assessment (writing, image gen, voice assistants, etc.) and model selection & hands-on setup.</p>
+                    <p><strong>Senior-Focused Onboarding:</strong> Large-print guides, slow-paced video tutorials, and follow-up sessions for reinforcement.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-laptop icon-gradient"></i> Computer Repair & Troubleshooting</h3>
+                    <p>Fix slow performance, remove viruses, repair hardware issues, and resolve software problems for Windows and Mac systems.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-globe icon-gradient"></i> Network Design & Implementation</h3>
+                    <p>Create reliable, scalable networks for businesses of all sizes, including wired and wireless solutions, VPNs, and secure remote access.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-shield icon-gradient"></i> Malware Removal & Prevention</h3>
+                    <p>Full system scans and removal of malware, installation and configuration of antivirus/anti-malware solutions, and ongoing best-practice hardening to keep systems clean.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-lock icon-gradient"></i> Network Security Audits</h3>
+                    <p>Guest-WiFi isolation and device hardening to improve your network security posture.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-house icon-gradient"></i> Home Network Setup & WiFi Optimization</h3>
+                    <p>Install and configure routers, extend WiFi coverage, eliminate dead zones, and secure your home network against unauthorized access.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-robot icon-gradient"></i> Smart Home Installation & Support</h3>
+                    <p>Setup and configure smart devices, integrate with voice assistants, and create automation routines for convenience and security.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-database icon-gradient"></i> Data Recovery & Backup Solutions</h3>
+                    <p>Recover lost files, set up automatic backups, and ensure your important documents, photos, and videos are protected.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-wrench icon-gradient"></i> IT Consulting & Support</h3>
+                    <p>Ongoing technical support and technology recommendations aligned with your business goals and budget.</p>
+                </div>
+                
+                <div class="about-card glass-card scroll-element">
+                    <h3><i class="ph-light ph-lightbulb icon-gradient"></i> Specialized Installations</h3>
+                    <p>Automotive ambient lighting (LED/acrylic dash & footwell installs, integration with factory lighting circuits) and home smart-device integration.</p>
                 </div>
             </div>
-
-            <div id="cybersecurity" class="service-item">
-                <h3>Cybersecurity Solutions</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/cybersecurity.jpg" alt="Cybersecurity Solutions">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Protect your business from evolving cyber threats with our comprehensive security solutions. We implement multiple layers of protection to safeguard your valuable data and systems from unauthorized access, malware, and other security breaches.</p>
-                        <p>Our cybersecurity services include:</p>
-                        <ul>
-                            <li>Network Security Assessment</li>
-                            <li>Endpoint Protection</li>
-                            <li>Firewall Management</li>
-                            <li>Email Security</li>
-                            <li>Security Awareness Training</li>
-                            <li>Data Encryption</li>
-                            <li>Incident Response Planning</li>
-                            <li>Compliance Management</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Secure Your Business</a>
-                    </div>
-                </div>
-            </div>
-
-            <div id="cloud-services" class="service-item">
-                <h3>Cloud Services</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/cloud-services.jpg" alt="Cloud Services">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Harness the power of cloud technology to transform your business operations. Our cloud services provide scalable, flexible solutions that improve collaboration, reduce costs, and enhance data accessibility from anywhere in the world.</p>
-                        <p>Our cloud services include:</p>
-                        <ul>
-                            <li>Cloud Migration Strategy</li>
-                            <li>Microsoft 365 Implementation and Support</li>
-                            <li>Google Workspace Solutions</li>
-                            <li>AWS and Azure Cloud Management</li>
-                            <li>Cloud Backup and Disaster Recovery</li>
-                            <li>Virtual Desktop Infrastructure (VDI)</li>
-                            <li>Cloud Security</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Cloud Consultation</a>
-                    </div>
-                </div>
-            </div>
-
-            <div id="network-infrastructure" class="service-item">
-                <h3>Network Infrastructure</h3>
-                <div class="service-item-content">
-                    <div class="service-item-image">
-                        <img src="img/network-infrastructure.jpg" alt="Network Infrastructure">
-                    </div>
-                    <div class="service-item-text">
-                        <p>Build a robust, reliable network infrastructure that supports your business operations. We design, implement, and maintain network solutions that ensure optimal performance, scalability, and security for your organization.</p>
-                        <p>Our network services include:</p>
-                        <ul>
-                            <li>Network Design and Implementation</li>
-                            <li>Wireless Network Solutions</li>
-                            <li>VPN Setup and Management</li>
-                            <li>Network Troubleshooting</li>
-                            <li>Performance Optimization</li>
-                            <li>Network Security</li>
-                            <li>Cabling and Hardware Installation</li>
-                        </ul>
-                        <a href="contact.html" class="btn">Network Consultation</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="second-cta">
-        <div class="container">
-            <h2>Need Customized IT Solutions?</h2>
-            <p>Contact us today for a free consultation</p>
-            <a href="#contact" class="btn">Get in Touch</a>
         </div>
     </section>
 
     <section id="contact" class="contact-form-section">
         <div class="container">
             <div class="contact-columns">
-                <div class="contact-info">
-                    <h3>📱 Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form>
-                        <input type="text" placeholder="Name" required>
-                        <input type="email" placeholder="Email*" required>
-                        <textarea placeholder="Message" rows="6" required></textarea>
+                <div class="contact-info glass-card scroll-element">
+                    <h3><i class="ph-light ph-phone icon-gradient"></i> Call, Text, or Message Below to Schedule Your Service</h3>
+                    <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="email" name="email" placeholder="Email*" required>
+                        <textarea name="message" placeholder="Message" rows="6" required></textarea>
+                        <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
+                        <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
+                        <input type="hidden" name="_captcha" value="false">
+                        
+                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
                         <button type="submit">Send a Quick Message</button>
                     </form>
-                    <p>This site is protected by reCAPTCHA and the Google <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a> apply.</p>
                 </div>
-                <div class="contact-info">
+                <div class="contact-info glass-card scroll-element">
                     <h3>Need Help or Have a Question?</h3>
                     <p>Need help choosing the right service or troubleshooting a tech issue? Reach out and we'll respond ASAP!</p>
                     
                     <h3 style="margin-top: 30px;">SpyderNet IT</h3>
-                    <p><i class="far fa-envelope"></i> spydernetit@gmail.com</p>
-                    <p><i class="fas fa-phone"></i> (949) 412-0047</p>
+                    <p><i class="ph-light ph-envelope icon-gradient"></i> spydernetit@gmail.com</p>
+                    <p><i class="ph-light ph-device-mobile icon-gradient"></i> (949) 237-2612</p>
                     
-                    <p style="margin-top: 30px;"><i class="fas fa-lock"></i> Your info is safe with us — we never spam.</p>
+                    <p style="margin-top: 30px;"><i class="ph-light ph-lock icon-gradient"></i> Your info is safe with us — we never spam.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer>
+    <section class="reviews scroll-element">
+        <div class="container">
+            <h2><i class="ph-light ph-star icon-gradient"></i> Leave A Google Review!</h2>
+            <p class="review-text">Help us grow by sharing your experience with others.</p>
+            <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
+                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 100px; height: auto;">
+                <span class="review-button">Write a Review</span>
+            </a>
+        </div>
+    </section>
+
+    <footer class="scroll-element">
         <div class="container">
             <div class="footer-bottom">
                 <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
                 <div class="footer-links" style="margin-top: 20px;">
-                    <a href="#">Privacy Policy</a>
-                    <span style="margin: 0 10px;">|</span>
-                    <a href="#">Terms and Conditions</a>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-conditions.html">Terms and Conditions</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <script src="js/script.js"></script>
+    <!-- Zapier Chatbot -->
+    <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
+    <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>
 </body>
 </html> 

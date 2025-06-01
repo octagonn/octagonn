@@ -5,14 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <script>
+        window.onload = function() {
+            var forms = document.getElementsByTagName('form');
+            for (var i = 0; i < forms.length; i++) {
+                forms[i].addEventListener('submit', function(event) {
+                    var response = grecaptcha.getResponse();
+                    if (response.length === 0) {
+                        event.preventDefault();
+                        alert('Please check the reCAPTCHA box to verify you are not a robot.');
+                        return false;
+                    }
+                });
+            }
+        };
+    </script>
 </head>
 <body>
     <header>
         <div class="container">
             <div class="logo">
-                <a href="index.html">
-                    <img src="img/spydernet-logo.png" alt="SpyderNet IT Logo">
+                <a href="index.html" class="logo-container">
+                    <img src="img/spydernet-logo-transparent-spideronly.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <img src="img/spydernet-logo-transparent-lettersonly.png" alt="SpyderNet Text" class="logo-text">
                 </a>
             </div>
             <nav>
@@ -26,107 +43,76 @@
         </div>
     </header>
 
-    <section class="hero">
+    <section class="page-title scroll-element">
         <div class="container">
-            <h2>About SpyderNet IT</h2>
-            <p>Your trusted partner for comprehensive IT solutions</p>
+            <h1>About Us</h1>
         </div>
     </section>
 
     <section class="about-section">
         <div class="container">
             <div class="about-content">
-                <div class="about-text">
-                    <h3>Our Story</h3>
-                    <p>SpyderNet IT was founded with a clear mission: to provide businesses and individuals with reliable, efficient, and secure IT solutions that enable growth and success. We've evolved from a small local IT support company to a comprehensive technology service provider serving clients across multiple industries.</p>
-                    <p>Our journey has been driven by a commitment to excellence, innovation, and exceptional customer service. We understand that technology is constantly changing, and we stay at the forefront of industry trends to ensure our clients receive the most advanced solutions available.</p>
-                    <h3>Our Approach</h3>
-                    <p>At SpyderNet IT, we believe that technology should work for you, not against you. Our approach is centered around understanding your unique needs and challenges, then developing customized solutions that align with your goals.</p>
-                    <p>We don't just fix IT problems – we prevent them from happening in the first place. Our proactive approach to IT management ensures your systems are always running optimally, minimizing downtime and maximizing productivity.</p>
-                </div>
-                <div class="about-image">
-                    <img src="img/about-main.jpg" alt="SpyderNet IT Office">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="team-section">
-        <div class="container">
-            <h2>Our Technology Services</h2>
-            <div class="team-grid">
-                <div class="team-member">
-                    <img src="img/network.jpg" alt="Network Infrastructure">
-                    <h3>Network Infrastructure</h3>
-                    <p>We design, implement, and maintain robust network solutions that ensure optimal performance, scalability, and security for your business.</p>
-                </div>
-                <div class="team-member">
-                    <img src="img/security.jpg" alt="Cybersecurity">
-                    <h3>Cybersecurity</h3>
-                    <p>Protect your business with our advanced security solutions, including threat detection, prevention, and rapid response to security incidents.</p>
-                </div>
-                <div class="team-member">
-                    <img src="img/cloud.jpg" alt="Cloud Services">
-                    <h3>Cloud Services</h3>
-                    <p>Transform your business with our cloud solutions that improve collaboration, reduce costs, and enhance data accessibility.</p>
-                </div>
-                <div class="team-member">
-                    <img src="img/support.jpg" alt="Technical Support">
-                    <h3>Technical Support</h3>
-                    <p>Get reliable help when you need it with our responsive support team, ready to solve your IT challenges quickly and efficiently.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="second-cta">
-        <div class="container">
-            <h2>Ready to Work With Us?</h2>
-            <p>Contact our team today to learn how we can help</p>
-            <a href="contact.html" class="btn">Get in Touch</a>
-        </div>
-    </section>
-
-    <section id="contact" class="contact-form-section">
-        <div class="container">
-            <div class="contact-columns">
-                <div class="contact-info">
-                    <h3>📱 Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form>
-                        <input type="text" placeholder="Name" required>
-                        <input type="email" placeholder="Email*" required>
-                        <textarea placeholder="Message" rows="6" required></textarea>
-                        <button type="submit">Send a Quick Message</button>
-                    </form>
-                    <p>This site is protected by reCAPTCHA and the Google <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a> apply.</p>
-                </div>
-                <div class="contact-info">
-                    <h3>Need Help or Have a Question?</h3>
-                    <p>Need help choosing the right service or troubleshooting a tech issue? Reach out and we'll respond ASAP!</p>
+                <div class="about-text fullwidth scroll-element">
+                    <h2 class="about-main-heading">About Us</h2>
+                    <p class="about-intro">SpyderNet IT is your friendly, hometown tech partner—run by a passionate computer science student who's spent years helping friends, family, and local businesses tackle their toughest tech challenges. We know how unsettling it can be when computers run slow, networks drop offline, or malware strikes, so our mission is simple: provide clear, honest, and reliable solutions that put you back in control.</p>
                     
-                    <h3 style="margin-top: 30px;">SpyderNet IT</h3>
-                    <p><i class="far fa-envelope"></i> spydernetit@gmail.com</p>
-                    <p><i class="fas fa-phone"></i> (949) 412-0047</p>
+                    <h2 class="about-secondary-heading">What sets us apart?</h2>
                     
-                    <p style="margin-top: 30px;"><i class="fas fa-lock"></i> Your info is safe with us — we never spam.</p>
+                    <div class="about-features">
+                        <div class="about-feature-card glass-card scroll-element">
+                            <div class="feature-icon-container">
+                                <i class="feature-icon ph-light ph-laptop"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Tech Expertise, Simplified</h3>
+                                <p>We translate complex jargon into step-by-step guidance you can understand—and even teach you a trick or two along the way.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="about-feature-card glass-card scroll-element">
+                            <div class="feature-icon-container">
+                                <i class="feature-icon ph-light ph-heart"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Genuine Care</h3>
+                                <p>Every call is treated like work on our own devices. We listen first, explain every step, and follow up to make sure things stay running smoothly.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="about-feature-card glass-card scroll-element">
+                            <div class="feature-icon-container">
+                                <i class="feature-icon ph-light ph-buildings"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Community Commitment</h3>
+                                <p>As a local business, we're invested in our neighbors' success. Whether it's boosting your home Wi-Fi, removing stubborn malware, or setting up smart home devices, we deliver solutions built for your life and budget.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="closing-statement-container glass-card scroll-element">
+                        <p class="closing-statement">At SpyderNet IT, you're never just a "ticket number." You're part of our community. Let us take the stress out of technology so you can focus on what matters most.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer>
+    <footer class="scroll-element">
         <div class="container">
             <div class="footer-bottom">
                 <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
                 <div class="footer-links" style="margin-top: 20px;">
-                    <a href="#">Privacy Policy</a>
-                    <span style="margin: 0 10px;">|</span>
-                    <a href="#">Terms and Conditions</a>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-conditions.html">Terms and Conditions</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <script src="js/script.js"></script>
+    <!-- Zapier Chatbot -->
+    <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
+    <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>
 </body>
 </html> 

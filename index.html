@@ -5,14 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.98/build/spline-viewer.js"></script>
+    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <script>
+        window.onload = function() {
+            var forms = document.getElementsByTagName('form');
+            for (var i = 0; i < forms.length; i++) {
+                forms[i].addEventListener('submit', function(event) {
+                    var response = grecaptcha.getResponse();
+                    if (response.length === 0) {
+                        event.preventDefault();
+                        alert('Please check the reCAPTCHA box to verify you are not a robot.');
+                        return false;
+                    }
+                });
+            }
+        };
+    </script>
 </head>
 <body>
+    <spline-viewer url="https://prod.spline.design/Ku6XISCeYHNehyOQ/scene.splinecode" class="spline-background"></spline-viewer>
+    
     <header>
         <div class="container">
             <div class="logo">
-                <a href="index.html">
-                    <img src="img/spydernet-logo.png" alt="SpyderNet IT Logo">
+                <a href="index.html" class="logo-container">
+                    <img src="img/spydernet-logo-transparent-spideronly.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <img src="img/spydernet-logo-transparent-lettersonly.png" alt="SpyderNet Text" class="logo-text">
                 </a>
             </div>
             <nav>
@@ -27,106 +47,104 @@
     </header>
 
     <section class="hero">
-        <div class="container">
-            <h2>Welcome to SpyderNet IT - Your IT Solutions Provider</h2>
-            <a href="#contact" class="btn">Get Expert Help Today ↓</a>
-        </div>
+        <!-- Hero section now purely for spacing - no visual elements -->
     </section>
 
-    <section class="section-title">
+    <section class="section-title scroll-element">
         <div class="container">
-            <h2>🔧 Why Choose SpyderNet IT?</h2>
+            <h2><i class="ph-light ph-wrench icon-gradient"></i> Why Choose SpyderNet IT?</h2>
         </div>
     </section>
 
     <section class="about-preview">
         <div class="container">
             <div class="about-content">
-                <div class="about-card">
-                    <img src="img/tech-support.jpg" alt="IT Support">
-                    <h3>💡 Fast, Reliable Help — Right When You Need It</h3>
+                <div class="about-card glass-card scroll-element">
+                    <img src="img/tech-support.png" alt="IT Support">
+                    <h3><i class="ph-light ph-lightbulb icon-gradient"></i> Fast, Reliable Help — Right When You Need It</h3>
                     <p>No more waiting on hold or guessing what's wrong. Whether your Wi-Fi's down, your devices aren't syncing, or your network needs a pro setup, we show up fast and get the job done right the first time.</p>
                 </div>
-                <div class="about-card">
-                    <img src="img/keyboard.jpg" alt="Tech Made Simple">
-                    <h3>💬 Tech Made Simple — No Geek Speak</h3>
+                <div class="about-card glass-card scroll-element">
+                    <img src="img/keyboard.png" alt="Tech Made Simple">
+                    <h3><i class="ph-light ph-brain icon-gradient"></i> Tech Made Simple — No Geek Speak</h3>
                     <p>We break down the fix in plain English, walk you through the process, and never upsell what you don't need. Our goal? Make your tech work for <em>you</em>, not the other way around.</p>
                 </div>
-                <div class="about-card">
-                    <img src="img/spydernet-logo-white.png" alt="SpyderNet IT Logo">
-                    <h3>📱 Let's Get You Back Online — Today</h3>
+                <div class="about-card glass-card scroll-element">
+                    <video autoplay loop muted playsinline class="logo-video" style="width: 80px; height: 80px;">
+                        <source src="img/rotating-3d-spydernet-logo.mp4" type="video/mp4">
+                        <img src="img/spydernet-logo-white.png" alt="SpyderNet IT Logo">
+                    </video>
+                    <h3><i class="ph-light ph-phone icon-gradient"></i> Let's Get You Back Online — Today</h3>
                     <p>Reach out now for a free consultation or same-day service in your area. We're local, honest, and ready to help.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="second-cta">
+    <section class="second-cta scroll-element">
         <div class="container">
             <h2>Reliable Tech Solutions. Trusted Local Support.</h2>
-            <a href="#contact" class="btn">Make An Appointment! ↓</a>
+            <a href="#contact" class="btn">Make An Appointment! <i class="ph-light ph-arrow-down"></i></a>
         </div>
     </section>
 
     <section id="contact" class="contact-form-section">
         <div class="container">
             <div class="contact-columns">
-                <div class="contact-info">
-                    <h3>📱 Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form>
-                        <input type="text" placeholder="Name" required>
-                        <input type="email" placeholder="Email*" required>
-                        <textarea placeholder="Message" rows="6" required></textarea>
+                <div class="contact-info glass-card scroll-element">
+                    <h3><i class="ph-light ph-phone icon-gradient"></i> Call, Text, or Message Below to Schedule Your Service</h3>
+                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="email" name="email" placeholder="Email*" required>
+                        <textarea name="message" placeholder="Message" rows="6" required></textarea>
+                        <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
+                        <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
+                        <input type="hidden" name="_captcha" value="false">
+                        
+                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
                         <button type="submit">Send a Quick Message</button>
                     </form>
-                    <p>This site is protected by reCAPTCHA and the Google <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a> apply.</p>
                 </div>
-                <div class="contact-info">
+                <div class="contact-info glass-card scroll-element">
                     <h3>Need Help or Have a Question?</h3>
                     <p>Need help choosing the right service or troubleshooting a tech issue? Reach out and we'll respond ASAP!</p>
                     
                     <h3 style="margin-top: 30px;">SpyderNet IT</h3>
-                    <p><i class="far fa-envelope"></i> spydernetit@gmail.com</p>
-                    <p><i class="fas fa-phone"></i> (949) 412-0047</p>
+                    <p><i class="ph-light ph-envelope icon-gradient"></i> spydernetit@gmail.com</p>
+                    <p><i class="ph-light ph-device-mobile icon-gradient"></i> (949) 237-2612</p>
                     
-                    <p style="margin-top: 30px;"><i class="fas fa-lock"></i> Your info is safe with us — we never spam.</p>
+                    <p style="margin-top: 30px;"><i class="ph-light ph-lock icon-gradient"></i> Your info is safe with us — we never spam.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="reviews">
+    <section class="reviews scroll-element">
         <div class="container">
-            <h2>Leave A Yelp Review!</h2>
-            <a href="https://www.yelp.com" target="_blank">
-                <img src="img/yelp-logo.png" alt="Yelp" class="yelp-icon">
+            <h2><i class="ph-light ph-star icon-gradient"></i> Leave A Google Review!</h2>
+            <p class="review-text">Help us grow by sharing your experience with others.</p>
+            <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
+                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 100px; height: auto;">
+                <span class="review-button">Write a Review</span>
             </a>
         </div>
     </section>
 
-    <section class="newsletter">
-        <div class="container">
-            <h2>Join Our Mailing List</h2>
-            <div class="newsletter-form">
-                <input type="email" placeholder="Email">
-                <button type="submit">Sign up</button>
-            </div>
-        </div>
-    </section>
-
-    <footer>
+    <footer class="scroll-element">
         <div class="container">
             <div class="footer-bottom">
                 <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
                 <div class="footer-links" style="margin-top: 20px;">
-                    <a href="#">Privacy Policy</a>
-                    <span style="margin: 0 10px;">|</span>
-                    <a href="#">Terms and Conditions</a>
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-conditions.html">Terms and Conditions</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <script src="js/script.js"></script>
+    <!-- Zapier Chatbot -->
+    <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
+    <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>
 </body>
 </html> 
