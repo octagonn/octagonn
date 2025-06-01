@@ -193,11 +193,11 @@ nav ul li a:hover:before, nav ul li a.active:before {
 .hero {
     position: relative;
     text-align: center;
-    padding: 100px 0;
+    padding: 60px 0;
     margin-bottom: 40px;
     margin-top: 0 !important;
-    height: 80vh;
-    min-height: 600px;
+    height: 50vh;
+    min-height: 400px;
     overflow: hidden;
     z-index: 1 !important;
 }
