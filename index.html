@@ -1,150 +1,39 @@
+
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpyderNet IT</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SpyderNet IT - Your IT Solutions Provider | Orange County</title>
+    <meta name="description" content="Professional IT services in Orange County. Computer repair, network setup, malware removal, AI consulting, and smart home installation. Fast, reliable, honest tech support." />
+    <meta name="author" content="SpyderNet IT" />
+    <meta name="keywords" content="IT support, computer repair, Orange County, network setup, malware removal, AI consulting, smart home, tech support" />
+
+    <meta property="og:title" content="SpyderNet IT - Your IT Solutions Provider" />
+    <meta property="og:description" content="Professional IT services in Orange County. Fast, reliable tech support for homes and businesses." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@lovable_dev" />
+    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+    <!-- Spline Viewer -->
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.98/build/spline-viewer.js"></script>
-    <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
-    <script>
-        window.onload = function() {
-            var forms = document.getElementsByTagName('form');
-            for (var i = 0; i < forms.length; i++) {
-                forms[i].addEventListener('submit', function(event) {
-                    var response = grecaptcha.getResponse();
-                    if (response.length === 0) {
-                        event.preventDefault();
-                        alert('Please check the reCAPTCHA box to verify you are not a robot.');
-                        return false;
-                    }
-                });
-            }
-        };
-    </script>
-</head>
-<body>
-    <spline-viewer url="https://prod.spline.design/Ku6XISCeYHNehyOQ/scene.splinecode" class="spline-background"></spline-viewer>
-    
-    <header>
-        <div class="container">
-            <div class="logo">
-                <a href="index.html" class="logo-container">
-                    <img src="img/spydernet-logo-transparent-spideronly.png" alt="SpyderNet Spider Logo" class="logo-spider">
-                    <img src="img/spydernet-logo-transparent-lettersonly.png" alt="SpyderNet Text" class="logo-text">
-                </a>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="index.html" class="active">Home</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+  </head>
 
-    <section class="hero">
-        <!-- Hero section now purely for spacing - no visual elements -->
-    </section>
-
-    <section class="section-title">
-        <div class="container">
-            <h2><span class="icon-wrench">🔧</span> Why Choose SpyderNet IT?</h2>
-        </div>
-    </section>
-
-    <section class="about-preview">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-card">
-                    <img src="img/tech-support.png" alt="IT Support">
-                    <h3><span class="icon-yellow">💡</span> Fast, Reliable Help — Right When You Need It</h3>
-                    <p>No more waiting on hold or guessing what's wrong. Whether your Wi-Fi's down, your devices aren't syncing, or your network needs a pro setup, we show up fast and get the job done right the first time.</p>
-                </div>
-                <div class="about-card">
-                    <img src="img/keyboard.png" alt="Tech Made Simple">
-                    <h3><span class="icon-pink">🧠</span> Tech Made Simple — No Geek Speak</h3>
-                    <p>We break down the fix in plain English, walk you through the process, and never upsell what you don't need. Our goal? Make your tech work for <em>you</em>, not the other way around.</p>
-                </div>
-                <div class="about-card">
-                    <video autoplay loop muted playsinline class="logo-video" style="width: 80px; height: 80px;">
-                        <source src="img/rotating-3d-spydernet-logo.mp4" type="video/mp4">
-                        <img src="img/spydernet-logo-white.png" alt="SpyderNet IT Logo">
-                    </video>
-                    <h3><span class="icon-teal">📞</span> Let's Get You Back Online — Today</h3>
-                    <p>Reach out now for a free consultation or same-day service in your area. We're local, honest, and ready to help.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="second-cta">
-        <div class="container">
-            <h2>Reliable Tech Solutions. Trusted Local Support.</h2>
-            <a href="#contact" class="btn">Make An Appointment! ↓</a>
-        </div>
-    </section>
-
-    <section id="contact" class="contact-form-section">
-        <div class="container">
-            <div class="contact-columns">
-                <div class="contact-info">
-                    <h3><span class="icon-teal">📞</span> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
-                        <input type="text" name="name" placeholder="Name" required>
-                        <input type="email" name="email" placeholder="Email*" required>
-                        <textarea name="message" placeholder="Message" rows="6" required></textarea>
-                        <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
-                        <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
-                        <input type="hidden" name="_captcha" value="false">
-                        
-                        <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
-                        <button type="submit">Send a Quick Message</button>
-                    </form>
-                </div>
-                <div class="contact-info">
-                    <h3>Need Help or Have a Question?</h3>
-                    <p>Need help choosing the right service or troubleshooting a tech issue? Reach out and we'll respond ASAP!</p>
-                    
-                    <h3 style="margin-top: 30px;">SpyderNet IT</h3>
-                    <p><span class="icon-blue">📧</span> spydernetit@gmail.com</p>
-                    <p><span class="icon-teal">📱</span> (949) 237-2612</p>
-                    
-                    <p style="margin-top: 30px;"><span class="icon-yellow">🔒</span> Your info is safe with us — we never spam.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="reviews">
-        <div class="container">
-            <h2><span class="icon-yellow">⭐</span> Leave A Google Review!</h2>
-            <p class="review-text">Help us grow by sharing your experience with others.</p>
-            <a href="https://g.page/r/Ca4pUoaLIJ6MEAE/review" target="_blank" class="review-link">
-                <img src="img/google-logo.png" alt="Google" class="review-logo" style="max-width: 100px; height: auto;">
-                <span class="review-button">Write a Review</span>
-            </a>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
-            <div class="footer-bottom">
-                <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
-                <div class="footer-links" style="margin-top: 20px;">
-                    <a href="privacy-policy.html">Privacy Policy</a>
-                    <a href="terms-conditions.html">Terms and Conditions</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <script src="js/script.js"></script>
-    <!-- Zapier Chatbot -->
-    <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
-    <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>
-</body>
-</html> 
+  <body>
+    <div id="root"></div>
+    <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
+    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

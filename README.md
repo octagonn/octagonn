@@ -1,59 +1,73 @@
-# SpyderNet IT Chatbot Knowledge Base
+# Welcome to your Lovable project
 
-This repository contains a knowledge base file for SpyderNet IT's chatbot implementation. This file provides a comprehensive set of questions and answers that can be used to train or configure a chatbot for customer support.
+## Project info
 
-## File Included
+**URL**: https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c
 
-**chatbot-knowledge-base.md** - A comprehensive markdown file containing all questions and answers organized by category.
+## How can I edit this code?
 
-## How to Use
+There are several ways of editing your application.
 
-The markdown file (`chatbot-knowledge-base.md`) is organized by categories with clear headings. This format is useful for:
-- Human review and editing
-- Documentation
-- Importing into platforms that support markdown
-- Reference material for support staff
+**Use Lovable**
 
-## Implementation Options
+Simply visit the [Lovable Project](https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c) and start prompting.
 
-### Dialogflow (Google)
-1. Create a new agent
-2. Go to Knowledge Base section
-3. Create a new knowledge base
-4. Import the markdown file or copy-paste the question/answer pairs
+Changes made via Lovable will be committed automatically to this repo.
 
-### Microsoft Bot Framework
-1. Use the QnA Maker service
-2. Create a new knowledge base
-3. Import the markdown file or copy-paste the question/answer pairs
-4. Train and publish
+**Use your preferred IDE**
 
-### ChatGPT/OpenAI
-1. Use the Assistants API
-2. Upload the knowledge base as a file
-3. Set the appropriate system instructions to use the knowledge base for customer inquiries
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-### Rasa
-1. Format the knowledge base as training data
-2. Use for intent classification and response generation
-3. Integrate with your Rasa chatbot
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-## Customization
+Follow these steps:
 
-Before implementing, be sure to:
-1. Replace all placeholder text (indicated by [brackets])
-2. Add any company-specific information
-3. Update technical recommendations as needed
-4. Add additional questions and answers relevant to your specific business
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-## Maintenance
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-Regularly review and update the knowledge base to ensure:
-- Current service offerings are reflected
-- Technical recommendations stay up-to-date
-- Pricing and policy information remains accurate
-- New common questions are added as they emerge
+# Step 3: Install the necessary dependencies.
+npm i
 
-## Support
+# Step 4: Start the development server with auto-reloading and an instant preview.
+npm run dev
+```
 
-For questions about implementing this knowledge base with your preferred chatbot platform, contact your development team or IT consultant. 
+**Edit a file directly in GitHub**
+
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
+
+**Use GitHub Codespaces**
+
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
+
+## What technologies are used for this project?
+
+This project is built with:
+
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
+
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c) and click on Share -> Publish.
+
+## Can I connect a custom domain to my Lovable project?
+
+Yes, you can!
+
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
