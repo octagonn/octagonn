@@ -354,7 +354,8 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Second CTA Section */
 .second-cta {
-    background: rgba(26, 26, 26, 0.8);
+    background: none !important;
+    background-image: none !important;
     background-size: cover;
     background-position: center;
     text-align: center;
