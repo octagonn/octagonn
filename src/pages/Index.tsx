@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Hero } from "@/components/Hero";
 import { WhyChooseUs } from "@/components/WhyChooseUs";
@@ -17,10 +16,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative bg-black">
-      {/* Spline Background */}
-      <div className="spline-background">
+      {/* Spline Background - Temporarily commented out for debugging */}
+      {/* <div className="spline-background">
         <spline-viewer url="https://prod.spline.design/XuOAzAxRvn23IgAq/scene.splinecode"></spline-viewer>
-      </div>
+      </div> */}
       
       {/* Main Content */}
       <div className={`relative z-10 transition-all duration-1000 ease-out ${

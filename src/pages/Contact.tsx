@@ -1,4 +1,3 @@
-
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ContactForm } from "@/components/ContactForm";
@@ -38,10 +37,10 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen relative bg-black">
-      {/* Spline Background */}
-      <div className="spline-background">
+      {/* Spline Background - Temporarily commented out for debugging */}
+      {/* <div className="spline-background">
         <spline-viewer url="https://prod.spline.design/XuOAzAxRvn23IgAq/scene.splinecode"></spline-viewer>
-      </div>
+      </div> */}
       
       <div className="relative z-10">
         <Navigation />
