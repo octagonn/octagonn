@@ -194,7 +194,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
     position: relative;
     text-align: center;
     padding: 60px 0;
-    margin-bottom: 40px;
+    margin-bottom: 160px;
     margin-top: 0 !important;
     height: 50vh;
     min-height: 400px;
@@ -252,8 +252,9 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Section Titles */
 .section-title {
+    background-color: rgba(26, 26, 26, 0.9);
     text-align: center;
-    margin: 40px 0;
+    margin: 0px 0;
     position: relative;
     z-index: 1 !important;
 }
@@ -277,9 +278,9 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* About Preview Section */
 .about-preview {
-    padding: 40px 0;
+    padding: 0px 0;
     background-color: rgba(26, 26, 26, 0.9);
-    margin-bottom: 40px;
+    margin-bottom: 0px;
     position: relative;
     z-index: 1 !important;
 }
@@ -354,13 +355,13 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Second CTA Section */
 .second-cta {
-    background: none !important;
+    background: rgba(26, 26, 26, 0.9) !important;
     background-image: none !important;
     background-size: cover;
     background-position: center;
     text-align: center;
-    padding: 80px 0;
-    margin: 40px 0;
+    padding: 40px 0;
+    margin: 0px 0;
     position: relative;
     z-index: 1 !important;
 }
@@ -383,8 +384,8 @@ nav ul li a:hover:before, nav ul li a.active:before {
 /* Contact Form Section */
 .contact-form-section {
     background-color: rgba(26, 26, 26, 0.9);
-    padding: 60px 0;
-    margin-bottom: 40px;
+    padding: 30px 0;
+    margin-bottom: 0px;
     position: relative;
     z-index: 1 !important;
 }
@@ -453,9 +454,9 @@ form button:hover {
 /* Reviews Section */
 .reviews {
     text-align: center;
-    padding: 40px 0;
+    padding: 0px 0;
     background-color: rgba(26, 26, 26, 0.9);
-    margin-bottom: 40px;
+    margin-bottom: 0px;
     position: relative;
     z-index: 1 !important;
 }
