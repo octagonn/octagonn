@@ -7,9 +7,20 @@
 }
 
 body {
-    background-color: #111;
+    background-color: rgba(17, 17, 17, 0.95);
     color: #f1f1f1;
     line-height: 1.6;
+}
+
+/* Global Spline Background */
+.spline-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -10;
+    pointer-events: none;
 }
 
 .container {
@@ -17,6 +28,8 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 0;
+    position: relative;
+    z-index: 1;
 }
 
 a {
@@ -183,15 +196,6 @@ nav ul li a:hover:before, nav ul li a.active:before {
     overflow: hidden;
 }
 
-.hero spline-viewer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-}
-
 .hero-content {
     position: relative;
     z-index: 2;
@@ -199,7 +203,9 @@ nav ul li a:hover:before, nav ul li a.active:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    margin: 0 20px;
 }
 
 .hero h2 {
@@ -261,7 +267,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
 /* About Preview Section */
 .about-preview {
     padding: 40px 0;
-    background-color: #1a1a1a;
+    background-color: rgba(26, 26, 26, 0.9);
     margin-bottom: 40px;
 }
 
@@ -360,7 +366,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
 
 /* Contact Form Section */
 .contact-form-section {
-    background-color: #1a1a1a;
+    background-color: rgba(26, 26, 26, 0.9);
     padding: 60px 0;
     margin-bottom: 40px;
 }
@@ -430,7 +436,7 @@ form button:hover {
 .reviews {
     text-align: center;
     padding: 40px 0;
-    background-color: #1a1a1a;
+    background-color: rgba(26, 26, 26, 0.9);
     margin-bottom: 40px;
 }
 
