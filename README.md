@@ -1,73 +1,114 @@
-# Welcome to your Lovable project
+# SpyderNet IT Website
+
+This is a React website built with Lovable.dev and configured for GitHub Pages deployment.
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c
+**Original Lovable URL**: https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c
 
-## How can I edit this code?
+## GitHub Pages Deployment
 
-There are several ways of editing your application.
+This project is configured to automatically deploy to GitHub Pages using GitHub Actions.
 
-**Use Lovable**
+### Automatic Deployment
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c) and start prompting.
+The site will automatically deploy when you push to the `main` branch. The GitHub Actions workflow will:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. Build the project
+2. Deploy to GitHub Pages
+3. Make it available at: `https://[username].github.io/octagonn/`
 
-**Use your preferred IDE**
+### Manual Deployment
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+To manually build for GitHub Pages:
+
+```sh
+npm run build:gh-pages
+```
+
+### GitHub Pages Setup
+
+To enable GitHub Pages for your repository:
+
+1. Go to your repository's Settings
+2. Navigate to "Pages" in the sidebar
+3. Under "Source", select "GitHub Actions"
+4. The site will be available at `https://[username].github.io/octagonn/`
+
+## Development
+
+### Local Development
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 Follow these steps:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Step 1: Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Step 2: Navigate to the project directory
+cd octagonn
 
-# Step 3: Install the necessary dependencies.
+# Step 3: Install dependencies
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Available Scripts
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:gh-pages` - Build for GitHub Pages deployment
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint
+
+### Editing Options
+
+**Use Lovable**
+
+Visit the [Lovable Project](https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c) and start prompting.
+
+**Use your preferred IDE**
+
+Clone this repo and push changes. Changes will be reflected in Lovable.
+
+**Edit directly in GitHub**
+
+Navigate to files and click the "Edit" button (pencil icon).
 
 **Use GitHub Codespaces**
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+Click "Code" → "Codespaces" → "New codespace" for a cloud development environment.
 
-## What technologies are used for this project?
+## Technologies Used
 
-This project is built with:
+- **Vite** - Build tool and development server
+- **TypeScript** - Type-safe JavaScript
+- **React** - UI library with React Router for routing
+- **shadcn-ui** - Modern React component library
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Unstyled, accessible UI components
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## GitHub Pages Configuration
 
-## How can I deploy this project?
+This project includes specific configurations for GitHub Pages:
 
-Simply open [Lovable](https://lovable.dev/projects/69ed7e4f-099f-4ce2-b3d9-5343a4b6259c) and click on Share -> Publish.
+- **Base path configuration** in `vite.config.ts` for subdirectory hosting
+- **Router basename** in `App.tsx` for proper navigation
+- **404.html** for client-side routing support
+- **GitHub Actions workflow** for automatic deployment
+- **Redirect script** in `index.html` for SPA routing
 
-## Can I connect a custom domain to my Lovable project?
+## Custom Domain
 
-Yes, you can!
+To connect a custom domain to GitHub Pages:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. In your repository, go to Settings → Pages
+2. Under "Custom domain", enter your domain
+3. Create a CNAME file in the root with your domain
+4. Configure your DNS provider to point to GitHub Pages
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+For Lovable projects, you can also use: Project > Settings > Domains in the Lovable interface.
