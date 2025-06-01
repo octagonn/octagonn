@@ -93,21 +93,21 @@ function initIntersectionObserver() {
 
 // Enhanced Mobile Navigation
 function initMobileNavigation() {
-    const header = document.querySelector('header');
-    
+        const header = document.querySelector('header');
+        
     // Create mobile toggle if it doesn't exist
-    if (!document.querySelector('.mobile-toggle')) {
-        const mobileToggle = document.createElement('div');
-        mobileToggle.className = 'mobile-toggle';
-        mobileToggle.innerHTML = '<span></span><span></span><span></span>';
-        
-        header.querySelector('.container').appendChild(mobileToggle);
-        
+        if (!document.querySelector('.mobile-toggle')) {
+            const mobileToggle = document.createElement('div');
+            mobileToggle.className = 'mobile-toggle';
+            mobileToggle.innerHTML = '<span></span><span></span><span></span>';
+            
+            header.querySelector('.container').appendChild(mobileToggle);
+            
         // Add event listener
-        mobileToggle.addEventListener('click', function() {
-            const nav = document.querySelector('nav');
-            nav.classList.toggle('active');
-            this.classList.toggle('active');
+            mobileToggle.addEventListener('click', function() {
+                const nav = document.querySelector('nav');
+                nav.classList.toggle('active');
+                this.classList.toggle('active');
             
             // Prevent body scroll when menu is open
             if (nav.classList.contains('active')) {
@@ -150,12 +150,12 @@ function initMobileNavigation() {
 // Enhanced Scroll to Top
 function initScrollToTop() {
     // Create scroll to top button
-    const scrollButton = document.createElement('button');
-    scrollButton.id = 'scrollTop';
+        const scrollButton = document.createElement('button');
+        scrollButton.id = 'scrollTop';
     scrollButton.innerHTML = '<i class="ph-light ph-arrow-up"></i>';
     scrollButton.setAttribute('aria-label', 'Scroll to top');
-    document.body.appendChild(scrollButton);
-    
+        document.body.appendChild(scrollButton);
+        
     // Show/hide based on scroll position
     let isVisible = false;
     window.addEventListener('scroll', () => {
@@ -180,11 +180,11 @@ function initScrollToTop() {
     
     // Smooth scroll to top
     scrollButton.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
-    });
     
     // Initialize hidden state
     scrollButton.style.opacity = '0';
@@ -364,23 +364,38 @@ window.addEventListener('scroll', () => {
 
 // Advanced Card Interactions
 function initAdvancedCardEffects() {
-    document.querySelectorAll('.glass-card, .about-card, .contact-info').forEach(card => {
-        card.addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
+    // Include ALL card types across the entire site for consistent behavior
+    const cardSelectors = [
+        '.glass-card',
+        '.about-card', 
+        '.contact-info',
+        '.about-feature-card',
+        '.contact-detail-card',
+        '.closing-statement-container',
+        'form.glass-card'
+    ];
+    
+    // Apply consistent sway effect to all card types
+    cardSelectors.forEach(selector => {
+        document.querySelectorAll(selector).forEach(card => {
+            card.addEventListener('mousemove', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Consistent subtle rotation for all cards
+                const rotateX = (y - centerY) / 30;
+                const rotateY = (centerX - x) / 30;
+                
+                this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px) scale(1.02)`;
+            });
             
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const rotateX = (y - centerY) / 25;
-            const rotateY = (centerX - x) / 25;
-            
-            this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px) scale(1.02)`;
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)';
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)';
+            });
         });
     });
 }

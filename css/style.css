@@ -539,6 +539,15 @@ nav ul li a.active::after {
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-glass);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.contact-info:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        var(--shadow-glass),
+        var(--shadow-glow);
+    border-color: rgba(74, 144, 226, 0.3);
 }
 
 .contact-info h3 {
@@ -840,6 +849,15 @@ footer {
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-glass);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.closing-statement-container:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        var(--shadow-glass),
+        var(--shadow-glow);
+    border-color: rgba(74, 144, 226, 0.3);
 }
 
 .closing-statement {
@@ -880,6 +898,15 @@ footer {
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     box-shadow: var(--shadow-glass);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.service-category:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 
+        var(--shadow-glass),
+        var(--shadow-glow);
+    border-color: rgba(74, 144, 226, 0.3);
 }
 
 .service-category h3 {
@@ -1108,10 +1135,10 @@ footer {
     
     nav ul {
         display: none;
-        position: absolute;
+    position: absolute;
         top: 100%;
         left: 0;
-        right: 0;
+    right: 0;
         background: rgba(10, 10, 10, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
