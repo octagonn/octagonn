@@ -209,7 +209,7 @@ nav ul li a:hover:before, nav ul li a.active:before {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
+    background: transparent;
     border-radius: 10px;
     margin: 0 20px;
 }
