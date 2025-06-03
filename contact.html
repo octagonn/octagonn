@@ -6,6 +6,7 @@
     <title>Contact Us - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
     <script>
         window.onload = function() {
@@ -79,6 +80,50 @@
         </div>
     </section>
 
+    <!-- Customer Login Prompt (for non-logged-in users) -->
+    <section id="loginPrompt" class="customer-prompt-section" style="display: none;">
+        <div class="container">
+            <div class="customer-prompt glass-card scroll-element">
+                <div class="prompt-content">
+                    <i class="ph-light ph-user-circle"></i>
+                    <h3>Get Faster Service</h3>
+                    <p>Sign in to your customer account to create trackable service tickets, view history, and schedule appointments.</p>
+                </div>
+                <div class="prompt-actions">
+                    <a href="login.html" class="btn btn-primary">
+                        <i class="ph-light ph-sign-in"></i>
+                        Sign In
+                    </a>
+                    <a href="login.html" class="btn btn-secondary">
+                        <i class="ph-light ph-user-plus"></i>
+                        Create Account
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Customer Info (for logged-in users) -->
+    <section id="customerInfo" class="customer-info-section" style="display: none;">
+        <div class="container">
+            <div class="customer-info glass-card scroll-element">
+                <div class="customer-welcome">
+                    <i class="ph-light ph-user-check"></i>
+                    <div>
+                        <h3>Welcome back, <span id="customerName">Customer</span>!</h3>
+                        <p>Creating a service ticket for: <span id="customerEmail">email@example.com</span></p>
+                    </div>
+                </div>
+                <div class="customer-actions">
+                    <a href="customer-portal.html" class="btn btn-secondary">
+                        <i class="ph-light ph-house"></i>
+                        Customer Portal
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="contact-details-section">
         <div class="container">
             <div class="contact-details-intro scroll-element">
@@ -117,15 +162,15 @@
         </div>
     </section>
 
-    <section class="contact-form-section">
+    <section class="contact-form-section" id="contact">
         <div class="container">
-            <div class="contact-form-intro scroll-element">
+            <div class="contact-content scroll-element">
                 <h2>Send Us a Message</h2>
                 <p>Fill out the form below and we'll get back to you as soon as possible.</p>
             </div>
             
             <div class="contact-form-container glass-card scroll-element">
-                <form action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
                     <div class="form-row">
                         <div class="form-group">
                             <input type="text" name="name" placeholder="Full Name" required>
@@ -185,7 +230,9 @@
         </div>
     </footer>
 
+    <script src="js/supabase-client.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/enhanced-contact.js"></script>
     <!-- Zapier Chatbot -->
     <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
     <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>

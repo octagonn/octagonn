@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Portal - SpyderNet IT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <div class="contact-item">
+                    <i class="ph-light ph-phone"></i>
+                    <span>(949) 237-2612</span>
+                </div>
+                <div class="contact-item">
+                    <i class="ph-light ph-envelope"></i>
+                    <span>spydernetit@gmail.com</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <span>Serving Orange County & Surrounding Areas</span>
+            </div>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="index.html" class="logo-container">
+                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <div class="logo-text-container">
+                        <span class="logo-main-text">SpyderNet</span>
+                        <span class="logo-sub-text">IT</span>
+                        <span class="logo-tagline">Your IT Solutions Provider</span>
+                    </div>
+                </a>
+            </div>
+            <div class="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li><a href="customer-portal.html" class="active">Portal</a></li>
+                </ul>
+            </nav>
+            <div class="header-cta">
+                <button id="logoutBtn" class="btn btn-header-cta">Sign Out</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="portal-section">
+        <div class="container">
+            <!-- Welcome Header -->
+            <div class="portal-welcome glass-card">
+                <div class="welcome-content">
+                    <h2>Welcome back, <span id="customerName">Customer</span>!</h2>
+                    <p>Manage your IT services, view service history, and schedule appointments.</p>
+                </div>
+                <div class="welcome-actions">
+                    <a href="contact.html" class="btn btn-primary">
+                        <i class="ph-light ph-plus-circle"></i>
+                        New Service Request
+                    </a>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="portal-stats">
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="ph-light ph-ticket"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="activeTickets">0</h3>
+                        <p>Active Tickets</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="ph-light ph-calendar"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="upcomingAppointments">0</h3>
+                        <p>Upcoming Appointments</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card">
+                    <div class="stat-icon">
+                        <i class="ph-light ph-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3 id="completedServices">0</h3>
+                        <p>Completed Services</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portal Tabs -->
+            <div class="portal-tabs">
+                <button class="tab-btn active" data-tab="tickets">
+                    <i class="ph-light ph-ticket"></i>
+                    Service Tickets
+                </button>
+                <button class="tab-btn" data-tab="appointments">
+                    <i class="ph-light ph-calendar"></i>
+                    Appointments
+                </button>
+                <button class="tab-btn" data-tab="profile">
+                    <i class="ph-light ph-user"></i>
+                    Profile
+                </button>
+            </div>
+
+            <!-- Tickets Tab -->
+            <div id="ticketsTab" class="tab-content active">
+                <div class="tab-header">
+                    <h3>Your Service Tickets</h3>
+                    <a href="contact.html" class="btn btn-secondary">
+                        <i class="ph-light ph-plus"></i>
+                        Create New Ticket
+                    </a>
+                </div>
+                <div id="ticketsList" class="tickets-list">
+                    <!-- Tickets will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Appointments Tab -->
+            <div id="appointmentsTab" class="tab-content">
+                <div class="tab-header">
+                    <h3>Your Appointments</h3>
+                    <button id="scheduleBtn" class="btn btn-secondary">
+                        <i class="ph-light ph-calendar-plus"></i>
+                        Schedule Appointment
+                    </button>
+                </div>
+                <div id="appointmentsList" class="appointments-list">
+                    <!-- Appointments will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Profile Tab -->
+            <div id="profileTab" class="tab-content">
+                <div class="tab-header">
+                    <h3>Your Profile</h3>
+                    <button id="editProfileBtn" class="btn btn-secondary">
+                        <i class="ph-light ph-pencil"></i>
+                        Edit Profile
+                    </button>
+                </div>
+                <div class="profile-info glass-card">
+                    <div id="profileDisplay">
+                        <div class="profile-field">
+                            <label>Full Name:</label>
+                            <span id="profileName">-</span>
+                        </div>
+                        <div class="profile-field">
+                            <label>Email:</label>
+                            <span id="profileEmail">-</span>
+                        </div>
+                        <div class="profile-field">
+                            <label>Phone:</label>
+                            <span id="profilePhone">-</span>
+                        </div>
+                        <div class="profile-field">
+                            <label>Address:</label>
+                            <span id="profileAddress">-</span>
+                        </div>
+                    </div>
+                    <form id="profileEditForm" style="display: none;">
+                        <div class="form-group">
+                            <label>Full Name:</label>
+                            <input type="text" id="editName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone:</label>
+                            <input type="tel" id="editPhone">
+                        </div>
+                        <div class="form-group">
+                            <label>Address:</label>
+                            <textarea id="editAddress" rows="3"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <button type="button" id="cancelEditBtn" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Loading your data...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule Appointment Modal -->
+    <div id="appointmentModal" class="modal" style="display: none;">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3>Schedule Appointment</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="appointmentForm">
+                <div class="form-group">
+                    <label>Select Ticket (Optional):</label>
+                    <select id="appointmentTicket">
+                        <option value="">General Appointment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Date:</label>
+                    <input type="date" id="appointmentDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Time:</label>
+                    <select id="appointmentTime" required>
+                        <option value="">Select Time</option>
+                        <option value="09:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="13:00">1:00 PM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Notes:</label>
+                    <textarea id="appointmentNotes" rows="3" placeholder="Any specific requirements or notes..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Schedule Appointment</button>
+                    <button type="button" class="modal-close btn btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
+                <div class="footer-links" style="margin-top: 20px;">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-conditions.html">Terms and Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/supabase-client.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/customer-portal.js"></script>
+</body>
+</html> 

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - SpyderNet IT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <div class="contact-item">
+                    <i class="ph-light ph-phone"></i>
+                    <span>(949) 237-2612</span>
+                </div>
+                <div class="contact-item">
+                    <i class="ph-light ph-envelope"></i>
+                    <span>spydernetit@gmail.com</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <span>Serving Orange County & Surrounding Areas</span>
+            </div>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="index.html" class="logo-container">
+                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <div class="logo-text-container">
+                        <span class="logo-main-text">SpyderNet</span>
+                        <span class="logo-sub-text">IT</span>
+                        <span class="logo-tagline">Your IT Solutions Provider</span>
+                    </div>
+                </a>
+            </div>
+            <div class="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="services.html">Services</a></li>
+                    <li><a href="about.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                </ul>
+            </nav>
+            <div class="header-cta">
+                <a href="contact.html" class="btn btn-header-cta">Get Help Today</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="login-section">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-header">
+                    <h2>Customer Portal</h2>
+                    <p>Access your service history, tickets, and appointments</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginForm" class="auth-form glass-card">
+                    <h3>Sign In</h3>
+                    <form id="signInForm">
+                        <div class="form-group">
+                            <input type="email" id="loginEmail" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="loginPassword" placeholder="Password" required>
+                        </div>
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ph-light ph-sign-in"></i>
+                                Sign In
+                            </button>
+                        </div>
+                        <div class="auth-switch">
+                            <p>Don't have an account? <a href="#" id="showSignUp">Create one here</a></p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Signup Form -->
+                <div id="signupForm" class="auth-form glass-card" style="display: none;">
+                    <h3>Create Account</h3>
+                    <form id="signUpForm">
+                        <div class="form-group">
+                            <input type="text" id="signupName" placeholder="Full Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="signupEmail" placeholder="Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="signupPhone" placeholder="Phone Number">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="signupPassword" placeholder="Password (min. 6 characters)" required minlength="6">
+                        </div>
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ph-light ph-user-plus"></i>
+                                Create Account
+                            </button>
+                        </div>
+                        <div class="auth-switch">
+                            <p>Already have an account? <a href="#" id="showSignIn">Sign in here</a></p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Messages -->
+                <div id="authMessage" class="auth-message" style="display: none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
+                <div class="footer-links" style="margin-top: 20px;">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms-conditions.html">Terms and Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/supabase-client.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const signInForm = document.getElementById('signInForm');
+            const signUpForm = document.getElementById('signUpForm');
+            const authMessage = document.getElementById('authMessage');
+
+            // Form switching
+            document.getElementById('showSignUp').addEventListener('click', function(e) {
+                e.preventDefault();
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                authMessage.style.display = 'none';
+            });
+
+            document.getElementById('showSignIn').addEventListener('click', function(e) {
+                e.preventDefault();
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                authMessage.style.display = 'none';
+            });
+
+            // Show message
+            function showMessage(message, type = 'info') {
+                authMessage.textContent = message;
+                authMessage.className = `auth-message ${type}`;
+                authMessage.style.display = 'block';
+            }
+
+            // Sign In
+            signInForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
+
+                const button = e.target.querySelector('button');
+                button.disabled = true;
+                button.innerHTML = '<i class="ph-light ph-spinner"></i> Signing In...';
+
+                try {
+                    const result = await SpyderNetDB.auth.signIn(email, password);
+                    
+                    if (result.success) {
+                        showMessage('Successfully signed in! Redirecting...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'customer-portal.html';
+                        }, 1500);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('An error occurred. Please try again.', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="ph-light ph-sign-in"></i> Sign In';
+                }
+            });
+
+            // Sign Up
+            signUpForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('signupName').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+
+                const button = e.target.querySelector('button');
+                button.disabled = true;
+                button.innerHTML = '<i class="ph-light ph-spinner"></i> Creating Account...';
+
+                try {
+                    const result = await SpyderNetDB.auth.signUp(email, password, name);
+                    
+                    if (result.success) {
+                        showMessage('Account created successfully! Please check your email to confirm your account.', 'success');
+                        // Switch to login form
+                        setTimeout(() => {
+                            signupForm.style.display = 'none';
+                            loginForm.style.display = 'block';
+                        }, 3000);
+                    } else {
+                        showMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showMessage('An error occurred. Please try again.', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="ph-light ph-user-plus"></i> Create Account';
+                }
+            });
+
+            // Check if already logged in
+            SpyderNetDB.auth.isLoggedIn().then(isLoggedIn => {
+                if (isLoggedIn) {
+                    window.location.href = 'customer-portal.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
