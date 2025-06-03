@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Portal - SpyderNet IT</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <div class="contact-item">
+                    <i class="ph-light ph-shield-check"></i>
+                    <span>Staff Access Only</span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <span>SpyderNet IT Administration</span>
+            </div>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="staff-portal.html" class="logo-container">
+                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <div class="logo-text-container">
+                        <span class="logo-main-text">SpyderNet</span>
+                        <span class="logo-sub-text">IT</span>
+                        <span class="logo-tagline">Staff Portal</span>
+                    </div>
+                </a>
+            </div>
+            <div class="header-cta">
+                <a href="index.html" class="btn btn-secondary">
+                    <i class="ph-light ph-arrow-left"></i>
+                    Back to Website
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <section class="staff-login-section">
+        <div class="container">
+            <div class="staff-login-container">
+                <div class="staff-login-header">
+                    <div class="staff-icon">
+                        <i class="ph-light ph-shield-check"></i>
+                    </div>
+                    <h2>Staff Portal Access</h2>
+                    <p>Authorized Personnel Only</p>
+                </div>
+
+                <!-- Login Form -->
+                <div id="staffLoginForm" class="auth-form glass-card">
+                    <h3>Sign In to Admin Dashboard</h3>
+                    <form id="staffSignInForm">
+                        <div class="form-group">
+                            <input type="email" id="staffEmail" placeholder="Staff Email Address" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="staffPassword" placeholder="Password" required>
+                        </div>
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ph-light ph-sign-in"></i>
+                                Access Admin Dashboard
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Messages -->
+                <div id="staffAuthMessage" class="auth-message" style="display: none;"></div>
+
+                <!-- Access Info -->
+                <div class="access-info glass-card">
+                    <div class="info-header">
+                        <i class="ph-light ph-info"></i>
+                        <h4>Access Information</h4>
+                    </div>
+                    <div class="info-content">
+                        <div class="info-item">
+                            <i class="ph-light ph-user-gear"></i>
+                            <span>Staff accounts must be created by an administrator</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="ph-light ph-shield"></i>
+                            <span>All admin activities are logged and monitored</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="ph-light ph-phone"></i>
+                            <span>For access issues, contact your system administrator</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>Copyright © 2025 SpyderNet IT - Staff Portal - Internal Use Only</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/supabase-client.js"></script>
+    <script src="js/admin-auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in as admin
+            checkAdminAuth();
+            
+            const staffSignInForm = document.getElementById('staffSignInForm');
+            const staffAuthMessage = document.getElementById('staffAuthMessage');
+
+            // Show message
+            function showStaffMessage(message, type = 'info') {
+                staffAuthMessage.textContent = message;
+                staffAuthMessage.className = `auth-message ${type}`;
+                staffAuthMessage.style.display = 'block';
+            }
+
+            // Staff Sign In
+            staffSignInForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('staffEmail').value;
+                const password = document.getElementById('staffPassword').value;
+
+                const button = e.target.querySelector('button');
+                button.disabled = true;
+                button.innerHTML = '<i class="ph-light ph-spinner"></i> Verifying Access...';
+
+                try {
+                    const result = await AdminAuth.signIn(email, password);
+                    
+                    if (result.success) {
+                        showStaffMessage('Access granted! Loading admin dashboard...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'admin-dashboard.html';
+                        }, 1500);
+                    } else {
+                        showStaffMessage(result.error, 'error');
+                    }
+                } catch (error) {
+                    showStaffMessage('Access denied. Please check your credentials.', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = '<i class="ph-light ph-sign-in"></i> Access Admin Dashboard';
+                }
+            });
+        });
+
+        // Check if user is already authenticated as admin
+        async function checkAdminAuth() {
+            const isAdmin = await AdminAuth.isLoggedIn();
+            if (isAdmin) {
+                window.location.href = 'admin-dashboard.html';
+            }
+        }
+    </script>
+
+    <style>
+        /* Staff Portal Specific Styles */
+        .staff-login-section {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl) 0;
+        }
+
+        .staff-login-container {
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .staff-login-header {
+            text-align: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .staff-icon {
+            font-size: 4rem;
+            color: var(--primary-blue);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .staff-login-header h2 {
+            font-size: 2.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .staff-login-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: var(--font-weight-medium);
+        }
+
+        .access-info {
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-xl);
+        }
+
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .info-header i {
+            font-size: 1.5rem;
+            color: var(--primary-blue);
+        }
+
+        .info-header h4 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .info-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-md);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            color: var(--text-secondary);
+        }
+
+        .info-item i {
+            color: var(--primary-blue);
+            min-width: 20px;
+        }
+
+        /* Override top bar for staff portal */
+        .top-bar {
+            background: rgba(20, 20, 20, 0.98);
+            border-bottom: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .logo-tagline {
+            color: var(--primary-blue) !important;
+            font-weight: var(--font-weight-medium) !important;
+        }
+
+        @media (max-width: 768px) {
+            .staff-login-container {
+                width: 95%;
+                padding: var(--spacing-md);
+            }
+            
+            .staff-icon {
+                font-size: 3rem;
+            }
+            
+            .staff-login-header h2 {
+                font-size: 2rem;
+            }
+            
+            .info-content {
+                gap: var(--spacing-lg);
+            }
+            
+            .info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-sm);
+                text-align: left;
+            }
+        }
+    </style>
+</body>
+</html> 

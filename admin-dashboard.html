@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SpyderNet IT</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="container">
+            <div class="top-bar-left">
+                <div class="contact-item">
+                    <i class="ph-light ph-shield-check"></i>
+                    <span>Admin Portal - <span id="adminName">Loading...</span></span>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <button id="signOutBtn" class="text-link">
+                    <i class="ph-light ph-sign-out"></i>
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <header>
+        <div class="container">
+            <div class="logo">
+                <a href="admin-dashboard.html" class="logo-container">
+                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
+                    <div class="logo-text-container">
+                        <span class="logo-main-text">SpyderNet</span>
+                        <span class="logo-sub-text">IT</span>
+                        <span class="logo-tagline">Admin Dashboard</span>
+                    </div>
+                </a>
+            </div>
+            <div class="header-cta">
+                <a href="index.html" class="btn btn-secondary" target="_blank">
+                    <i class="ph-light ph-globe"></i>
+                    View Website
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <div class="container">
+            <!-- Dashboard Stats -->
+            <section class="admin-stats">
+                <h2>Dashboard Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">
+                            <i class="ph-light ph-envelope"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="pendingContactsCount">0</div>
+                            <div class="stat-label">Pending Contacts</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">
+                            <i class="ph-light ph-ticket"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="activeTicketsCount">0</div>
+                            <div class="stat-label">Active Tickets</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">
+                            <i class="ph-light ph-calendar"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="upcomingAppointmentsCount">0</div>
+                            <div class="stat-label">Upcoming Appointments</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">
+                            <i class="ph-light ph-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="totalCustomersCount">0</div>
+                            <div class="stat-label">Total Customers</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Tabs -->
+            <section class="admin-tabs">
+                <div class="tab-headers">
+                    <button class="tab-header active" data-tab="contacts">
+                        <i class="ph-light ph-envelope"></i>
+                        Contact Submissions
+                    </button>
+                    <button class="tab-header" data-tab="tickets">
+                        <i class="ph-light ph-ticket"></i>
+                        Service Tickets
+                    </button>
+                    <button class="tab-header" data-tab="customers">
+                        <i class="ph-light ph-users"></i>
+                        Customers
+                    </button>
+                    <button class="tab-header" data-tab="appointments">
+                        <i class="ph-light ph-calendar"></i>
+                        Appointments
+                    </button>
+                </div>
+
+                <!-- Contact Submissions Tab -->
+                <div id="contactsTab" class="tab-content active">
+                    <div class="tab-header">
+                        <h3>Contact Submissions</h3>
+                        <div class="tab-actions">
+                            <button id="refreshContacts" class="btn btn-secondary">
+                                <i class="ph-light ph-arrow-clockwise"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Name</th>
+                                    <th>Contact</th>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contactsTableBody">
+                                <!-- Contact submissions will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Service Tickets Tab -->
+                <div id="ticketsTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Service Tickets</h3>
+                        <div class="tab-actions">
+                            <button id="createTicketBtn" class="btn btn-primary">
+                                <i class="ph-light ph-plus"></i>
+                                Create Ticket
+                            </button>
+                            <button id="refreshTickets" class="btn btn-secondary">
+                                <i class="ph-light ph-arrow-clockwise"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Customer</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketsTableBody">
+                                <!-- Tickets will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Customers Tab -->
+                <div id="customersTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Customers</h3>
+                        <div class="tab-actions">
+                            <button id="refreshCustomers" class="btn btn-secondary">
+                                <i class="ph-light ph-arrow-clockwise"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTableBody">
+                                <!-- Customers will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Appointments Tab -->
+                <div id="appointmentsTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Appointments</h3>
+                        <div class="tab-actions">
+                            <button id="refreshAppointments" class="btn btn-secondary">
+                                <i class="ph-light ph-arrow-clockwise"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Customer</th>
+                                    <th>Service</th>
+                                    <th>Ticket</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointmentsTableBody">
+                                <!-- Appointments will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Create Ticket Modal -->
+    <div id="createTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Service Ticket</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="createTicketForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticketCustomer">Customer</label>
+                        <select id="ticketCustomer" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticketPriority">Priority</label>
+                        <select id="ticketPriority" required>
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="ticketTitle">Title</label>
+                    <input type="text" id="ticketTitle" required placeholder="Brief description of the issue">
+                </div>
+                <div class="form-group">
+                    <label for="ticketDescription">Description</label>
+                    <textarea id="ticketDescription" required placeholder="Detailed description of the issue or service request"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ticketNotes">Staff Notes (Internal)</label>
+                    <textarea id="ticketNotes" placeholder="Internal notes for staff"></textarea>
+                </div>
+                <div class="form-submit">
+                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Details Modal -->
+    <div id="contactDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Contact Submission Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="contactDetailsContent">
+                <!-- Contact details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Ticket Details Modal -->
+    <div id="ticketDetailsModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Ticket Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="ticketDetailsContent">
+                <!-- Ticket details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-bottom">
+                <p>Copyright © 2025 SpyderNet IT - Admin Dashboard - Internal Use Only</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/supabase-client.js"></script>
+    <script src="js/admin-auth.js"></script>
+    <script src="js/admin-dashboard.js"></script>
+</body>
+</html> 
