@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    <div id="status">Testing...</div>
+    
+    <div style="margin-top: 20px;">
+        <h3>Quick Test</h3>
+        <input type="email" id="testEmail" placeholder="Test email" value="test@example.com">
+        <input type="password" id="testPassword" placeholder="Test password" value="testpassword123">
+        <button onclick="testAuth()">Test Auth</button>
+        <div id="authResult"></div>
+    </div>
+
+    <script>
+        // Direct Supabase connection test
+        const SUPABASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40';
+
+        const statusDiv = document.getElementById('status');
+        const authResultDiv = document.getElementById('authResult');
+
+        function log(message) {
+            console.log(message);
+            statusDiv.innerHTML += '<br>' + message;
+        }
+
+        async function runTests() {
+            try {
+                log('Starting Supabase tests...');
+                
+                // Test 1: Check if Supabase is loaded
+                log('1. Checking if Supabase CDN is loaded...');
+                if (typeof window.supabase === 'undefined') {
+                    log('❌ ERROR: Supabase CDN not loaded');
+                    return;
+                }
+                log('✅ Supabase CDN loaded successfully');
+
+                // Test 2: Create client
+                log('2. Creating Supabase client...');
+                const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                log('✅ Supabase client created');
+                
+                // Test 3: Test connection
+                log('3. Testing connection...');
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    log('❌ Connection error: ' + error.message);
+                    log('Error details: ' + JSON.stringify(error));
+                } else {
+                    log('✅ Connection successful');
+                    log('Session data: ' + JSON.stringify(data));
+                }
+
+                // Test 4: Test basic API call
+                log('4. Testing basic API access...');
+                try {
+                    const { data: testData, error: testError } = await supabase
+                        .from('customers')
+                        .select('id')
+                        .limit(1);
+                    
+                    if (testError) {
+                        log('❌ API test error: ' + testError.message);
+                        log('Error details: ' + JSON.stringify(testError));
+                    } else {
+                        log('✅ API access working');
+                    }
+                } catch (apiError) {
+                    log('❌ API test exception: ' + apiError.message);
+                }
+
+                window.testSupabase = supabase; // Make available globally
+                log('Tests completed. You can now test authentication.');
+
+            } catch (error) {
+                log('❌ Test failed: ' + error.message);
+                log('Full error: ' + JSON.stringify(error));
+            }
+        }
+
+        async function testAuth() {
+            if (!window.testSupabase) {
+                authResultDiv.innerHTML = '❌ Please run the connection tests first';
+                return;
+            }
+
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+
+            authResultDiv.innerHTML = 'Testing authentication...';
+
+            try {
+                // Try to sign up first
+                const { data: signUpData, error: signUpError } = await window.testSupabase.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                authResultDiv.innerHTML = `
+                    <h4>Sign Up Result:</h4>
+                    <pre>${JSON.stringify({ data: signUpData, error: signUpError }, null, 2)}</pre>
+                `;
+
+            } catch (error) {
+                authResultDiv.innerHTML = `❌ Auth test failed: ${error.message}<br>Full error: ${JSON.stringify(error)}`;
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html> 

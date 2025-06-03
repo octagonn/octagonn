@@ -2,14 +2,89 @@
 const SUPABASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40'
 
-// Import Supabase (we'll add this via CDN in HTML)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+// Initialize Supabase client with error checking
+let supabase;
+
+function initializeSupabase() {
+    try {
+        console.log('Attempting to initialize Supabase...');
+        console.log('Supabase URL:', SUPABASE_URL);
+        console.log('Window.supabase available:', typeof window.supabase);
+        
+        // Check if Supabase is loaded
+        if (typeof window.supabase === 'undefined') {
+            console.error('Supabase library not loaded. Make sure to include the CDN script.');
+            return false;
+        }
+        
+        // Create the client
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
+        
+        console.log('Supabase client initialized successfully:', supabase);
+        
+        // Test connection
+        testConnection();
+        
+        return true;
+    } catch (error) {
+        console.error('Failed to initialize Supabase client:', error);
+        return false;
+    }
+}
+
+// Test Supabase connection
+async function testConnection() {
+    try {
+        console.log('Testing Supabase connection...');
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+            console.error('Supabase connection test failed:', error);
+        } else {
+            console.log('Supabase connection test successful:', data);
+        }
+    } catch (error) {
+        console.error('Supabase connection test error:', error);
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded - attempting Supabase initialization');
+    // Small delay to ensure Supabase CDN is loaded
+    setTimeout(() => {
+        if (!initializeSupabase()) {
+            console.log('First initialization failed, retrying...');
+            // Try again after a short delay
+            setTimeout(() => {
+                initializeSupabase();
+            }, 1000);
+        }
+    }, 100);
+});
+
+// Alternative initialization for manual calling
+if (typeof window.supabase !== 'undefined') {
+    console.log('Supabase available immediately, initializing...');
+    initializeSupabase();
+}
 
 // Authentication helpers
 const auth = {
     // Sign up new customer
     async signUp(email, password, fullName) {
         try {
+            console.log('Attempting sign up for:', email);
+            
+            if (!supabase) {
+                throw new Error('Supabase client not initialized');
+            }
+            
             const { data, error } = await supabase.auth.signUp({
                 email: email,
                 password: password,
@@ -19,6 +94,8 @@ const auth = {
                     }
                 }
             })
+            
+            console.log('Sign up response:', { data, error });
             
             if (error) throw error
             return { success: true, data }
@@ -31,10 +108,18 @@ const auth = {
     // Sign in existing customer
     async signIn(email, password) {
         try {
+            console.log('Attempting sign in for:', email);
+            
+            if (!supabase) {
+                throw new Error('Supabase client not initialized');
+            }
+            
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
             })
+            
+            console.log('Sign in response:', { data, error });
             
             if (error) throw error
             return { success: true, data }
@@ -47,6 +132,10 @@ const auth = {
     // Sign out
     async signOut() {
         try {
+            if (!supabase) {
+                throw new Error('Supabase client not initialized');
+            }
+            
             const { error } = await supabase.auth.signOut()
             if (error) throw error
             return { success: true }
@@ -59,6 +148,11 @@ const auth = {
     // Get current user
     async getCurrentUser() {
         try {
+            if (!supabase) {
+                console.error('Supabase client not initialized');
+                return null;
+            }
+            
             const { data: { user } } = await supabase.auth.getUser()
             return user
         } catch (error) {

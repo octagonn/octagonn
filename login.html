@@ -178,7 +178,12 @@
                 button.innerHTML = '<i class="ph-light ph-spinner"></i> Signing In...';
 
                 try {
-                    const result = await SpyderNetDB.auth.signIn(email, password);
+                    // Wait for Supabase to be initialized
+                    if (!supabase) {
+                        throw new Error('Database connection not available. Please refresh the page.');
+                    }
+                    
+                    const result = await auth.signIn(email, password);
                     
                     if (result.success) {
                         showMessage('Successfully signed in! Redirecting...', 'success');
@@ -189,7 +194,8 @@
                         showMessage(result.error, 'error');
                     }
                 } catch (error) {
-                    showMessage('An error occurred. Please try again.', 'error');
+                    console.error('Sign in error:', error);
+                    showMessage(error.message || 'An error occurred. Please try again.', 'error');
                 } finally {
                     button.disabled = false;
                     button.innerHTML = '<i class="ph-light ph-sign-in"></i> Sign In';
@@ -209,7 +215,12 @@
                 button.innerHTML = '<i class="ph-light ph-spinner"></i> Creating Account...';
 
                 try {
-                    const result = await SpyderNetDB.auth.signUp(email, password, name);
+                    // Wait for Supabase to be initialized
+                    if (!supabase) {
+                        throw new Error('Database connection not available. Please refresh the page.');
+                    }
+                    
+                    const result = await auth.signUp(email, password, name);
                     
                     if (result.success) {
                         showMessage('Account created successfully! Please check your email to confirm your account.', 'success');
@@ -222,19 +233,27 @@
                         showMessage(result.error, 'error');
                     }
                 } catch (error) {
-                    showMessage('An error occurred. Please try again.', 'error');
+                    console.error('Sign up error:', error);
+                    showMessage(error.message || 'An error occurred. Please try again.', 'error');
                 } finally {
                     button.disabled = false;
                     button.innerHTML = '<i class="ph-light ph-user-plus"></i> Create Account';
                 }
             });
 
-            // Check if already logged in
-            SpyderNetDB.auth.isLoggedIn().then(isLoggedIn => {
-                if (isLoggedIn) {
-                    window.location.href = 'customer-portal.html';
+            // Check if already logged in (wait for Supabase to be initialized)
+            setTimeout(async () => {
+                try {
+                    if (supabase) {
+                        const isLoggedIn = await auth.isLoggedIn();
+                        if (isLoggedIn) {
+                            window.location.href = 'customer-portal.html';
+                        }
+                    }
+                } catch (error) {
+                    console.error('Auth check error:', error);
                 }
-            });
+            }, 500);
         });
     </script>
 </body>
