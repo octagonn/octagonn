@@ -1595,4 +1595,56 @@ html {
 
 *::-webkit-scrollbar-thumb:hover {
     background: var(--gradient-secondary);
+}
+
+/* Top Contact Bar */
+.top-bar {
+    background: rgba(15, 15, 15, 0.98);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 8px 0;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    position: relative;
+    z-index: 1001;
+}
+
+.top-bar .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+}
+
+.top-bar-left {
+    display: flex;
+    gap: var(--spacing-xl);
+    align-items: center;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+}
+
+.contact-item:hover {
+    color: var(--primary-blue);
+}
+
+.contact-item i {
+    font-size: 1rem;
+    color: var(--primary-blue);
+}
+
+.top-bar-right {
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-light);
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        display: none;
+    }
 } 
