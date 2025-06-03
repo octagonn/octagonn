@@ -21,6 +21,7 @@ async function init() {
     setupEventListeners();
     displayAdminInfo();
     initializeTabs(); // Ensure clean tab state
+    hideAllModals(); // Ensure all modals are hidden
     await loadAllData();
     updateStats();
 }
@@ -43,6 +44,13 @@ function initializeTabs() {
         firstTabHeader.classList.add('active');
         firstTabContent.classList.add('active');
     }
+}
+
+// Hide all modals on page load
+function hideAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
 }
 
 // Setup event listeners
