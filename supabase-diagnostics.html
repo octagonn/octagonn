@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Diagnostics</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow: auto; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Supabase Diagnostics</h1>
+    
+    <div class="test-section">
+        <h3>Network & CORS Tests</h3>
+        <button onclick="testNetworkAccess()">Test Network Access</button>
+        <button onclick="testCORSPreflight()">Test CORS Preflight</button>
+        <div id="networkResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Authentication Tests</h3>
+        <button onclick="testAnonymousAuth()">Test Anonymous Access</button>
+        <button onclick="testAuthSignUp()">Test Sign Up</button>
+        <div id="authResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Database Access Tests</h3>
+        <button onclick="testDatabaseRead()">Test Database Read</button>
+        <button onclick="testRLSPolicies()">Test RLS Policies</button>
+        <div id="dbResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Configuration Info</h3>
+        <div id="configInfo"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'warning';
+            element.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+
+        async function testNetworkAccess() {
+            const resultsDiv = document.getElementById('networkResults');
+            resultsDiv.innerHTML = '<div>Testing network access...</div>';
+
+            try {
+                // Test 1: Direct URL access
+                log('networkResults', '1. Testing direct URL access...');
+                const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+                    method: 'HEAD',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    log('networkResults', '✅ Direct URL access successful', 'success');
+                } else {
+                    log('networkResults', `❌ Direct URL access failed: ${response.status} ${response.statusText}`, 'error');
+                }
+
+                // Test 2: CORS headers
+                log('networkResults', '2. Checking CORS headers...');
+                const corsHeaders = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers')
+                };
+                log('networkResults', `CORS Headers: <pre>${JSON.stringify(corsHeaders, null, 2)}</pre>`);
+
+            } catch (error) {
+                log('networkResults', `❌ Network test failed: ${error.message}`, 'error');
+                log('networkResults', `Error type: ${error.name}`);
+                
+                if (error.message.includes('Failed to fetch')) {
+                    log('networkResults', '🔍 This looks like a CORS or network connectivity issue', 'warning');
+                }
+            }
+        }
+
+        async function testCORSPreflight() {
+            const resultsDiv = document.getElementById('networkResults');
+            
+            try {
+                log('networkResults', '3. Testing CORS preflight...');
+                
+                const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Origin': window.location.origin,
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'apikey, content-type'
+                    }
+                });
+
+                if (response.ok) {
+                    log('networkResults', '✅ CORS preflight successful', 'success');
+                } else {
+                    log('networkResults', `❌ CORS preflight failed: ${response.status}`, 'error');
+                }
+
+            } catch (error) {
+                log('networkResults', `❌ CORS preflight error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAnonymousAuth() {
+            const resultsDiv = document.getElementById('authResults');
+            resultsDiv.innerHTML = '<div>Testing anonymous authentication...</div>';
+
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    log('authResults', `❌ Get session failed: ${error.message}`, 'error');
+                } else {
+                    log('authResults', '✅ Get session successful', 'success');
+                    log('authResults', `Session: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                }
+
+            } catch (error) {
+                log('authResults', `❌ Auth test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAuthSignUp() {
+            const resultsDiv = document.getElementById('authResults');
+            
+            try {
+                log('authResults', 'Testing sign up...');
+                
+                const testEmail = `test${Date.now()}@example.com`;
+                const { data, error } = await supabase.auth.signUp({
+                    email: testEmail,
+                    password: 'testpassword123'
+                });
+
+                if (error) {
+                    log('authResults', `❌ Sign up failed: ${error.message}`, 'error');
+                    log('authResults', `Error details: <pre>${JSON.stringify(error, null, 2)}</pre>`);
+                } else {
+                    log('authResults', '✅ Sign up successful', 'success');
+                    log('authResults', `Response: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                }
+
+            } catch (error) {
+                log('authResults', `❌ Sign up test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testDatabaseRead() {
+            const resultsDiv = document.getElementById('dbResults');
+            resultsDiv.innerHTML = '<div>Testing database access...</div>';
+
+            try {
+                // Test basic table access
+                log('dbResults', 'Testing customers table access...');
+                const { data, error } = await supabase
+                    .from('customers')
+                    .select('id')
+                    .limit(1);
+
+                if (error) {
+                    log('dbResults', `❌ Database read failed: ${error.message}`, 'error');
+                    log('dbResults', `Error code: ${error.code}`);
+                    log('dbResults', `Error details: <pre>${JSON.stringify(error, null, 2)}</pre>`);
+                } else {
+                    log('dbResults', '✅ Database read successful', 'success');
+                    log('dbResults', `Data: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                }
+
+            } catch (error) {
+                log('dbResults', `❌ Database test failed: ${error.message}`, 'error');
+                
+                if (error.message.includes('Failed to fetch')) {
+                    log('dbResults', '🔍 Network/CORS issue detected', 'warning');
+                }
+            }
+        }
+
+        async function testRLSPolicies() {
+            const resultsDiv = document.getElementById('dbResults');
+            
+            try {
+                log('dbResults', 'Testing RLS policies...');
+                
+                // Test each table
+                const tables = ['customers', 'service_tickets', 'appointments', 'contact_submissions'];
+                
+                for (const table of tables) {
+                    try {
+                        const { data, error } = await supabase
+                            .from(table)
+                            .select('id')
+                            .limit(1);
+
+                        if (error) {
+                            log('dbResults', `❌ Table ${table}: ${error.message}`, 'error');
+                        } else {
+                            log('dbResults', `✅ Table ${table}: Access OK`, 'success');
+                        }
+                    } catch (err) {
+                        log('dbResults', `❌ Table ${table}: ${err.message}`, 'error');
+                    }
+                }
+
+            } catch (error) {
+                log('dbResults', `❌ RLS test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Show configuration info
+        document.getElementById('configInfo').innerHTML = `
+            <div><strong>Current URL:</strong> ${window.location.href}</div>
+            <div><strong>Origin:</strong> ${window.location.origin}</div>
+            <div><strong>Protocol:</strong> ${window.location.protocol}</div>
+            <div><strong>Supabase URL:</strong> ${SUPABASE_URL}</div>
+            <div><strong>User Agent:</strong> ${navigator.userAgent}</div>
+            <div><strong>Timestamp:</strong> ${new Date().toISOString()}</div>
+        `;
+    </script>
+</body>
+</html> 

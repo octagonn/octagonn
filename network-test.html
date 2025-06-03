@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Connectivity Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Network Connectivity Test</h1>
+    
+    <div class="test">
+        <h3>Direct Browser Test</h3>
+        <p>Click this link to test direct REST API access:</p>
+        <a href="https://zlskmowbxeurzoisqlkp.supabase.co/rest/v1/customers?select=id&limit=1&apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40" target="_blank">
+            Test Supabase REST API Direct Access
+        </a>
+        <div id="browserResult">
+            <p><strong>Expected Results:</strong></p>
+            <ul>
+                <li>✅ <strong>Success:</strong> JSON response like <code>[]</code> or <code>[{...}]</code></li>
+                <li>❌ <strong>Network Issue:</strong> Timeout, connection refused, or "can't reach this page"</li>
+                <li>❌ <strong>API Issue:</strong> Error message from Supabase</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test">
+        <h3>JavaScript Fetch Test</h3>
+        <button onclick="testFetch()">Test Fetch from JavaScript</button>
+        <div id="fetchResult"></div>
+    </div>
+
+    <div class="test">
+        <h3>Alternative Endpoints Test</h3>
+        <button onclick="testAlternativeEndpoints()">Test Multiple Endpoints</button>
+        <div id="altResult"></div>
+    </div>
+
+    <div class="test">
+        <h3>User Info</h3>
+        <div id="userInfo"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40';
+        const BASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            element.innerHTML += `<div class="${className}">${message}</div>`;
+        }
+
+        async function testFetch() {
+            const resultDiv = document.getElementById('fetchResult');
+            resultDiv.innerHTML = '<div class="info">Testing JavaScript fetch...</div>';
+
+            try {
+                log('fetchResult', '1. Testing basic fetch to REST API...');
+                
+                const response = await fetch(`${BASE_URL}/rest/v1/customers?select=id&limit=1`, {
+                    method: 'GET',
+                    headers: {
+                        'apikey': API_KEY,
+                        'Authorization': `Bearer ${API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                log('fetchResult', `Response status: ${response.status} ${response.statusText}`);
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    log('fetchResult', `✅ Fetch successful! Data: ${data}`, 'success');
+                } else {
+                    log('fetchResult', `❌ Fetch failed with status ${response.status}`, 'error');
+                    const errorText = await response.text();
+                    log('fetchResult', `Error response: ${errorText}`, 'error');
+                }
+
+            } catch (error) {
+                log('fetchResult', `❌ Fetch error: ${error.message}`, 'error');
+                log('fetchResult', `Error type: ${error.constructor.name}`, 'error');
+                
+                if (error.message.includes('Failed to fetch')) {
+                    log('fetchResult', '🔍 This indicates a network connectivity or CORS issue', 'error');
+                }
+            }
+        }
+
+        async function testAlternativeEndpoints() {
+            const resultDiv = document.getElementById('altResult');
+            resultDiv.innerHTML = '<div class="info">Testing multiple endpoints...</div>';
+
+            const endpoints = [
+                `${BASE_URL}/rest/v1/`,
+                `${BASE_URL}/auth/v1/settings`,
+                `${BASE_URL}/rest/v1/contact_submissions?select=id&limit=1`,
+                'https://httpbin.org/get', // External test
+                'https://api.github.com/zen' // Another external test
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    log('altResult', `Testing: ${endpoint}`);
+                    
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: endpoint.includes('supabase.co') ? {
+                            'apikey': API_KEY,
+                            'Authorization': `Bearer ${API_KEY}`
+                        } : {}
+                    });
+
+                    if (response.ok) {
+                        log('altResult', `✅ ${endpoint} - SUCCESS (${response.status})`, 'success');
+                    } else {
+                        log('altResult', `❌ ${endpoint} - FAILED (${response.status})`, 'error');
+                    }
+
+                } catch (error) {
+                    log('altResult', `❌ ${endpoint} - ERROR: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        // Show user info
+        document.getElementById('userInfo').innerHTML = `
+            <div><strong>URL:</strong> ${window.location.href}</div>
+            <div><strong>User Agent:</strong> ${navigator.userAgent}</div>
+            <div><strong>Online:</strong> ${navigator.onLine}</div>
+            <div><strong>Connection:</strong> ${navigator.connection ? navigator.connection.effectiveType : 'Unknown'}</div>
+            <div><strong>Timestamp:</strong> ${new Date().toISOString()}</div>
+        `;
+    </script>
+</body>
+</html> 

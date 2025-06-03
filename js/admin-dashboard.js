@@ -20,12 +20,33 @@ let currentData = {
 async function init() {
     setupEventListeners();
     displayAdminInfo();
+    initializeTabs(); // Ensure clean tab state
     await loadAllData();
     updateStats();
 }
 
+// Initialize tabs - ensure only the first tab is active
+function initializeTabs() {
+    // Remove active class from all tabs and content
+    document.querySelectorAll('.tab-header').forEach(header => {
+        header.classList.remove('active');
+    });
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    // Set first tab as active
+    const firstTabHeader = document.querySelector('.tab-header[data-tab="contacts"]');
+    const firstTabContent = document.getElementById('contactsTab');
+    
+    if (firstTabHeader && firstTabContent) {
+        firstTabHeader.classList.add('active');
+        firstTabContent.classList.add('active');
+    }
+}
+
 // Setup event listeners
-function setupEventHandlers() {
+function setupEventListeners() {
     // Sign out
     document.getElementById('signOutBtn').addEventListener('click', async function() {
         if (confirm('Are you sure you want to sign out?')) {
@@ -477,10 +498,6 @@ async function markContactProcessed(contactId) {
 }
 
 // Utility functions
-function setupEventListeners() {
-    setupEventHandlers();
-}
-
 function showLoading(elementId) {
     document.getElementById(elementId).innerHTML = '<tr><td colspan="10" class="loading">Loading...</td></tr>';
 }

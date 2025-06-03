@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Verification Test</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Admin Verification Debug Test</h1>
+    
+    <div id="results" style="font-family: monospace; white-space: pre-wrap; background: #f5f5f5; padding: 20px; margin: 20px 0;"></div>
+    
+    <button onclick="runTest()" style="padding: 10px 20px; font-size: 16px;">Run Admin Verification Test</button>
+    
+    <script src="js/supabase-client.js"></script>
+    
+    <script>
+        function log(message) {
+            const results = document.getElementById('results');
+            results.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            console.log(message);
+        }
+        
+        async function runTest() {
+            const results = document.getElementById('results');
+            results.textContent = '';
+            
+            log('=== ADMIN VERIFICATION TEST ===');
+            
+            try {
+                // Step 1: Check if we have a current user
+                log('1. Checking current auth user...');
+                const { data: { user }, error: userError } = await supabase.auth.getUser();
+                
+                if (userError) {
+                    log('❌ Auth error: ' + userError.message);
+                    return;
+                }
+                
+                if (!user) {
+                    log('❌ No authenticated user found');
+                    log('   Please sign in first at login.html');
+                    return;
+                }
+                
+                log('✅ Current user found:');
+                log('   ID: ' + user.id);
+                log('   Email: ' + user.email);
+                log('   Confirmed: ' + (user.email_confirmed_at ? 'Yes' : 'No'));
+                
+                // Step 2: Test direct database query
+                log('\n2. Testing direct admin_users query...');
+                const { data: adminData, error: adminError } = await supabase
+                    .from('admin_users')
+                    .select('*')
+                    .eq('user_id', user.id);
+                
+                if (adminError) {
+                    log('❌ Direct query error: ' + adminError.message);
+                    log('   Error details: ' + JSON.stringify(adminError, null, 2));
+                    return;
+                }
+                
+                log('✅ Direct query results:');
+                log('   Records found: ' + adminData.length);
+                if (adminData.length > 0) {
+                    adminData.forEach((admin, index) => {
+                        log(`   Admin ${index + 1}:`);
+                        log(`     ID: ${admin.id}`);
+                        log(`     Email: ${admin.email}`);
+                        log(`     Role: ${admin.role}`);
+                        log(`     Active: ${admin.is_active}`);
+                    });
+                }
+                
+                // Step 3: Test with is_active filter
+                log('\n3. Testing query with is_active = true filter...');
+                const { data: activeAdminData, error: activeError } = await supabase
+                    .from('admin_users')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .eq('is_active', true);
+                
+                if (activeError) {
+                    log('❌ Active admin query error: ' + activeError.message);
+                    return;
+                }
+                
+                log('✅ Active admin query results:');
+                log('   Records found: ' + activeAdminData.length);
+                
+                // Step 4: Test single() method
+                if (activeAdminData.length > 0) {
+                    log('\n4. Testing single() method...');
+                    const { data: singleAdmin, error: singleError } = await supabase
+                        .from('admin_users')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .eq('is_active', true)
+                        .single();
+                    
+                    if (singleError) {
+                        log('❌ Single query error: ' + singleError.message);
+                        log('   Error code: ' + singleError.code);
+                        log('   Error details: ' + JSON.stringify(singleError, null, 2));
+                    } else {
+                        log('✅ Single query success:');
+                        log('   Admin: ' + JSON.stringify(singleAdmin, null, 2));
+                    }
+                }
+                
+                // Step 5: Test AdminAuth function directly if available
+                if (typeof AdminAuth !== 'undefined') {
+                    log('\n5. Testing AdminAuth.verifyAdminStatus...');
+                    const adminResult = await AdminAuth.verifyAdminStatus(user.id);
+                    log('   Result: ' + JSON.stringify(adminResult, null, 2));
+                }
+                
+                log('\n=== TEST COMPLETE ===');
+                
+            } catch (error) {
+                log('❌ Unexpected error: ' + error.message);
+                log('   Stack: ' + error.stack);
+            }
+        }
+        
+        // Auto-run on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('Page loaded. Click button to run test.');
+            log('Make sure you are signed in first!');
+        });
+    </script>
+</body>
+</html> 
