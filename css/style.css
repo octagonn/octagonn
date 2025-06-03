@@ -304,6 +304,7 @@ header .container {
     display: flex;
     align-items: center;
     transition: all 0.3s ease;
+    text-decoration: none;
 }
 
 .logo-container:hover {
@@ -314,17 +315,51 @@ header .container {
 .logo-spider {
     height: 50px;
     width: auto;
-    margin-right: var(--spacing-sm);
+    margin-right: var(--spacing-md);
     filter: drop-shadow(0 0 10px rgba(74, 144, 226, 0.3));
 }
 
-.logo-text {
-    height: 40px;
-    width: auto;
-    filter: drop-shadow(0 0 10px rgba(74, 144, 226, 0.3));
+.logo-text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.logo-main-text {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    line-height: 1;
+    margin: 0;
+}
+
+.logo-sub-text {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin: 0;
+}
+
+.logo-tagline {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: var(--font-weight-light);
+    line-height: 1;
+    margin-top: 2px;
+    opacity: 0.8;
 }
 
 /* Navigation */
+nav {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
 nav ul {
     display: flex;
     gap: var(--spacing-xl);
@@ -361,6 +396,55 @@ nav ul li a::after {
 nav ul li a:hover::after,
 nav ul li a.active::after {
     width: 100%;
+}
+
+/* Header CTA Button */
+.header-cta {
+    display: flex;
+    align-items: center;
+}
+
+.btn-header-cta {
+    background: linear-gradient(135deg, #4A90E2, #8A2BE2);
+    color: white;
+    border: none;
+    font-weight: var(--font-weight-semibold);
+    font-size: 0.875rem;
+    padding: 12px 24px;
+    border-radius: 25px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-header-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #5A9AE8, #9A3BE8);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 25px;
+}
+
+.btn-header-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(74, 144, 226, 0.4);
+}
+
+.btn-header-cta:hover::before {
+    opacity: 1;
+}
+
+.btn-header-cta:active {
+    transform: translateY(0);
 }
 
 /* Hero Section */
@@ -1229,14 +1313,29 @@ footer {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
+        position: relative;
+    }
+    
+    .logo-text-container {
+        display: none;
+    }
+    
+    .logo-spider {
+        height: 40px;
+        margin-right: 0;
+    }
+    
+    nav {
+        order: 2;
+        flex: none;
     }
     
     nav ul {
         display: none;
-    position: absolute;
+        position: absolute;
         top: 100%;
         left: 0;
-    right: 0;
+        right: 0;
         background: rgba(10, 10, 10, 0.95);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
@@ -1244,10 +1343,25 @@ footer {
         flex-direction: column;
         padding: var(--spacing-lg);
         gap: var(--spacing-md);
+        z-index: 1000;
     }
     
     nav.active ul {
         display: flex;
+    }
+    
+    .header-cta {
+        order: 3;
+    }
+    
+    .btn-header-cta {
+        font-size: 0.75rem;
+        padding: 8px 16px;
+    }
+    
+    .mobile-toggle {
+        order: 2;
+        margin-right: var(--spacing-sm);
     }
     
     .hero {
@@ -1328,6 +1442,9 @@ footer {
     cursor: pointer;
     padding: var(--spacing-sm);
     z-index: 1001;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .mobile-toggle span {
@@ -1335,7 +1452,7 @@ footer {
     width: 25px;
     height: 3px;
     background: var(--gradient-primary);
-    margin: 5px 0;
+    margin: 3px 0;
     transition: all 0.3s ease;
     border-radius: var(--radius-full);
 }
@@ -1354,7 +1471,7 @@ footer {
 
 @media (max-width: 768px) {
     .mobile-toggle {
-        display: block;
+        display: flex;
     }
 }
 
