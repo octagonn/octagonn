@@ -1,4 +1,4 @@
-// Customer Portal JavaScript
+// Customer Portal JavaScript - Updated for Staff-Only Ticket Creation
 let currentCustomer = null;
 let currentUser = null;
 
@@ -95,6 +95,12 @@ function setupEventListeners() {
             closeAllModals();
         }
     });
+
+    document.getElementById('ticketModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeAllModals();
+        }
+    });
 }
 
 // Setup tab functionality
@@ -181,15 +187,15 @@ async function loadTickets() {
                     <div class="empty-state glass-card">
                         <i class="ph-light ph-ticket"></i>
                         <h4>No Service Tickets</h4>
-                        <p>You don't have any service tickets yet.</p>
-                        <a href="contact.html" class="btn btn-primary">Create Your First Ticket</a>
+                        <p>Our support team will create tickets for your service requests.</p>
+                        <a href="contact.html" class="btn btn-primary">Contact Support</a>
                     </div>
                 `;
                 return;
             }
             
             ticketsList.innerHTML = tickets.map(ticket => `
-                <div class="ticket-card glass-card">
+                <div class="ticket-card glass-card" data-ticket-id="${ticket.id}">
                     <div class="ticket-header">
                         <h4>${ticket.title}</h4>
                         <span class="status-badge ${SpyderNetDB.utils.getStatusColor(ticket.status)}">
@@ -206,6 +212,12 @@ async function loadTickets() {
                             <i class="ph-light ph-flag"></i>
                             Priority: ${ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}
                         </div>
+                    </div>
+                    <div class="ticket-actions">
+                        <button class="btn btn-secondary" onclick="viewTicketDetails('${ticket.id}')">
+                            <i class="ph-light ph-eye"></i>
+                            View Details
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -229,6 +241,157 @@ async function loadTickets() {
                 <p>An unexpected error occurred.</p>
             </div>
         `;
+    }
+}
+
+// View ticket details and messages
+async function viewTicketDetails(ticketId) {
+    try {
+        // Get ticket details
+        const ticketResult = await SpyderNetDB.db.tickets.getById(ticketId);
+        if (!ticketResult.success) {
+            showNotification('Error loading ticket details', 'error');
+            return;
+        }
+        
+        const ticket = ticketResult.data;
+        
+        // Get ticket messages
+        const messagesResult = await SpyderNetDB.db.messages.getByTicketId(ticketId);
+        const messages = messagesResult.success ? messagesResult.data : [];
+        
+        // Update modal content
+        document.getElementById('ticketModalTitle').textContent = `Ticket: ${ticket.title}`;
+        
+        const modalContent = document.getElementById('ticketModalContent');
+        modalContent.innerHTML = `
+            <div class="ticket-details">
+                <div class="ticket-info">
+                    <div class="info-row">
+                        <label>Status:</label>
+                        <span class="status-badge ${SpyderNetDB.utils.getStatusColor(ticket.status)}">
+                            ${SpyderNetDB.utils.formatStatus(ticket.status)}
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <label>Priority:</label>
+                        <span>${ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1)}</span>
+                    </div>
+                    <div class="info-row">
+                        <label>Created:</label>
+                        <span>${SpyderNetDB.utils.formatDate(ticket.created_at)}</span>
+                    </div>
+                </div>
+                
+                <div class="ticket-description">
+                    <h4>Description:</h4>
+                    <p>${ticket.description}</p>
+                </div>
+                
+                <div class="ticket-messages">
+                    <h4>Communication:</h4>
+                    <div class="messages-list" id="messagesList">
+                        ${messages.length === 0 ? 
+                            '<p class="no-messages">No messages yet. Send a message to communicate with our support team.</p>' : 
+                            messages.map(msg => `
+                                <div class="message ${msg.is_from_staff ? 'staff-message' : 'customer-message'}">
+                                    <div class="message-header">
+                                        <span class="message-author">${msg.is_from_staff ? 'Support Team' : 'You'}</span>
+                                        <span class="message-time">${SpyderNetDB.utils.formatTime(msg.created_at)}</span>
+                                    </div>
+                                    <div class="message-content">${msg.message}</div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                    
+                    ${ticket.status !== 'completed' && ticket.status !== 'cancelled' ? `
+                        <form id="messageForm" class="message-form" data-ticket-id="${ticketId}">
+                            <div class="form-group">
+                                <textarea id="messageText" placeholder="Type your message here..." rows="3" required></textarea>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ph-light ph-paper-plane"></i>
+                                    Send Message
+                                </button>
+                            </div>
+                        </form>
+                    ` : '<p class="ticket-closed">This ticket has been closed. Contact support if you need further assistance.</p>'}
+                </div>
+            </div>
+        `;
+        
+        // Setup message form if ticket is active
+        if (ticket.status !== 'completed' && ticket.status !== 'cancelled') {
+            const messageForm = document.getElementById('messageForm');
+            messageForm.addEventListener('submit', handleMessageSubmit);
+        }
+        
+        // Show modal
+        document.getElementById('ticketModal').style.display = 'flex';
+        
+    } catch (error) {
+        console.error('Error viewing ticket details:', error);
+        showNotification('Error loading ticket details', 'error');
+    }
+}
+
+// Handle message submission
+async function handleMessageSubmit(e) {
+    e.preventDefault();
+    
+    const ticketId = e.target.dataset.ticketId;
+    const messageText = document.getElementById('messageText').value.trim();
+    
+    if (!messageText) return;
+    
+    const button = e.target.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.innerHTML = '<i class="ph-light ph-spinner"></i> Sending...';
+    
+    try {
+        const messageData = {
+            ticket_id: ticketId,
+            customer_id: currentCustomer.id,
+            message: messageText
+        };
+        
+        const result = await SpyderNetDB.db.messages.create(messageData);
+        
+        if (result.success) {
+            // Add message to UI
+            const messagesList = document.getElementById('messagesList');
+            const noMessages = messagesList.querySelector('.no-messages');
+            if (noMessages) {
+                noMessages.remove();
+            }
+            
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message customer-message';
+            newMessage.innerHTML = `
+                <div class="message-header">
+                    <span class="message-author">You</span>
+                    <span class="message-time">Just now</span>
+                </div>
+                <div class="message-content">${messageText}</div>
+            `;
+            messagesList.appendChild(newMessage);
+            
+            // Clear form
+            document.getElementById('messageText').value = '';
+            
+            showNotification('Message sent successfully!', 'success');
+        } else {
+            showNotification('Error sending message: ' + result.error, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showNotification('Error sending message', 'error');
+    } finally {
+        button.disabled = false;
+        button.innerHTML = '<i class="ph-light ph-paper-plane"></i> Send Message';
     }
 }
 
@@ -435,6 +598,7 @@ async function handleAppointmentSubmit(e) {
 // Close all modals
 function closeAllModals() {
     document.getElementById('appointmentModal').style.display = 'none';
+    document.getElementById('ticketModal').style.display = 'none';
 }
 
 // Format time for display
@@ -481,4 +645,8 @@ function hideNotification(notification) {
             notification.parentNode.removeChild(notification);
         }
     }, 300);
-} 
+}
+
+// Make viewTicketDetails globally accessible
+window.viewTicketDetails = viewTicketDetails;
+window.showAppointmentModal = showAppointmentModal; 

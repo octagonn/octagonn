@@ -126,23 +126,8 @@ const db = {
         }
     },
 
-    // Service ticket operations
+    // Service ticket operations (READ ONLY for customers)
     tickets: {
-        async create(ticketData) {
-            try {
-                const { data, error } = await supabase
-                    .from('service_tickets')
-                    .insert([ticketData])
-                    .select()
-                
-                if (error) throw error
-                return { success: true, data: data[0] }
-            } catch (error) {
-                console.error('Create ticket error:', error)
-                return { success: false, error: error.message }
-            }
-        },
-
         async getByCustomerId(customerId) {
             try {
                 const { data, error } = await supabase
@@ -159,22 +144,91 @@ const db = {
             }
         },
 
-        async updateStatus(ticketId, status) {
+        async getById(ticketId) {
             try {
                 const { data, error } = await supabase
                     .from('service_tickets')
-                    .update({ 
-                        status,
-                        updated_at: new Date().toISOString(),
-                        ...(status === 'completed' && { completed_at: new Date().toISOString() })
-                    })
+                    .select('*')
                     .eq('id', ticketId)
+                    .single()
+                
+                if (error) throw error
+                return { success: true, data }
+            } catch (error) {
+                console.error('Get ticket error:', error)
+                return { success: false, error: error.message }
+            }
+        }
+    },
+
+    // Ticket messages for customer-staff communication
+    messages: {
+        async getByTicketId(ticketId) {
+            try {
+                const { data, error } = await supabase
+                    .from('ticket_messages')
+                    .select('*')
+                    .eq('ticket_id', ticketId)
+                    .eq('is_internal', false) // Only show non-internal messages to customers
+                    .order('created_at', { ascending: true })
+                
+                if (error) throw error
+                return { success: true, data }
+            } catch (error) {
+                console.error('Get messages error:', error)
+                return { success: false, error: error.message }
+            }
+        },
+
+        async create(messageData) {
+            try {
+                const { data, error } = await supabase
+                    .from('ticket_messages')
+                    .insert([{
+                        ...messageData,
+                        is_from_staff: false,
+                        is_internal: false
+                    }])
                     .select()
                 
                 if (error) throw error
                 return { success: true, data: data[0] }
             } catch (error) {
-                console.error('Update ticket error:', error)
+                console.error('Create message error:', error)
+                return { success: false, error: error.message }
+            }
+        }
+    },
+
+    // Contact form submissions
+    contactSubmissions: {
+        async create(submissionData) {
+            try {
+                const { data, error } = await supabase
+                    .from('contact_submissions')
+                    .insert([submissionData])
+                    .select()
+                
+                if (error) throw error
+                return { success: true, data: data[0] }
+            } catch (error) {
+                console.error('Create contact submission error:', error)
+                return { success: false, error: error.message }
+            }
+        },
+
+        async getByCustomerId(customerId) {
+            try {
+                const { data, error } = await supabase
+                    .from('contact_submissions')
+                    .select('*')
+                    .eq('customer_id', customerId)
+                    .order('created_at', { ascending: false })
+                
+                if (error) throw error
+                return { success: true, data }
+            } catch (error) {
+                console.error('Get contact submissions error:', error)
                 return { success: false, error: error.message }
             }
         }
@@ -240,6 +294,16 @@ const utils = {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
+        })
+    },
+
+    // Format time for display
+    formatTime(dateString) {
+        const date = new Date(dateString)
+        return date.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
         })
     },
 

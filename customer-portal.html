@@ -65,12 +65,12 @@
             <div class="portal-welcome glass-card">
                 <div class="welcome-content">
                     <h2>Welcome back, <span id="customerName">Customer</span>!</h2>
-                    <p>Manage your IT services, view service history, and schedule appointments.</p>
+                    <p>View your service tickets, communicate with our team, and manage appointments.</p>
                 </div>
                 <div class="welcome-actions">
                     <a href="contact.html" class="btn btn-primary">
-                        <i class="ph-light ph-plus-circle"></i>
-                        New Service Request
+                        <i class="ph-light ph-envelope"></i>
+                        Contact Support
                     </a>
                 </div>
             </div>
@@ -127,8 +127,8 @@
                 <div class="tab-header">
                     <h3>Your Service Tickets</h3>
                     <a href="contact.html" class="btn btn-secondary">
-                        <i class="ph-light ph-plus"></i>
-                        Create New Ticket
+                        <i class="ph-light ph-envelope"></i>
+                        Contact Support
                     </a>
                 </div>
                 <div id="ticketsList" class="tickets-list">
@@ -247,6 +247,19 @@
                     <button type="button" class="modal-close btn btn-secondary">Cancel</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketModal" class="modal" style="display: none;">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3 id="ticketModalTitle">Ticket Details</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="ticketModalContent">
+                <!-- Ticket details and messages will be loaded here -->
+            </div>
         </div>
     </div>
 

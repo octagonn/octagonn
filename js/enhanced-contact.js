@@ -1,4 +1,4 @@
-// Enhanced Contact Form with Ticket Creation
+// Enhanced Contact Form - Updated for Staff-Only Ticket Creation
 document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in
     checkUserStatus();
@@ -25,8 +25,8 @@ async function checkUserStatus() {
                 await loadCustomerInfo(user);
             }
             
-            // Update form for ticket creation
-            updateFormForTicketCreation();
+            // Update form messaging for logged-in users
+            updateFormForLoggedInUser();
         } else {
             // User not logged in - show login prompt
             if (loginSection) loginSection.style.display = 'block';
@@ -71,48 +71,30 @@ async function loadCustomerInfo(user) {
     }
 }
 
-// Update form for ticket creation
-function updateFormForTicketCreation() {
+// Update form for logged-in users
+function updateFormForLoggedInUser() {
     // Update form heading and description
     const formHeading = document.querySelector('.contact-content h2');
     const formDescription = document.querySelector('.contact-content p');
     
     if (formHeading) {
-        formHeading.textContent = 'Create Service Request';
+        formHeading.textContent = 'Contact Our Support Team';
     }
     
     if (formDescription) {
-        formDescription.textContent = 'Submit a new service request. We\'ll create a ticket and get back to you soon.';
+        formDescription.textContent = 'Send us a message and our staff will review your request. If needed, we\'ll create a service ticket and you\'ll be notified through your customer portal.';
     }
     
-    // Add priority field
-    addPriorityField();
+    // Remove priority field if it exists (since customers can't create tickets)
+    const priorityField = document.getElementById('priorityField');
+    if (priorityField) {
+        priorityField.remove();
+    }
     
     // Update submit button text
     const submitButton = document.querySelector('button[type="submit"]');
     if (submitButton) {
-        submitButton.innerHTML = '<i class="ph-light ph-ticket"></i> Create Service Ticket';
-    }
-}
-
-// Add priority field to form
-function addPriorityField() {
-    const messageGroup = document.querySelector('.form-group:has(textarea[name="message"])');
-    if (messageGroup && !document.getElementById('priorityField')) {
-        const priorityGroup = document.createElement('div');
-        priorityGroup.className = 'form-group';
-        priorityGroup.id = 'priorityField';
-        priorityGroup.innerHTML = `
-            <label for="priority">Priority Level:</label>
-            <select name="priority" id="priority" required>
-                <option value="normal">Normal</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-                <option value="low">Low</option>
-            </select>
-        `;
-        
-        messageGroup.parentNode.insertBefore(priorityGroup, messageGroup);
+        submitButton.innerHTML = '<i class="ph-light ph-envelope"></i> Send Message to Support';
     }
 }
 
@@ -126,18 +108,18 @@ async function handleContactSubmission(e) {
     // Disable submit button
     submitButton.disabled = true;
     const originalText = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="ph-light ph-spinner"></i> Processing...';
+    submitButton.innerHTML = '<i class="ph-light ph-spinner"></i> Sending...';
     
     try {
         // Check if user is logged in
         const user = await SpyderNetDB.auth.getCurrentUser();
         
         if (user) {
-            // Create service ticket
-            await createServiceTicket(formData, user);
+            // Save contact submission with customer reference
+            await saveContactSubmission(formData, user);
         } else {
-            // Send regular contact form (you can implement email sending here)
-            await sendRegularContact(formData);
+            // Save regular contact submission
+            await saveContactSubmission(formData, null);
         }
         
     } catch (error) {
@@ -149,68 +131,61 @@ async function handleContactSubmission(e) {
     }
 }
 
-// Create service ticket for logged-in users
-async function createServiceTicket(formData, user) {
+// Save contact submission to database
+async function saveContactSubmission(formData, user) {
     try {
-        // Get customer data
-        const customerResult = await SpyderNetDB.db.customers.getByUserId(user.id);
-        if (!customerResult.success) {
-            throw new Error('Could not find customer data');
+        let customer = null;
+        if (user) {
+            const customerResult = await SpyderNetDB.db.customers.getByUserId(user.id);
+            if (customerResult.success) {
+                customer = customerResult.data;
+            }
         }
         
-        const customer = customerResult.data;
-        
-        // Prepare ticket data
-        const ticketData = {
-            customer_id: customer.id,
-            title: formData.get('subject') || 'Service Request',
-            description: formData.get('message'),
-            priority: formData.get('priority') || 'normal',
-            status: 'new'
+        // Prepare submission data
+        const submissionData = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone'),
+            subject: formData.get('subject'),
+            message: formData.get('message'),
+            is_from_customer: !!customer,
+            customer_id: customer ? customer.id : null
         };
         
-        // Create ticket
-        const ticketResult = await SpyderNetDB.db.tickets.create(ticketData);
+        // Save to database
+        const result = await SpyderNetDB.db.contactSubmissions.create(submissionData);
         
-        if (ticketResult.success) {
-            const ticket = ticketResult.data;
-            showContactMessage(
-                `Service ticket created successfully! Ticket ID: #${ticket.id.slice(-8)}. You can track this ticket in your customer portal.`,
-                'success'
-            );
+        if (result.success) {
+            if (customer) {
+                showContactMessage(
+                    'Message sent successfully! Our support team will review your request and may create a service ticket if needed. You\'ll be notified through your customer portal.',
+                    'success'
+                );
+                
+                // Show portal link
+                showPortalLink();
+            } else {
+                showContactMessage(
+                    'Thank you for your message! We\'ll get back to you within 24 hours. For faster service and to track requests, consider creating a customer account.',
+                    'success'
+                );
+                
+                // Show signup prompt
+                showSignupPrompt();
+            }
             
             // Reset form
             document.getElementById('contactForm').reset();
             
-            // Show portal link
-            showPortalLink();
-            
         } else {
-            throw new Error(ticketResult.error);
+            throw new Error(result.error);
         }
         
     } catch (error) {
-        console.error('Error creating service ticket:', error);
-        showContactMessage('Error creating service ticket: ' + error.message, 'error');
+        console.error('Error saving contact submission:', error);
+        showContactMessage('Error sending message: ' + error.message, 'error');
     }
-}
-
-// Send regular contact form (for non-logged-in users)
-async function sendRegularContact(formData) {
-    // This would typically send an email or save to a database
-    // For now, we'll just show a success message
-    console.log('Regular contact form submission:', Object.fromEntries(formData));
-    
-    showContactMessage(
-        'Thank you for your message! We\'ll get back to you within 24 hours. For faster service, consider creating an account to track your requests.',
-        'success'
-    );
-    
-    // Reset form
-    document.getElementById('contactForm').reset();
-    
-    // Show signup prompt
-    showSignupPrompt();
 }
 
 // Show contact message
@@ -243,14 +218,14 @@ function showContactMessage(message, type = 'info') {
     }
 }
 
-// Show portal link after ticket creation
+// Show portal link after message submission
 function showPortalLink() {
     const portalLink = document.createElement('div');
     portalLink.className = 'portal-link-container';
     portalLink.innerHTML = `
         <div class="glass-card" style="margin-top: 20px; text-align: center;">
-            <h4>Track Your Service Request</h4>
-            <p>Visit your customer portal to view ticket status and schedule appointments.</p>
+            <h4>Check Your Customer Portal</h4>
+            <p>Visit your customer portal to view any service tickets our team creates and track your requests.</p>
             <a href="customer-portal.html" class="btn btn-primary">
                 <i class="ph-light ph-arrow-right"></i>
                 Go to Customer Portal
@@ -268,8 +243,8 @@ function showSignupPrompt() {
     signupPrompt.className = 'signup-prompt-container';
     signupPrompt.innerHTML = `
         <div class="glass-card" style="margin-top: 20px; text-align: center;">
-            <h4>Want to Track Your Request?</h4>
-            <p>Create a customer account to track your service requests, view history, and schedule appointments.</p>
+            <h4>Want to Track Your Requests?</h4>
+            <p>Create a customer account to track service requests, view service history, and schedule appointments.</p>
             <a href="login.html" class="btn btn-primary">
                 <i class="ph-light ph-user-plus"></i>
                 Create Account
