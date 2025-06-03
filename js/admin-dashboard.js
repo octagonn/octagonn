@@ -374,6 +374,8 @@ async function showCreateTicketModal() {
 async function handleCreateTicket(e) {
     e.preventDefault();
     
+    console.log('Creating ticket...');
+    
     const formData = {
         customer_id: document.getElementById('ticketCustomer').value,
         title: document.getElementById('ticketTitle').value,
@@ -384,20 +386,43 @@ async function handleCreateTicket(e) {
         staff_notes: document.getElementById('ticketNotes').value || null
     };
 
+    console.log('Form data:', formData);
+
+    // Validate required fields
+    if (!formData.customer_id) {
+        showNotification('Please select a customer', 'error');
+        return;
+    }
+    if (!formData.title) {
+        showNotification('Please enter a ticket title', 'error');
+        return;
+    }
+    if (!formData.description) {
+        showNotification('Please enter a ticket description', 'error');
+        return;
+    }
+
     const submitBtn = e.target.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating...';
 
-    const result = await AdminDB.tickets.create(formData);
-    
-    if (result.success) {
-        document.getElementById('createTicketModal').style.display = 'none';
-        document.getElementById('createTicketForm').reset();
-        showNotification('Ticket created successfully!', 'success');
-        await loadTickets();
-        updateStats();
-    } else {
-        showNotification('Failed to create ticket: ' + result.error, 'error');
+    try {
+        const result = await AdminDB.tickets.create(formData);
+        console.log('Create ticket result:', result);
+        
+        if (result.success) {
+            document.getElementById('createTicketModal').style.display = 'none';
+            document.getElementById('createTicketForm').reset();
+            showNotification('Ticket created successfully!', 'success');
+            await loadTickets();
+            updateStats();
+        } else {
+            console.error('Ticket creation failed:', result.error);
+            showNotification('Failed to create ticket: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Unexpected error creating ticket:', error);
+        showNotification('Unexpected error: ' + error.message, 'error');
     }
 
     submitBtn.disabled = false;
@@ -500,8 +525,349 @@ async function markContactProcessed(contactId) {
         showNotification('Contact marked as processed', 'success');
         await loadContacts();
         updateStats();
+        // Close the modal
+        document.getElementById('contactDetailsModal').style.display = 'none';
     } else {
         showNotification('Failed to update contact', 'error');
+    }
+}
+
+// Ticket functions - now fully implemented
+async function viewTicketDetails(ticketId) {
+    const ticket = currentData.tickets.find(t => t.id === ticketId);
+    if (!ticket) {
+        showNotification('Ticket not found', 'error');
+        return;
+    }
+
+    // Load ticket messages
+    const messagesResult = await AdminDB.messages.getByTicketId(ticketId);
+    const messages = messagesResult.success ? messagesResult.data : [];
+
+    const content = `
+        <div class="ticket-details">
+            <div class="detail-section">
+                <h4>Ticket Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Ticket ID:</label>
+                        <span>#${ticket.id.slice(-8)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Customer:</label>
+                        <span>${escapeHtml(ticket.customers?.full_name || 'Unknown')}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Status:</label>
+                        <span class="status-badge status-${ticket.status}">
+                            ${capitalizeFirst(ticket.status)}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Priority:</label>
+                        <span class="priority-badge priority-${ticket.priority}">
+                            ${capitalizeFirst(ticket.priority)}
+                        </span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Created:</label>
+                        <span>${formatDateTime(ticket.created_at)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Updated:</label>
+                        <span>${formatDateTime(ticket.updated_at)}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h4>Description</h4>
+                <div class="message-content">
+                    ${escapeHtml(ticket.description).replace(/\n/g, '<br>')}
+                </div>
+            </div>
+            ${ticket.staff_notes ? `
+                <div class="detail-section">
+                    <h4>Staff Notes</h4>
+                    <div class="message-content">
+                        ${escapeHtml(ticket.staff_notes).replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            ` : ''}
+            <div class="detail-section">
+                <h4>Messages (${messages.length})</h4>
+                <div class="messages-list">
+                    ${messages.length > 0 ? messages.map(msg => `
+                        <div class="message ${msg.is_from_staff ? 'staff-message' : 'customer-message'}">
+                            <div class="message-header">
+                                <strong>${escapeHtml(msg.is_from_staff ? (msg.staff_name || 'Staff') : ticket.customers?.full_name || 'Customer')}</strong>
+                                <span class="message-time">${formatDateTime(msg.created_at)}</span>
+                                ${msg.is_internal ? '<span class="internal-badge">Internal</span>' : ''}
+                            </div>
+                            <div class="message-content">
+                                ${escapeHtml(msg.message).replace(/\n/g, '<br>')}
+                            </div>
+                        </div>
+                    `).join('') : '<p class="no-messages">No messages yet</p>'}
+                </div>
+                
+                <!-- Add Message Form -->
+                <div class="message-form">
+                    <form id="addMessageForm" onsubmit="addTicketMessage(event, '${ticket.id}')">
+                        <div class="form-group">
+                            <textarea id="newMessage" placeholder="Type your message..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>
+                                <input type="checkbox" id="isInternal"> Internal message (not visible to customer)
+                            </label>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ph-light ph-paper-plane"></i>
+                                Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="editTicket('${ticket.id}')">
+                    <i class="ph-light ph-pencil-simple"></i>
+                    Edit Ticket
+                </button>
+                <button class="btn btn-secondary" onclick="document.getElementById('ticketDetailsModal').style.display = 'none'">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('ticketDetailsContent').innerHTML = content;
+    document.getElementById('ticketDetailsModal').style.display = 'flex';
+}
+
+async function addTicketMessage(event, ticketId) {
+    event.preventDefault();
+    
+    const messageText = document.getElementById('newMessage').value;
+    const isInternal = document.getElementById('isInternal').checked;
+    
+    if (!messageText.trim()) {
+        showNotification('Please enter a message', 'error');
+        return;
+    }
+
+    const submitBtn = event.target.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    const result = await AdminDB.messages.create({
+        ticket_id: ticketId,
+        message: messageText
+    }, isInternal);
+
+    if (result.success) {
+        showNotification('Message sent successfully', 'success');
+        // Refresh the ticket details view
+        await viewTicketDetails(ticketId);
+    } else {
+        showNotification('Failed to send message: ' + result.error, 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Send Message';
+    }
+}
+
+async function editTicket(ticketId) {
+    const ticket = currentData.tickets.find(t => t.id === ticketId);
+    if (!ticket) return;
+
+    const newStatus = prompt(
+        `Current status: ${ticket.status}\nEnter new status (open, in-progress, resolved, closed):`,
+        ticket.status
+    );
+    
+    if (newStatus && ['open', 'in-progress', 'resolved', 'closed'].includes(newStatus.toLowerCase())) {
+        const result = await AdminDB.tickets.update(ticketId, { 
+            status: newStatus.toLowerCase(),
+            updated_at: new Date().toISOString()
+        });
+        
+        if (result.success) {
+            showNotification('Ticket updated successfully', 'success');
+            await loadTickets();
+            updateStats();
+            // Refresh details view if open
+            document.getElementById('ticketDetailsModal').style.display = 'none';
+        } else {
+            showNotification('Failed to update ticket: ' + result.error, 'error');
+        }
+    } else if (newStatus !== null) {
+        showNotification('Invalid status. Use: open, in-progress, resolved, or closed', 'error');
+    }
+}
+
+async function viewCustomerTickets(customerId) {
+    const customer = currentData.customers.find(c => c.id === customerId);
+    if (!customer) return;
+
+    const customerTickets = currentData.tickets.filter(t => t.customer_id === customerId);
+    
+    const content = `
+        <div class="customer-details">
+            <div class="detail-section">
+                <h4>Customer Information</h4>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Name:</label>
+                        <span>${escapeHtml(customer.full_name)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email:</label>
+                        <span>${escapeHtml(customer.email)}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Phone:</label>
+                        <span>${escapeHtml(customer.phone || 'N/A')}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Address:</label>
+                        <span>${escapeHtml(customer.address || 'N/A')}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="detail-section">
+                <h4>Service Tickets (${customerTickets.length})</h4>
+                ${customerTickets.length > 0 ? `
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${customerTickets.map(ticket => `
+                                    <tr>
+                                        <td>#${ticket.id.slice(-8)}</td>
+                                        <td>${escapeHtml(ticket.title)}</td>
+                                        <td>
+                                            <span class="status-badge status-${ticket.status}">
+                                                ${capitalizeFirst(ticket.status)}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="priority-badge priority-${ticket.priority}">
+                                                ${capitalizeFirst(ticket.priority)}
+                                            </span>
+                                        </td>
+                                        <td>${formatDate(ticket.created_at)}</td>
+                                        <td>
+                                            <button class="btn-icon" onclick="viewTicketDetails('${ticket.id}')" title="View Details">
+                                                <i class="ph-light ph-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                ` : '<p class="no-data">No tickets found for this customer</p>'}
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="createTicketForCustomer('${customer.id}')">
+                    <i class="ph-light ph-plus"></i>
+                    Create New Ticket
+                </button>
+                <button class="btn btn-secondary" onclick="editCustomer('${customer.id}')">
+                    <i class="ph-light ph-pencil-simple"></i>
+                    Edit Customer
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('contactDetailsContent').innerHTML = content;
+    document.getElementById('contactDetailsModal').style.display = 'flex';
+}
+
+async function createTicketForCustomer(customerId) {
+    // Pre-select the customer in create ticket form
+    document.getElementById('ticketCustomer').value = customerId;
+    
+    // Close customer modal and show ticket modal
+    document.getElementById('contactDetailsModal').style.display = 'none';
+    await showCreateTicketModal();
+}
+
+async function editCustomer(customerId) {
+    const customer = currentData.customers.find(c => c.id === customerId);
+    if (!customer) return;
+
+    const newPhone = prompt(`Current phone: ${customer.phone || 'None'}\nEnter new phone number:`, customer.phone || '');
+    const newAddress = prompt(`Current address: ${customer.address || 'None'}\nEnter new address:`, customer.address || '');
+    
+    if (newPhone !== null || newAddress !== null) {
+        const updates = {};
+        if (newPhone !== null) updates.phone = newPhone;
+        if (newAddress !== null) updates.address = newAddress;
+        
+        const result = await AdminDB.customers.update(customerId, updates);
+        
+        if (result.success) {
+            showNotification('Customer updated successfully', 'success');
+            await loadCustomers();
+            // Close modal
+            document.getElementById('contactDetailsModal').style.display = 'none';
+        } else {
+            showNotification('Failed to update customer: ' + result.error, 'error');
+        }
+    }
+}
+
+async function editAppointment(appointmentId) {
+    const appointment = currentData.appointments.find(a => a.id === appointmentId);
+    if (!appointment) return;
+
+    const newStatus = prompt(
+        `Current status: ${appointment.status}\nEnter new status (scheduled, confirmed, completed, cancelled):`,
+        appointment.status
+    );
+    
+    if (newStatus && ['scheduled', 'confirmed', 'completed', 'cancelled'].includes(newStatus.toLowerCase())) {
+        const result = await AdminDB.appointments.update(appointmentId, { 
+            status: newStatus.toLowerCase(),
+            updated_at: new Date().toISOString()
+        });
+        
+        if (result.success) {
+            showNotification('Appointment updated successfully', 'success');
+            await loadAppointments();
+            updateStats();
+        } else {
+            showNotification('Failed to update appointment: ' + result.error, 'error');
+        }
+    } else if (newStatus !== null) {
+        showNotification('Invalid status. Use: scheduled, confirmed, completed, or cancelled', 'error');
+    }
+}
+
+async function cancelAppointment(appointmentId) {
+    if (!confirm('Cancel this appointment?')) return;
+    
+    const result = await AdminDB.appointments.update(appointmentId, { 
+        status: 'cancelled',
+        updated_at: new Date().toISOString()
+    });
+    
+    if (result.success) {
+        showNotification('Appointment cancelled successfully', 'success');
+        await loadAppointments();
+        updateStats();
+    } else {
+        showNotification('Failed to cancel appointment: ' + result.error, 'error');
     }
 }
 
@@ -560,30 +926,4 @@ function escapeHtml(text) {
 
 function capitalizeFirst(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// Placeholder functions for other actions
-async function viewTicketDetails(ticketId) {
-    showNotification('Ticket details view - Coming soon!', 'info');
-}
-
-async function editTicket(ticketId) {
-    showNotification('Ticket editing - Coming soon!', 'info');
-}
-
-async function viewCustomerTickets(customerId) {
-    showNotification('Customer ticket view - Coming soon!', 'info');
-}
-
-async function editCustomer(customerId) {
-    showNotification('Customer editing - Coming soon!', 'info');
-}
-
-async function editAppointment(appointmentId) {
-    showNotification('Appointment editing - Coming soon!', 'info');
-}
-
-async function cancelAppointment(appointmentId) {
-    if (!confirm('Cancel this appointment?')) return;
-    showNotification('Appointment cancellation - Coming soon!', 'info');
 } 
