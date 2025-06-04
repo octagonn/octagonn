@@ -15,8 +15,18 @@ CREATE TABLE IF NOT EXISTS customers (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     full_name TEXT,
+    first_name TEXT,
+    last_name TEXT,
     phone TEXT,
     address TEXT,
+    city TEXT,
+    state TEXT,
+    zip TEXT,
+    country TEXT DEFAULT 'US',
+    company TEXT,
+    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'suspended')),
+    notes TEXT,
+    last_contact TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
@@ -24,6 +34,7 @@ CREATE TABLE IF NOT EXISTS customers (
 -- Create service_tickets table (only staff can create)
 CREATE TABLE IF NOT EXISTS service_tickets (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    ticket_number SERIAL UNIQUE NOT NULL,
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -114,8 +125,13 @@ CREATE TABLE IF NOT EXISTS admin_users (
 
 CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
+CREATE INDEX IF NOT EXISTS idx_customers_status ON customers(status);
+CREATE INDEX IF NOT EXISTS idx_customers_company ON customers(company);
+CREATE INDEX IF NOT EXISTS idx_customers_last_contact ON customers(last_contact);
+CREATE INDEX IF NOT EXISTS idx_customers_full_name ON customers(full_name);
 CREATE INDEX IF NOT EXISTS idx_tickets_customer_id ON service_tickets(customer_id);
 CREATE INDEX IF NOT EXISTS idx_tickets_status ON service_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_ticket_number ON service_tickets(ticket_number);
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_customer_id ON ticket_messages(customer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_customer_id ON appointments(customer_id);
