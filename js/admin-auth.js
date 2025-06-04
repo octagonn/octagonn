@@ -398,6 +398,21 @@ const AdminDB = {
                 console.error('Error creating appointment:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async delete(appointmentId) {
+            try {
+                const { error } = await supabase
+                    .from('appointments')
+                    .delete()
+                    .eq('id', appointmentId);
+                
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting appointment:', error);
+                return { success: false, error: error.message };
+            }
         }
     },
 

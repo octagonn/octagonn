@@ -367,10 +367,10 @@ function renderAppointmentsTable() {
         <tr>
             <td>
                 <div>${formatDateTime(appointment.appointment_date)}</div>
-                <div class="text-secondary">${appointment.duration} minutes</div>
+                <div class="text-secondary">${appointment.duration_minutes || 60} minutes</div>
             </td>
             <td>${escapeHtml(appointment.customers?.full_name || 'Unknown')}</td>
-            <td>${escapeHtml(appointment.service_type)}</td>
+            <td>${escapeHtml(appointment.service_type || 'N/A')}</td>
             <td>
                 ${appointment.service_tickets ? 
                     `<a href="#" onclick="viewTicketDetails('${appointment.ticket_id}')">#${appointment.service_tickets.id.slice(-8)}</a>` : 
@@ -387,9 +387,15 @@ function renderAppointmentsTable() {
                     <button class="btn-icon" onclick="editAppointment('${appointment.id}')" title="Edit Appointment">
                         <i class="ph-light ph-pencil-simple"></i>
                     </button>
-                    <button class="btn-icon" onclick="cancelAppointment('${appointment.id}')" title="Cancel">
-                        <i class="ph-light ph-x"></i>
-                    </button>
+                    ${appointment.status === 'cancelled' ? `
+                        <button class="btn-icon btn-danger" onclick="deleteAppointment('${appointment.id}')" title="Delete Appointment">
+                            <i class="ph-light ph-trash"></i>
+                        </button>
+                    ` : `
+                        <button class="btn-icon" onclick="cancelAppointment('${appointment.id}')" title="Cancel">
+                            <i class="ph-light ph-x"></i>
+                        </button>
+                    `}
                 </div>
             </td>
         </tr>
@@ -949,6 +955,23 @@ async function cancelAppointment(appointmentId) {
         updateStats();
     } else {
         showNotification('Failed to cancel appointment: ' + result.error, 'error');
+    }
+}
+
+async function deleteAppointment(appointmentId) {
+    const appointment = currentData.appointments.find(a => a.id === appointmentId);
+    if (!appointment) return;
+
+    if (!confirm('Permanently delete this cancelled appointment? This action cannot be undone.')) return;
+    
+    const result = await AdminDB.appointments.delete(appointmentId);
+    
+    if (result.success) {
+        showNotification('Appointment deleted successfully', 'success');
+        await loadAppointments();
+        updateStats();
+    } else {
+        showNotification('Failed to delete appointment: ' + result.error, 'error');
     }
 }
 
