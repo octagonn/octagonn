@@ -205,7 +205,7 @@ function updateStats() {
     document.getElementById('totalCustomersCount').textContent = currentData.customers.length;
 
     // Pending requests
-    const pendingRequests = currentData.appointmentRequests.filter(r => r.status === 'pending').length;
+    const pendingRequests = currentData.appointmentRequests.filter(r => r.status === 'requested').length;
     document.getElementById('pendingRequestsCount').textContent = pendingRequests;
 }
 
@@ -426,7 +426,7 @@ function renderAppointmentRequestsTable() {
             </td>
             <td>
                 <div class="action-buttons">
-                    ${request.status === 'pending' ? `
+                    ${request.status === 'requested' ? `
                         <button class="btn-icon btn-success" onclick="approveAppointmentRequest('${request.id}')" title="Approve Request">
                             <i class="ph-light ph-check"></i>
                         </button>

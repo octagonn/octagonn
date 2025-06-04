@@ -390,7 +390,7 @@ const db = {
                         requested_date: requestData.requested_date,
                         requested_time: requestData.requested_time,
                         notes: requestData.notes,
-                        status: 'pending'
+                        status: 'requested'
                     }])
                     .select()
                 
@@ -467,7 +467,7 @@ const utils = {
             'cancelled': 'Cancelled',
             'scheduled': 'Scheduled',
             'confirmed': 'Confirmed',
-            'pending': 'Pending',
+            'requested': 'Requested',
             'approved': 'Approved',
             'rejected': 'Rejected'
         }
@@ -483,7 +483,7 @@ const utils = {
             'cancelled': 'status-cancelled',
             'scheduled': 'status-scheduled',
             'confirmed': 'status-confirmed',
-            'pending': 'status-pending',
+            'requested': 'status-requested',
             'approved': 'status-approved',
             'rejected': 'status-rejected'
         }

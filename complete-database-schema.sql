@@ -1,5 +1,13 @@
--- SpyderNet IT Customer Portal Database Schema
--- Run this in Supabase SQL Editor
+-- SpyderNet IT Complete Database Schema
+-- Run this complete script in your Supabase SQL Editor
+-- This replaces all other SQL files and includes everything needed for the system
+
+-- Enable necessary extensions
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ============================================================================
+-- CUSTOMER PORTAL TABLES
+-- ============================================================================
 
 -- Create customers table
 CREATE TABLE IF NOT EXISTS customers (
@@ -36,6 +44,7 @@ CREATE TABLE IF NOT EXISTS ticket_messages (
     message TEXT NOT NULL,
     is_from_staff BOOLEAN DEFAULT false,
     is_internal BOOLEAN DEFAULT false, -- Internal staff messages customers cannot see
+    staff_name TEXT, -- Name of staff member who sent the message
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -62,7 +71,7 @@ CREATE TABLE IF NOT EXISTS appointment_requests (
     requested_date DATE NOT NULL,
     requested_time TIME NOT NULL,
     notes TEXT,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'scheduled')),
+    status TEXT DEFAULT 'requested' CHECK (status IN ('requested', 'approved', 'rejected', 'scheduled')),
     staff_response TEXT, -- Staff response/notes when processing the request
     appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL, -- Link to created appointment if approved
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
@@ -80,10 +89,32 @@ CREATE TABLE IF NOT EXISTS contact_submissions (
     message TEXT NOT NULL,
     is_from_customer BOOLEAN DEFAULT false,
     customer_id UUID REFERENCES customers(id) ON DELETE SET NULL,
+    processed BOOLEAN DEFAULT false,
+    ticket_id UUID REFERENCES service_tickets(id) ON DELETE SET NULL,
+    processed_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create indexes for better performance
+-- ============================================================================
+-- ADMIN PORTAL TABLES
+-- ============================================================================
+
+-- Create admin_users table for staff authentication
+CREATE TABLE IF NOT EXISTS admin_users (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL UNIQUE,
+    full_name TEXT NOT NULL,
+    role TEXT DEFAULT 'staff' CHECK (role IN ('admin', 'staff', 'technician')),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- ============================================================================
+-- INDEXES FOR PERFORMANCE
+-- ============================================================================
+
 CREATE INDEX IF NOT EXISTS idx_customers_user_id ON customers(user_id);
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_tickets_customer_id ON service_tickets(customer_id);
@@ -96,30 +127,38 @@ CREATE INDEX IF NOT EXISTS idx_appointment_requests_customer_id ON appointment_r
 CREATE INDEX IF NOT EXISTS idx_appointment_requests_status ON appointment_requests(status);
 CREATE INDEX IF NOT EXISTS idx_appointment_requests_date ON appointment_requests(requested_date);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_email ON contact_submissions(email);
+CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id);
+CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);
+CREATE INDEX IF NOT EXISTS idx_admin_users_role ON admin_users(role);
 
--- Enable Row Level Security (RLS) on all tables
+-- ============================================================================
+-- ROW LEVEL SECURITY SETUP
+-- ============================================================================
+
+-- Enable Row Level Security on all tables
 ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointment_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies to avoid conflicts
 DROP POLICY IF EXISTS "Users can view own customer data" ON customers;
 DROP POLICY IF EXISTS "Users can update own customer data" ON customers;
 DROP POLICY IF EXISTS "Users can insert own customer data" ON customers;
+DROP POLICY IF EXISTS "Admins can manage all customers" ON customers;
 
 DROP POLICY IF EXISTS "Users can view own tickets" ON service_tickets;
-DROP POLICY IF EXISTS "Users can create own tickets" ON service_tickets;
-DROP POLICY IF EXISTS "Users can update own tickets" ON service_tickets;
+DROP POLICY IF EXISTS "Admins can manage all tickets" ON service_tickets;
 
 DROP POLICY IF EXISTS "Users can view own ticket messages" ON ticket_messages;
 DROP POLICY IF EXISTS "Users can create messages on own tickets" ON ticket_messages;
+DROP POLICY IF EXISTS "Admins can manage all messages" ON ticket_messages;
 
 DROP POLICY IF EXISTS "Users can view own appointments" ON appointments;
-DROP POLICY IF EXISTS "Users can create own appointments" ON appointments;
-DROP POLICY IF EXISTS "Users can update own appointments" ON appointments;
+DROP POLICY IF EXISTS "Admins can manage all appointments" ON appointments;
 
 DROP POLICY IF EXISTS "Users can view own appointment requests" ON appointment_requests;
 DROP POLICY IF EXISTS "Users can create appointment requests" ON appointment_requests;
@@ -127,8 +166,16 @@ DROP POLICY IF EXISTS "Users can update own appointment requests" ON appointment
 
 DROP POLICY IF EXISTS "Users can create contact submissions" ON contact_submissions;
 DROP POLICY IF EXISTS "Users can view own contact submissions" ON contact_submissions;
+DROP POLICY IF EXISTS "Admins can manage all contact submissions" ON contact_submissions;
 
--- Create RLS policies for customers table
+DROP POLICY IF EXISTS "Authenticated users can read admin_users" ON admin_users;
+DROP POLICY IF EXISTS "Users can manage their own admin record" ON admin_users;
+
+-- ============================================================================
+-- CUSTOMER RLS POLICIES
+-- ============================================================================
+
+-- Customers table policies
 CREATE POLICY "Users can view own customer data" ON customers
     FOR SELECT USING (auth.uid() = user_id);
 
@@ -138,7 +185,7 @@ CREATE POLICY "Users can update own customer data" ON customers
 CREATE POLICY "Users can insert own customer data" ON customers
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Create RLS policies for service_tickets table (READ ONLY for customers)
+-- Service tickets policies (READ ONLY for customers)
 CREATE POLICY "Users can view own tickets" ON service_tickets
     FOR SELECT USING (
         customer_id IN (
@@ -146,9 +193,7 @@ CREATE POLICY "Users can view own tickets" ON service_tickets
         )
     );
 
--- No INSERT/UPDATE policies for customers on service_tickets (only staff can create/modify)
-
--- Create RLS policies for ticket_messages table
+-- Ticket messages policies
 CREATE POLICY "Users can view own ticket messages" ON ticket_messages
     FOR SELECT USING (
         customer_id IN (
@@ -163,7 +208,7 @@ CREATE POLICY "Users can create messages on own tickets" ON ticket_messages
         ) AND is_from_staff = false AND is_internal = false
     );
 
--- Create RLS policies for appointments table (READ ONLY for customers)
+-- Appointments policies (READ ONLY for customers)
 CREATE POLICY "Users can view own appointments" ON appointments
     FOR SELECT USING (
         customer_id IN (
@@ -171,9 +216,7 @@ CREATE POLICY "Users can view own appointments" ON appointments
         )
     );
 
--- No INSERT/UPDATE policies for customers on appointments (only staff can create/modify)
-
--- Create RLS policies for appointment_requests table
+-- Appointment requests policies
 CREATE POLICY "Users can view own appointment requests" ON appointment_requests
     FOR SELECT USING (
         customer_id IN (
@@ -192,10 +235,10 @@ CREATE POLICY "Users can update own appointment requests" ON appointment_request
     FOR UPDATE USING (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
-        ) AND status = 'pending' -- Only allow updates to pending requests
+        ) AND status = 'requested' -- Only allow updates to requested requests
     );
 
--- Create RLS policies for contact_submissions table
+-- Contact submissions policies
 CREATE POLICY "Users can create contact submissions" ON contact_submissions
     FOR INSERT WITH CHECK (true); -- Anyone can submit contact forms
 
@@ -206,7 +249,76 @@ CREATE POLICY "Users can view own contact submissions" ON contact_submissions
         ) OR customer_id IS NULL
     );
 
--- Create function to automatically create customer record when user signs up
+-- ============================================================================
+-- ADMIN RLS POLICIES
+-- ============================================================================
+
+-- Admin users policies (simple to avoid recursion)
+CREATE POLICY "Authenticated users can read admin_users" ON admin_users
+    FOR SELECT USING (auth.uid() IS NOT NULL);
+
+CREATE POLICY "Users can manage their own admin record" ON admin_users
+    FOR ALL USING (auth.uid() = user_id);
+
+-- Admin access to all customer data
+CREATE POLICY "Admins can manage all customers" ON customers
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Admin access to all tickets
+CREATE POLICY "Admins can manage all tickets" ON service_tickets
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Admin access to all messages
+CREATE POLICY "Admins can manage all messages" ON ticket_messages
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Admin access to all appointments
+CREATE POLICY "Admins can manage all appointments" ON appointments
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Admin access to all appointment requests
+CREATE POLICY "Admins can manage all appointment requests" ON appointment_requests
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Admin access to all contact submissions
+CREATE POLICY "Admins can manage all contact submissions" ON contact_submissions
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- ============================================================================
+-- FUNCTIONS AND TRIGGERS
+-- ============================================================================
+
+-- Function to automatically create customer record when user signs up
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -220,13 +332,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create trigger to automatically create customer record
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-CREATE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
-
--- Create function to update updated_at timestamp
+-- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS trigger AS $$
 BEGIN
@@ -235,7 +341,62 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create triggers to automatically update updated_at timestamps
+-- Function to create admin user
+CREATE OR REPLACE FUNCTION public.create_admin_user(
+    admin_email TEXT,
+    admin_name TEXT,
+    admin_role TEXT DEFAULT 'staff'
+)
+RETURNS JSON AS $$
+DECLARE
+    user_record RECORD;
+    admin_record RECORD;
+BEGIN
+    -- Check if user exists in auth.users
+    SELECT * INTO user_record FROM auth.users WHERE email = admin_email;
+    
+    IF user_record.id IS NULL THEN
+        RETURN json_build_object('success', false, 'error', 'User not found in auth.users. Please sign up first.');
+    END IF;
+    
+    -- Check if admin user already exists
+    SELECT * INTO admin_record FROM admin_users WHERE user_id = user_record.id;
+    
+    IF admin_record.id IS NOT NULL THEN
+        RETURN json_build_object('success', false, 'error', 'Admin user already exists.');
+    END IF;
+    
+    -- Create admin user
+    INSERT INTO admin_users (user_id, email, full_name, role)
+    VALUES (user_record.id, admin_email, admin_name, admin_role);
+    
+    RETURN json_build_object('success', true, 'message', 'Admin user created successfully.');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Helper function to check if current user is admin
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.admin_users 
+        WHERE user_id = auth.uid() 
+        AND is_active = true
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================================
+-- TRIGGERS
+-- ============================================================================
+
+-- Trigger to automatically create customer record
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Triggers to automatically update updated_at timestamps
 DROP TRIGGER IF EXISTS update_customers_updated_at ON customers;
 CREATE TRIGGER update_customers_updated_at BEFORE UPDATE ON customers
     FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
@@ -250,4 +411,22 @@ CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments
 
 DROP TRIGGER IF EXISTS update_appointment_requests_updated_at ON appointment_requests;
 CREATE TRIGGER update_appointment_requests_updated_at BEFORE UPDATE ON appointment_requests
-    FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column(); 
+    FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_admin_users_updated_at ON admin_users;
+CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
+    FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
+
+-- ============================================================================
+-- SETUP COMPLETE
+-- ============================================================================
+
+-- The database is now fully configured and ready to use!
+-- 
+-- Next steps:
+-- 1. Create your first admin user by running:
+--    SELECT public.create_admin_user('your-email@example.com', 'Your Name', 'admin');
+-- 
+-- 2. Test the system by creating user accounts through the website
+-- 
+-- 3. Access the admin dashboard with your admin credentials 
