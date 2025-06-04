@@ -1,469 +1,690 @@
-// SpyderNet IT Admin Dashboard
-document.addEventListener('DOMContentLoaded', async function() {
-    // Check admin authentication
-    const authResult = await AdminAuth.requireAuth();
-    if (!authResult) return;
+// Admin Dashboard JavaScript - Zendesk Style Layout
+let currentView = 'unsolved-tickets';
+let currentTicketId = null;
+let allTickets = [];
+let allCustomers = [];
+let allContacts = [];
+let allAppointments = [];
+let allCancellationRequests = [];
 
-    // Initialize dashboard
-    init();
+// Initialize dashboard when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Admin Dashboard initializing...');
+    
+    // Check admin authentication
+    if (!AdminAuth.getCurrentAdmin()) {
+        console.log('No admin session found, redirecting to login');
+        window.location.href = 'admin-login.html';
+        return;
+    }
+
+    initializeDashboard();
 });
 
-// Global state
-let currentData = {
-    contacts: [],
-    tickets: [],
-    customers: [],
-    appointments: [],
-    appointmentCancellationRequests: []
-};
-
-// Initialize dashboard
-async function init() {
-    setupEventListeners();
-    displayAdminInfo();
-    initializeTabs(); // Ensure clean tab state
-    hideAllModals(); // Ensure all modals are hidden
-    await loadAllData();
-    updateStats();
-}
-
-// Initialize tabs - ensure only the first tab is active
-function initializeTabs() {
-    // Remove active class from all tabs and content
-    document.querySelectorAll('.tab-header').forEach(header => {
-        header.classList.remove('active');
-    });
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Set first tab as active
-    const firstTabHeader = document.querySelector('.tab-header[data-tab="contacts"]');
-    const firstTabContent = document.getElementById('contactsTab');
-    
-    if (firstTabHeader && firstTabContent) {
-        firstTabHeader.classList.add('active');
-        firstTabContent.classList.add('active');
+// Initialize the dashboard
+async function initializeDashboard() {
+    try {
+        // Setup UI components
+        setupEventHandlers();
+        
+        // Load admin info
+        await loadAdminInfo();
+        
+        // Load initial data
+        await loadDashboardData();
+        
+        // Set up auto-refresh
+        setupAutoRefresh();
+        
+        console.log('Dashboard initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize dashboard:', error);
+        showNotification('Failed to initialize dashboard', 'error');
     }
 }
 
-// Hide all modals on page load
-function hideAllModals() {
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.style.display = 'none';
+// Setup all event handlers
+function setupEventHandlers() {
+    // Navigation handlers
+    setupNavigationHandlers();
+    
+    // Modal handlers
+    setupModalHandlers();
+    
+    // Form handlers
+    setupFormHandlers();
+    
+    // Search handlers
+    setupSearchHandlers();
+    
+    // Table handlers
+    setupTableHandlers();
+    
+    // Ticket detail handlers
+    setupTicketDetailHandlers();
+}
+
+// Setup navigation event handlers
+function setupNavigationHandlers() {
+    // Sidebar navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const view = this.dataset.view;
+            if (view) {
+                switchView(view);
+            }
+        });
+    });
+    
+    // Sign out
+    document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
+    
+    // Refresh current view
+    document.getElementById('refreshCurrentView')?.addEventListener('click', function() {
+        refreshCurrentView();
     });
 }
 
-// Setup event listeners
-function setupEventListeners() {
-    // Sign out
-    document.getElementById('signOutBtn').addEventListener('click', async function() {
-        if (confirm('Are you sure you want to sign out?')) {
-            await AdminAuth.signOut();
-            window.location.href = 'staff-portal.html';
-        }
-    });
-
-    // Tab switching
-    document.querySelectorAll('.tab-header').forEach(header => {
-        header.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            switchTab(tabName);
-        });
-    });
-
-    // Refresh buttons
-    document.getElementById('refreshContacts').addEventListener('click', () => loadContacts());
-    document.getElementById('refreshTickets').addEventListener('click', () => loadTickets());
-    document.getElementById('refreshCustomers').addEventListener('click', () => loadCustomers());
-    document.getElementById('refreshAppointments').addEventListener('click', () => loadAppointments());
-    document.getElementById('refreshAppointmentRequests').addEventListener('click', () => loadAppointmentCancellationRequests());
-
-    // Create ticket button
-    document.getElementById('createTicketBtn').addEventListener('click', showCreateTicketModal);
-
-    // Modal close handlers
+// Setup modal event handlers
+function setupModalHandlers() {
+    // Modal close buttons
     document.querySelectorAll('.modal-close').forEach(btn => {
         btn.addEventListener('click', function() {
-            this.closest('.modal').style.display = 'none';
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
         });
     });
-
-    // Create ticket form
-    document.getElementById('createTicketForm').addEventListener('submit', handleCreateTicket);
-
+    
     // Close modals when clicking outside
-    window.addEventListener('click', function(event) {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    });
+    
+    // Ticket detail sidebar close
+    document.querySelector('.close-detail-sidebar')?.addEventListener('click', function() {
+        document.getElementById('ticketDetailSidebar').style.display = 'none';
+    });
+}
+
+// Setup form event handlers
+function setupFormHandlers() {
+    // Create ticket form
+    const createTicketForm = document.getElementById('createTicketForm');
+    if (createTicketForm) {
+        createTicketForm.addEventListener('submit', handleCreateTicket);
+    }
+    
+    // Create ticket button
+    document.getElementById('createTicketBtn')?.addEventListener('click', function() {
+        showCreateTicketModal();
+    });
+    
+    // Reply form
+    const replyForm = document.getElementById('replyForm');
+    if (replyForm) {
+        replyForm.addEventListener('submit', handleReplySubmit);
+    }
+    
+    // Reply type buttons
+    document.querySelectorAll('.reply-type-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.reply-type-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// Setup search handlers
+function setupSearchHandlers() {
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch) {
+        globalSearch.addEventListener('input', debounce(handleGlobalSearch, 300));
+    }
+    
+    // Filter handlers
+    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+    document.getElementById('priorityFilter')?.addEventListener('change', applyFilters);
+    document.getElementById('sortBy')?.addEventListener('change', applySorting);
+}
+
+// Setup table handlers
+function setupTableHandlers() {
+    // Select all checkbox
+    document.getElementById('selectAllTickets')?.addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateBulkActions();
+    });
+    
+    // Bulk actions
+    document.getElementById('applyBulkAction')?.addEventListener('click', handleBulkAction);
+}
+
+// Setup ticket detail handlers
+function setupTicketDetailHandlers() {
+    // Property updates
+    document.getElementById('ticketStatusSelect')?.addEventListener('change', function() {
+        updateTicketProperty('status', this.value);
+    });
+    
+    document.getElementById('ticketPrioritySelect')?.addEventListener('change', function() {
+        updateTicketProperty('priority', this.value);
+    });
+    
+    document.getElementById('ticketTypeSelect')?.addEventListener('change', function() {
+        updateTicketProperty('type', this.value);
+    });
+    
+    // Tag input
+    document.getElementById('addTagInput')?.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            addTicketTag(this.value.trim());
+            this.value = '';
         }
     });
 }
 
-// Display admin info
-function displayAdminInfo() {
-    const admin = AdminAuth.getCurrentAdmin();
-    if (admin) {
-        document.getElementById('adminName').textContent = admin.full_name;
+// Load admin information
+async function loadAdminInfo() {
+    try {
+        const admin = AdminAuth.getCurrentAdmin();
+        if (admin && admin.name) {
+            document.getElementById('adminName').textContent = admin.name;
+        }
+    } catch (error) {
+        console.error('Error loading admin info:', error);
     }
 }
 
-// Load all data
-async function loadAllData() {
-    await Promise.all([
-        loadContacts(),
-        loadTickets(),
-        loadCustomers(),
-        loadAppointments(),
-        loadAppointmentCancellationRequests()
-    ]);
+// Load all dashboard data
+async function loadDashboardData() {
+    try {
+        showLoading();
+        
+        // Load all data in parallel
+        const [tickets, customers, contacts, appointments, cancellationRequests] = await Promise.all([
+            AdminDB.tickets.getAll(),
+            AdminDB.customers.getAll(),
+            AdminDB.contacts.getAll(),
+            AdminDB.appointments.getAll(),
+            AdminDB.appointmentCancellationRequests.getAll()
+        ]);
+        
+        // Store data globally
+        allTickets = tickets || [];
+        allCustomers = customers || [];
+        allContacts = contacts || [];
+        allAppointments = appointments || [];
+        allCancellationRequests = cancellationRequests || [];
+        
+        // Update UI
+        updateDashboardStats();
+        updateSidebarCounts();
+        updateCurrentView();
+        
+        // Load customers into create ticket dropdown
+        loadCustomerDropdown();
+        
+        hideLoading();
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        showNotification('Failed to load dashboard data', 'error');
+        hideLoading();
+    }
 }
 
-// Load contact submissions
-async function loadContacts() {
-    showLoading('contactsTableBody');
+// Update dashboard statistics
+function updateDashboardStats() {
+    const activeTickets = allTickets.filter(t => t.status !== 'completed' && t.status !== 'cancelled').length;
+    const pendingContacts = allContacts.filter(c => c.status === 'pending').length;
     
-    const result = await AdminDB.contactSubmissions.getAll();
-    if (result.success) {
-        currentData.contacts = result.data;
-        renderContactsTable();
-    } else {
-        showError('contactsTableBody', 'Failed to load contact submissions');
-    }
+    // Update sidebar stats
+    document.getElementById('sidebarActiveTickets').textContent = activeTickets;
+    document.getElementById('sidebarPendingContacts').textContent = pendingContacts;
 }
 
-// Load tickets
-async function loadTickets() {
-    showLoading('ticketsTableBody');
-    
-    const result = await AdminDB.tickets.getAll();
-    if (result.success) {
-        currentData.tickets = result.data;
-        renderTicketsTable();
-    } else {
-        showError('ticketsTableBody', 'Failed to load tickets');
-    }
-}
-
-// Load customers
-async function loadCustomers() {
-    showLoading('customersTableBody');
-    
-    const result = await AdminDB.customers.getAll();
-    if (result.success) {
-        currentData.customers = result.data;
-        renderCustomersTable();
-    } else {
-        showError('customersTableBody', 'Failed to load customers');
-    }
-}
-
-// Load appointments
-async function loadAppointments() {
-    showLoading('appointmentsTableBody');
-    
-    const result = await AdminDB.appointments.getAll();
-    if (result.success) {
-        currentData.appointments = result.data;
-        renderAppointmentsTable();
-    } else {
-        showError('appointmentsTableBody', 'Failed to load appointments');
-    }
-}
-
-// Load appointment cancellation requests
-async function loadAppointmentCancellationRequests() {
-    showLoading('appointmentRequestsTableBody');
-    
-    const result = await AdminDB.appointmentCancellationRequests.getAll();
-    if (result.success) {
-        currentData.appointmentCancellationRequests = result.data;
-        renderAppointmentRequestsTable();
-    } else {
-        showError('appointmentRequestsTableBody', 'Failed to load appointment cancellation requests');
-    }
-}
-
-// Update dashboard stats
-function updateStats() {
-    // Pending contacts
-    const pendingContacts = currentData.contacts.filter(c => !c.processed).length;
-    document.getElementById('pendingContactsCount').textContent = pendingContacts;
-
-    // Active tickets
-    const activeTickets = currentData.tickets.filter(t => t.status !== 'closed').length;
-    document.getElementById('activeTicketsCount').textContent = activeTickets;
-
-    // Upcoming appointments
+// Update sidebar counts
+function updateSidebarCounts() {
     const now = new Date();
-    const upcomingAppointments = currentData.appointments.filter(a => 
-        new Date(a.appointment_date) > now && a.status !== 'cancelled'
-    ).length;
+    
+    // Ticket counts
+    const unsolvedTickets = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress').length;
+    const unassignedTickets = allTickets.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'cancelled').length;
+    const recentlySolved = allTickets.filter(t => {
+        if (t.status !== 'completed') return false;
+        const completedDate = new Date(t.completed_at || t.updated_at);
+        const daysDiff = (now - completedDate) / (1000 * 60 * 60 * 24);
+        return daysDiff <= 7;
+    }).length;
+    const pendingTickets = allTickets.filter(t => t.status === 'new').length;
+    
+    // Contact and customer counts
+    const contactSubmissions = allContacts.filter(c => c.status === 'pending').length;
+    const allCustomersCount = allCustomers.length;
+    
+    // Appointment counts
+    const upcomingAppointments = allAppointments.filter(a => {
+        const appointmentDate = new Date(a.appointment_date + 'T' + a.appointment_time);
+        return appointmentDate > now && a.status !== 'cancelled';
+    }).length;
+    const cancellationRequestsCount = allCancellationRequests.filter(r => r.status === 'pending').length;
+    const allAppointmentsCount = allAppointments.length;
+    
+    // Update counts in sidebar
+    document.getElementById('unsolvedTicketsCount').textContent = unsolvedTickets;
+    document.getElementById('unassignedTicketsCount').textContent = unassignedTickets;
+    document.getElementById('allTicketsCount').textContent = allTickets.length;
+    document.getElementById('recentlySolvedCount').textContent = recentlySolved;
+    document.getElementById('pendingTicketsCount').textContent = pendingTickets;
+    document.getElementById('contactSubmissionsCount').textContent = contactSubmissions;
+    document.getElementById('allCustomersCount').textContent = allCustomersCount;
     document.getElementById('upcomingAppointmentsCount').textContent = upcomingAppointments;
-
-    // Total customers
-    document.getElementById('totalCustomersCount').textContent = currentData.customers.length;
-
-    // Pending requests
-    const pendingRequests = currentData.appointmentCancellationRequests.filter(r => r.status === 'requested').length;
-    document.getElementById('pendingRequestsCount').textContent = pendingRequests;
+    document.getElementById('cancellationRequestsCount').textContent = cancellationRequestsCount;
+    document.getElementById('allAppointmentsCount').textContent = allAppointmentsCount;
 }
 
-// Switch tabs
-function switchTab(tabName) {
-    // Update tab headers
-    document.querySelectorAll('.tab-header').forEach(header => {
-        header.classList.remove('active');
+// Switch between views
+function switchView(view) {
+    currentView = view;
+    
+    // Update active navigation item
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.view === view) {
+            item.classList.add('active');
+        }
     });
-    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    
+    // Update view title and content
+    updateCurrentView();
+}
 
-    // Update tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
+// Update current view content
+function updateCurrentView() {
+    const viewTitle = document.getElementById('currentViewTitle');
+    const viewCount = document.getElementById('currentViewCount');
+    
+    // Hide all list views
+    document.querySelectorAll('.list-view').forEach(view => {
+        view.classList.remove('active');
     });
-    document.getElementById(tabName + 'Tab').classList.add('active');
-
-    // Load data for the active tab if needed
-    switch(tabName) {
-        case 'contacts':
-            if (currentData.contacts.length === 0) loadContacts();
+    
+    let filteredData = [];
+    let viewTitleText = '';
+    let countText = '';
+    
+    switch (currentView) {
+        case 'unsolved-tickets':
+            filteredData = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress');
+            viewTitleText = 'Your unsolved tickets';
+            countText = `${filteredData.length} tickets`;
+            showTicketListView(filteredData);
             break;
-        case 'tickets':
-            if (currentData.tickets.length === 0) loadTickets();
+            
+        case 'unassigned-tickets':
+            filteredData = allTickets.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'cancelled');
+            viewTitleText = 'Unassigned tickets';
+            countText = `${filteredData.length} tickets`;
+            showTicketListView(filteredData);
             break;
-        case 'customers':
-            if (currentData.customers.length === 0) loadCustomers();
+            
+        case 'all-tickets':
+            filteredData = allTickets;
+            viewTitleText = 'All tickets';
+            countText = `${filteredData.length} tickets`;
+            showTicketListView(filteredData);
             break;
-        case 'appointments':
-            if (currentData.appointments.length === 0) loadAppointments();
+            
+        case 'recently-solved':
+            const now = new Date();
+            filteredData = allTickets.filter(t => {
+                if (t.status !== 'completed') return false;
+                const completedDate = new Date(t.completed_at || t.updated_at);
+                const daysDiff = (now - completedDate) / (1000 * 60 * 60 * 24);
+                return daysDiff <= 7;
+            });
+            viewTitleText = 'Recently solved tickets';
+            countText = `${filteredData.length} tickets`;
+            showTicketListView(filteredData);
             break;
-        case 'appointment-requests':
-            if (currentData.appointmentCancellationRequests.length === 0) loadAppointmentCancellationRequests();
+            
+        case 'pending-tickets':
+            filteredData = allTickets.filter(t => t.status === 'new');
+            viewTitleText = 'Pending tickets';
+            countText = `${filteredData.length} tickets`;
+            showTicketListView(filteredData);
+            break;
+            
+        case 'contact-submissions':
+            filteredData = allContacts;
+            viewTitleText = 'Contact submissions';
+            countText = `${filteredData.length} submissions`;
+            showContactListView(filteredData);
+            break;
+            
+        case 'all-customers':
+            filteredData = allCustomers;
+            viewTitleText = 'All customers';
+            countText = `${filteredData.length} customers`;
+            showCustomerListView(filteredData);
+            break;
+            
+        case 'upcoming-appointments':
+            const upcoming = allAppointments.filter(a => {
+                const appointmentDate = new Date(a.appointment_date + 'T' + a.appointment_time);
+                return appointmentDate > new Date() && a.status !== 'cancelled';
+            });
+            filteredData = upcoming;
+            viewTitleText = 'Upcoming appointments';
+            countText = `${filteredData.length} appointments`;
+            showAppointmentListView(filteredData);
+            break;
+            
+        case 'cancellation-requests':
+            filteredData = allCancellationRequests;
+            viewTitleText = 'Cancellation requests';
+            countText = `${filteredData.length} requests`;
+            showCancellationRequestsView(filteredData);
+            break;
+            
+        case 'all-appointments':
+            filteredData = allAppointments;
+            viewTitleText = 'All appointments';
+            countText = `${filteredData.length} appointments`;
+            showAppointmentListView(filteredData);
             break;
     }
+    
+    viewTitle.textContent = viewTitleText;
+    viewCount.textContent = countText;
 }
 
-// Render contacts table
-function renderContactsTable() {
-    const tbody = document.getElementById('contactsTableBody');
+// Show ticket list view
+function showTicketListView(tickets) {
+    const ticketListView = document.getElementById('ticketListView');
+    const ticketsTableBody = document.getElementById('ticketsTableBody');
+    const emptyState = document.getElementById('emptyState');
     
-    if (currentData.contacts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No contact submissions found</td></tr>';
+    ticketListView.classList.add('active');
+    
+    if (tickets.length === 0) {
+        ticketsTableBody.innerHTML = '';
+        emptyState.style.display = 'flex';
         return;
     }
-
-    tbody.innerHTML = currentData.contacts.map(contact => `
-        <tr>
-            <td>${formatDate(contact.created_at)}</td>
-            <td>${escapeHtml(contact.full_name)}</td>
-            <td>
-                <div>${escapeHtml(contact.email)}</div>
-                <div class="text-secondary">${escapeHtml(contact.phone || 'N/A')}</div>
-            </td>
-            <td>${escapeHtml(contact.service_type || 'General')}</td>
-            <td>
-                <span class="status-badge ${contact.processed ? 'status-completed' : 'status-pending'}">
-                    ${contact.processed ? 'Processed' : 'Pending'}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="viewContactDetails('${contact.id}')" title="View Details">
+    
+    emptyState.style.display = 'none';
+    
+    ticketsTableBody.innerHTML = tickets.map(ticket => {
+        const customer = allCustomers.find(c => c.id === ticket.customer_id);
+        const customerName = customer ? customer.name : 'Unknown Customer';
+        const customerEmail = customer ? customer.email : '';
+        
+        const createdDate = new Date(ticket.created_at);
+        const timeAgo = getTimeAgo(createdDate);
+        
+        const typeClass = ticket.service_type ? `type-${ticket.service_type.toLowerCase().replace(/\s+/g, '-')}` : 'type-question';
+        
+        return `
+            <tr data-ticket-id="${ticket.id}" class="ticket-row">
+                <td class="checkbox-col">
+                    <input type="checkbox" value="${ticket.id}">
+                </td>
+                <td class="id-col">#${ticket.id}</td>
+                <td class="subject-col">
+                    <a href="#" class="ticket-subject" onclick="openTicketDetail(${ticket.id})">${escapeHtml(ticket.title)}</a>
+                </td>
+                <td class="requester-col">
+                    <div class="requester-info">
+                        <div class="requester-name">${escapeHtml(customerName)}</div>
+                        <div class="requester-email">${escapeHtml(customerEmail)}</div>
+                    </div>
+                </td>
+                <td class="requested-col">${timeAgo}</td>
+                <td class="type-col">
+                    <span class="type-badge ${typeClass}">${ticket.service_type || 'Question'}</span>
+                </td>
+                <td class="priority-col">
+                    <span class="priority-badge priority-${ticket.priority}">${capitalizeFirst(ticket.priority)}</span>
+                </td>
+                <td class="status-col">
+                    <span class="status-badge status-${ticket.status}">${getStatusDisplay(ticket.status)}</span>
+                </td>
+                <td class="actions-col">
+                    <button class="btn-icon" onclick="openTicketDetail(${ticket.id})" title="View ticket">
                         <i class="ph-light ph-eye"></i>
                     </button>
-                    ${!contact.processed ? `
-                        <button class="btn-icon" onclick="createTicketFromContact('${contact.id}')" title="Create Ticket">
-                            <i class="ph-light ph-ticket"></i>
-                        </button>
-                        <button class="btn-icon" onclick="markContactProcessed('${contact.id}')" title="Mark Processed">
-                            <i class="ph-light ph-check"></i>
-                        </button>
-                    ` : ''}
-                </div>
-            </td>
-        </tr>
-    `).join('');
-}
-
-// Render tickets table
-function renderTicketsTable() {
-    const tbody = document.getElementById('ticketsTableBody');
-    
-    if (currentData.tickets.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="no-data">No tickets found</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = currentData.tickets.map(ticket => `
-        <tr>
-            <td>#${ticket.id.slice(-8)}</td>
-            <td>${escapeHtml(ticket.customers?.full_name || 'Unknown')}</td>
-            <td>${escapeHtml(ticket.title)}</td>
-            <td>
-                <span class="status-badge status-${ticket.status}">
-                    ${capitalizeFirst(ticket.status)}
-                </span>
-            </td>
-            <td>
-                <span class="priority-badge priority-${ticket.priority}">
-                    ${capitalizeFirst(ticket.priority)}
-                </span>
-            </td>
-            <td>${formatDate(ticket.created_at)}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="viewTicketDetails('${ticket.id}')" title="View Details">
-                        <i class="ph-light ph-eye"></i>
-                    </button>
-                    <button class="btn-icon" onclick="editTicket('${ticket.id}')" title="Edit Ticket">
+                    <button class="btn-icon" onclick="editTicket(${ticket.id})" title="Edit ticket">
                         <i class="ph-light ph-pencil-simple"></i>
                     </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Add click handlers for rows
+    document.querySelectorAll('.ticket-row').forEach(row => {
+        row.addEventListener('click', function(e) {
+            if (e.target.type !== 'checkbox' && !e.target.closest('button')) {
+                const ticketId = this.dataset.ticketId;
+                openTicketDetail(parseInt(ticketId));
+            }
+        });
+    });
+    
+    // Add checkbox change handlers
+    document.querySelectorAll('.tickets-table tbody input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
 }
 
-// Render customers table
-function renderCustomersTable() {
-    const tbody = document.getElementById('customersTableBody');
-    
-    if (currentData.customers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No customers found</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = currentData.customers.map(customer => `
-        <tr>
-            <td>${escapeHtml(customer.full_name)}</td>
-            <td>${escapeHtml(customer.email)}</td>
-            <td>${escapeHtml(customer.phone || 'N/A')}</td>
-            <td>${escapeHtml(customer.address || 'N/A')}</td>
-            <td>${formatDate(customer.created_at)}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="viewCustomerTickets('${customer.id}')" title="View Tickets">
-                        <i class="ph-light ph-ticket"></i>
-                    </button>
-                    <button class="btn-icon" onclick="editCustomer('${customer.id}')" title="Edit Customer">
-                        <i class="ph-light ph-pencil-simple"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+// Show contact list view (placeholder)
+function showContactListView(contacts) {
+    // For now, redirect to ticket view - you can implement this later
+    console.log('Contact list view - showing', contacts.length, 'contacts');
+    // Implementation would be similar to ticket list view
 }
 
-// Render appointments table
-function renderAppointmentsTable() {
-    const tbody = document.getElementById('appointmentsTableBody');
-    
-    if (currentData.appointments.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No appointments found</td></tr>';
-        return;
-    }
-
-    tbody.innerHTML = currentData.appointments.map(appointment => `
-        <tr>
-            <td>
-                <div>${formatDateTime(appointment.appointment_date)}</div>
-                <div class="text-secondary">${appointment.duration_minutes || 60} minutes</div>
-            </td>
-            <td>${escapeHtml(appointment.customers?.full_name || 'Unknown')}</td>
-            <td>${escapeHtml(appointment.service_type || 'N/A')}</td>
-            <td>
-                ${appointment.service_tickets ? 
-                    `<a href="#" onclick="viewTicketDetails('${appointment.ticket_id}')">#${appointment.service_tickets.id.slice(-8)}</a>` : 
-                    'N/A'
-                }
-            </td>
-            <td>
-                <span class="status-badge status-${appointment.status}">
-                    ${capitalizeFirst(appointment.status)}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-icon" onclick="editAppointment('${appointment.id}')" title="Edit Appointment">
-                        <i class="ph-light ph-pencil-simple"></i>
-                    </button>
-                    ${appointment.status === 'cancelled' ? `
-                        <button class="btn-icon btn-danger" onclick="deleteAppointment('${appointment.id}')" title="Delete Appointment">
-                            <i class="ph-light ph-trash"></i>
-                        </button>
-                    ` : `
-                        <button class="btn-icon" onclick="cancelAppointment('${appointment.id}')" title="Cancel">
-                            <i class="ph-light ph-x"></i>
-                        </button>
-                    `}
-                </div>
-            </td>
-        </tr>
-    `).join('');
+// Show customer list view (placeholder)
+function showCustomerListView(customers) {
+    // For now, redirect to ticket view - you can implement this later
+    console.log('Customer list view - showing', customers.length, 'customers');
+    // Implementation would be similar to ticket list view
 }
 
-// Render appointment requests table
-function renderAppointmentRequestsTable() {
-    const tbody = document.getElementById('appointmentRequestsTableBody');
+// Show appointment list view (placeholder)
+function showAppointmentListView(appointments) {
+    // For now, redirect to ticket view - you can implement this later
+    console.log('Appointment list view - showing', appointments.length, 'appointments');
+    // Implementation would be similar to ticket list view
+}
+
+// Show cancellation requests view (placeholder)
+function showCancellationRequestsView(requests) {
+    // For now, redirect to ticket view - you can implement this later
+    console.log('Cancellation requests view - showing', requests.length, 'requests');
+    // Implementation would be similar to ticket list view
+}
+
+// Open ticket detail modal
+async function openTicketDetail(ticketId) {
+    try {
+        currentTicketId = ticketId;
+        const ticket = allTickets.find(t => t.id === ticketId);
+        const customer = allCustomers.find(c => c.id === ticket.customer_id);
+        
+        if (!ticket) {
+            showNotification('Ticket not found', 'error');
+            return;
+        }
+        
+        // Update modal content
+        document.getElementById('modalTicketSubject').textContent = ticket.title;
+        document.getElementById('modalTicketId').textContent = `#${ticket.id}`;
+        document.getElementById('modalTicketCreated').textContent = `Created ${getTimeAgo(new Date(ticket.created_at))}`;
+        document.getElementById('modalTicketStatus').textContent = getStatusDisplay(ticket.status);
+        document.getElementById('modalTicketPriority').textContent = capitalizeFirst(ticket.priority);
+        document.getElementById('modalTicketType').textContent = ticket.service_type || 'Question';
+        document.getElementById('modalTicketCreatedDate').textContent = getTimeAgo(new Date(ticket.created_at));
+        
+        // Update customer info
+        if (customer) {
+            document.getElementById('modalCustomerName').textContent = customer.name;
+            document.getElementById('modalCustomerEmail').textContent = customer.email;
+            document.getElementById('modalCustomerPhone').textContent = customer.phone || 'N/A';
+            document.getElementById('modalCustomerLocation').textContent = customer.address || 'N/A';
+        }
+        
+        // Load conversation
+        await loadTicketConversation(ticketId);
+        
+        // Show modal
+        document.getElementById('ticketDetailModal').style.display = 'flex';
+        
+    } catch (error) {
+        console.error('Error opening ticket detail:', error);
+        showNotification('Failed to load ticket details', 'error');
+    }
+}
+
+// Load ticket conversation
+async function loadTicketConversation(ticketId) {
+    try {
+        const messages = await AdminDB.messages.getByTicketId(ticketId);
+        const conversationDiv = document.getElementById('conversationMessages');
+        
+        if (!messages || messages.length === 0) {
+            conversationDiv.innerHTML = `
+                <div class="conversation-message staff-message">
+                    <div class="message-header">
+                        <span class="message-author">System</span>
+                        <span class="message-time">Ticket created</span>
+                    </div>
+                    <div class="message-content">
+                        This ticket was created and is ready for your response.
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        conversationDiv.innerHTML = messages.map(message => {
+            const isFromStaff = message.is_from_staff;
+            const isInternal = message.is_internal;
+            const messageClass = isInternal ? 'internal-message' : (isFromStaff ? 'staff-message' : 'customer-message');
+            
+            return `
+                <div class="conversation-message ${messageClass}">
+                    <div class="message-header">
+                        <span class="message-author">
+                            ${escapeHtml(isFromStaff ? (message.staff_name || 'Staff') : message.customer_name || 'Customer')}
+                            ${isInternal ? '<span class="internal-badge">Internal</span>' : ''}
+                        </span>
+                        <span class="message-time">${getTimeAgo(new Date(message.created_at))}</span>
+                    </div>
+                    <div class="message-content">
+                        ${escapeHtml(message.message).replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Scroll to bottom
+        conversationDiv.scrollTop = conversationDiv.scrollHeight;
+        
+    } catch (error) {
+        console.error('Error loading conversation:', error);
+        showNotification('Failed to load conversation', 'error');
+    }
+}
+
+// Handle reply form submission
+async function handleReplySubmit(e) {
+    e.preventDefault();
     
-    if (currentData.appointmentCancellationRequests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="no-data">No appointment cancellation requests found</td></tr>';
+    if (!currentTicketId) {
+        showNotification('No ticket selected', 'error');
         return;
     }
-
-    tbody.innerHTML = currentData.appointmentCancellationRequests.map(request => `
-        <tr>
-            <td>
-                <div>${formatDateTime(request.appointments?.appointment_date)} at ${formatTime(request.appointments?.appointment_time)}</div>
-                <div class="text-secondary">Duration: ${request.appointments?.duration_minutes || 60} minutes</div>
-            </td>
-            <td>${escapeHtml(request.customers?.full_name || 'Unknown')}</td>
-            <td>${escapeHtml(request.reason || 'No reason provided')}</td>
-            <td>
-                <span class="status-badge status-${request.status}">
-                    ${capitalizeFirst(request.status)}
-                </span>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    ${request.status === 'requested' ? `
-                        <button class="btn-icon btn-success" onclick="approveCancellationRequest('${request.id}')" title="Approve Cancellation">
-                            <i class="ph-light ph-check"></i>
-                        </button>
-                        <button class="btn-icon btn-danger" onclick="rejectCancellationRequest('${request.id}')" title="Reject Cancellation">
-                            <i class="ph-light ph-x"></i>
-                        </button>
-                    ` : `
-                        <button class="btn-icon" onclick="viewCancellationRequestDetails('${request.id}')" title="View Details">
-                            <i class="ph-light ph-eye"></i>
-                        </button>
-                    `}
-                </div>
-            </td>
-        </tr>
-    `).join('');
+    
+    const message = document.getElementById('replyMessage').value.trim();
+    if (!message) {
+        showNotification('Please enter a message', 'error');
+        return;
+    }
+    
+    const isInternal = document.querySelector('.reply-type-btn.active').dataset.type === 'internal';
+    const solveTicket = document.getElementById('solveTicket').checked;
+    
+    try {
+        const admin = AdminAuth.getCurrentAdmin();
+        
+        // Create message
+        await AdminDB.messages.create({
+            ticket_id: currentTicketId,
+            message: message,
+            is_from_staff: true,
+            is_internal: isInternal,
+            staff_name: admin.name || 'Staff'
+        });
+        
+        // Update ticket status if solving
+        if (solveTicket) {
+            await AdminDB.tickets.update(currentTicketId, {
+                status: 'completed',
+                completed_at: new Date().toISOString()
+            });
+        }
+        
+        // Clear form
+        document.getElementById('replyMessage').value = '';
+        document.getElementById('solveTicket').checked = false;
+        
+        // Reload conversation and data
+        await loadTicketConversation(currentTicketId);
+        await loadDashboardData();
+        
+        showNotification('Reply sent successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error sending reply:', error);
+        showNotification('Failed to send reply', 'error');
+    }
 }
 
 // Show create ticket modal
 async function showCreateTicketModal() {
-    // Load customers for dropdown
-    const customerSelect = document.getElementById('ticketCustomer');
-    customerSelect.innerHTML = '<option value="">Select Customer</option>';
-    
-    currentData.customers.forEach(customer => {
-        customerSelect.innerHTML += `<option value="${customer.id}">${escapeHtml(customer.full_name)} (${escapeHtml(customer.email)})</option>`;
-    });
-
+    await loadCustomerDropdown();
     document.getElementById('createTicketModal').style.display = 'flex';
 }
 
-// Handle create ticket form
+// Load customers into dropdown
+async function loadCustomerDropdown() {
+    const customerSelect = document.getElementById('ticketCustomer');
+    if (!customerSelect) return;
+    
+    customerSelect.innerHTML = '<option value="">Select Customer</option>';
+    
+    allCustomers.forEach(customer => {
+        const option = document.createElement('option');
+        option.value = customer.id;
+        option.textContent = `${customer.name} (${customer.email})`;
+        customerSelect.appendChild(option);
+    });
+}
+
+// Handle create ticket form submission
 async function handleCreateTicket(e) {
     e.preventDefault();
     
     console.log('Creating ticket...');
     
-    // Get the current admin user
     const admin = AdminAuth.getCurrentAdmin();
     
     const formData = {
@@ -472,688 +693,293 @@ async function handleCreateTicket(e) {
         description: document.getElementById('ticketDescription').value.trim(),
         priority: document.getElementById('ticketPriority').value,
         status: document.getElementById('ticketStatus').value,
-        created_by_staff: true,
-        staff_notes: document.getElementById('ticketNotes').value.trim() || null
+        service_type: document.getElementById('ticketType').value
     };
 
-    // Add service type to staff notes if provided
-    const serviceType = document.getElementById('ticketType').value;
-    if (serviceType && serviceType !== 'Other') {
-        const serviceTypeNote = `Service Type: ${serviceType}`;
-        formData.staff_notes = formData.staff_notes 
-            ? `${serviceTypeNote}\n\n${formData.staff_notes}`
-            : serviceTypeNote;
+    // Add staff notes to description if provided
+    const staffNotes = document.getElementById('ticketNotes').value.trim();
+    if (staffNotes) {
+        formData.staff_notes = staffNotes;
     }
 
-    // Add assignment info if admin assigned to themselves
-    const assignToMe = document.getElementById('ticketAssignToMe').checked;
-    if (assignToMe && admin) {
-        const assignmentNote = `Assigned to: ${admin.full_name} (${admin.email})`;
-        formData.staff_notes = formData.staff_notes 
-            ? `${assignmentNote}\n\n${formData.staff_notes}`
-            : assignmentNote;
-    }
-
-    console.log('Form data:', formData);
-
-    // Enhanced validation
-    const errors = [];
-    
+    // Validation
     if (!formData.customer_id) {
-        errors.push('Please select a customer');
-    }
-    if (!formData.title) {
-        errors.push('Please enter a ticket subject/title');
-    }
-    if (formData.title.length < 5) {
-        errors.push('Subject must be at least 5 characters long');
-    }
-    if (!formData.description) {
-        errors.push('Please enter a detailed description');
-    }
-    if (formData.description.length < 20) {
-        errors.push('Description must be at least 20 characters long for proper context');
-    }
-
-    if (errors.length > 0) {
-        showNotification(errors.join('\n'), 'error');
+        showNotification('Please select a customer', 'error');
         return;
     }
-
-    const submitBtn = e.target.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="ph-light ph-circle-notch" style="animation: spin 1s linear infinite;"></i> Creating...';
+    
+    if (formData.title.length < 5) {
+        showNotification('Title must be at least 5 characters long', 'error');
+        return;
+    }
+    
+    if (formData.description.length < 20) {
+        showNotification('Description must be at least 20 characters long', 'error');
+        return;
+    }
 
     try {
-        const result = await AdminDB.tickets.create(formData);
-        console.log('Create ticket result:', result);
+        console.log('Creating ticket with data:', formData);
         
-        if (result.success) {
-            // Close modal and reset form
-            document.getElementById('createTicketModal').style.display = 'none';
-            document.getElementById('createTicketForm').reset();
-            
-            // Show success notification with ticket ID
-            const ticketId = result.data.id.slice(-8);
-            showNotification(`✅ Ticket #${ticketId} created successfully!`, 'success');
-            
-            // Refresh data and stats
-            await loadTickets();
-            updateStats();
-            
-            // Switch to tickets tab to show the new ticket
-            switchTab('tickets');
-            
-            // Optionally auto-open the ticket details
-            setTimeout(() => {
-                viewTicketDetails(result.data.id);
-            }, 500);
-            
-        } else {
-            console.error('Ticket creation failed:', result.error);
-            let errorMessage = 'Failed to create ticket: ' + result.error;
-            
-            // Provide more helpful error messages
-            if (result.error.includes('foreign key')) {
-                errorMessage = 'Selected customer is invalid. Please refresh and try again.';
-            } else if (result.error.includes('check constraint')) {
-                errorMessage = 'Invalid status or priority value. Please contact technical support.';
-            } else if (result.error.includes('not-null')) {
-                errorMessage = 'Missing required information. Please fill in all required fields.';
-            }
-            
-            showNotification(errorMessage, 'error');
+        // Create the ticket
+        const newTicket = await AdminDB.tickets.create(formData);
+        console.log('Ticket created successfully:', newTicket);
+        
+        // Assign to current admin if checkbox is checked
+        if (document.getElementById('ticketAssignToMe').checked) {
+            await AdminDB.tickets.update(newTicket.id, {
+                assigned_to: admin.email
+            });
         }
+        
+        // Close modal and reset form
+        document.getElementById('createTicketModal').style.display = 'none';
+        document.getElementById('createTicketForm').reset();
+        
+        // Refresh data
+        await loadDashboardData();
+        
+        showNotification('Ticket created successfully!', 'success');
+        
+        // Open the new ticket
+        setTimeout(() => {
+            openTicketDetail(newTicket.id);
+        }, 500);
+        
     } catch (error) {
-        console.error('Unexpected error creating ticket:', error);
-        showNotification('Unexpected error: ' + error.message, 'error');
+        console.error('Error creating ticket:', error);
+        let errorMessage = 'Failed to create ticket';
+        
+        if (error.message && error.message.includes('could not find the')) {
+            errorMessage = 'Database schema error. Please run the column fix script first.';
+        } else if (error.message) {
+            errorMessage = error.message;
+        }
+        
+        showNotification(errorMessage, 'error');
     }
-
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = originalText;
 }
 
-// Action functions
-async function viewContactDetails(contactId) {
-    const contact = currentData.contacts.find(c => c.id === contactId);
-    if (!contact) return;
-
-    const content = `
-        <div class="contact-details">
-            <div class="detail-section">
-                <h4>Contact Information</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <label>Name:</label>
-                        <span>${escapeHtml(contact.full_name)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Email:</label>
-                        <span>${escapeHtml(contact.email)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Phone:</label>
-                        <span>${escapeHtml(contact.phone || 'N/A')}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Service Type:</label>
-                        <span>${escapeHtml(contact.service_type || 'General')}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Message</h4>
-                <div class="message-content">
-                    ${escapeHtml(contact.message).replace(/\n/g, '<br>')}
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Submission Details</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <label>Submitted:</label>
-                        <span>${formatDateTime(contact.created_at)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Status:</label>
-                        <span class="status-badge ${contact.processed ? 'status-completed' : 'status-pending'}">
-                            ${contact.processed ? 'Processed' : 'Pending'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            ${!contact.processed ? `
-                <div class="modal-actions">
-                    <button class="btn btn-primary" onclick="createTicketFromContact('${contact.id}')">
-                        <i class="ph-light ph-ticket"></i>
-                        Create Ticket
-                    </button>
-                    <button class="btn btn-secondary" onclick="markContactProcessed('${contact.id}')">
-                        <i class="ph-light ph-check"></i>
-                        Mark Processed
-                    </button>
-                </div>
-            ` : ''}
-        </div>
-    `;
-
-    document.getElementById('contactDetailsContent').innerHTML = content;
-    document.getElementById('contactDetailsModal').style.display = 'flex';
+// Handle global search
+function handleGlobalSearch(searchTerm) {
+    console.log('Searching for:', searchTerm);
+    // Implementation for global search across all data
+    // This would filter the current view based on the search term
 }
 
-async function createTicketFromContact(contactId) {
-    const contact = currentData.contacts.find(c => c.id === contactId);
-    if (!contact) return;
-
-    // Pre-fill create ticket form
-    document.getElementById('ticketTitle').value = `${contact.service_type || 'Service Request'} - ${contact.full_name}`;
-    document.getElementById('ticketDescription').value = contact.message;
+// Apply filters
+function applyFilters() {
+    const statusFilter = document.getElementById('statusFilter')?.value;
+    const priorityFilter = document.getElementById('priorityFilter')?.value;
     
-    // Find customer by email
-    const customer = currentData.customers.find(c => c.email === contact.email);
-    if (customer) {
-        document.getElementById('ticketCustomer').value = customer.id;
-    }
-
-    // Close contact modal and show ticket modal
-    document.getElementById('contactDetailsModal').style.display = 'none';
-    await showCreateTicketModal();
+    // Re-filter current view data
+    updateCurrentView();
 }
 
-async function markContactProcessed(contactId) {
-    if (!confirm('Mark this contact submission as processed?')) return;
-
-    const result = await AdminDB.contactSubmissions.markAsProcessed(contactId);
+// Apply sorting
+function applySorting() {
+    const sortBy = document.getElementById('sortBy')?.value;
     
-    if (result.success) {
-        showNotification('Contact marked as processed', 'success');
-        await loadContacts();
-        updateStats();
-        // Close the modal
-        document.getElementById('contactDetailsModal').style.display = 'none';
+    // Re-sort current view data
+    updateCurrentView();
+}
+
+// Update bulk actions visibility
+function updateBulkActions() {
+    const checkedBoxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]:checked');
+    const bulkActions = document.querySelector('.bulk-actions');
+    
+    if (checkedBoxes.length > 0) {
+        bulkActions.style.display = 'flex';
     } else {
-        showNotification('Failed to update contact', 'error');
+        bulkActions.style.display = 'none';
     }
 }
 
-// Ticket functions - now fully implemented
-async function viewTicketDetails(ticketId) {
-    const ticket = currentData.tickets.find(t => t.id === ticketId);
-    if (!ticket) {
-        showNotification('Ticket not found', 'error');
+// Handle bulk actions
+function handleBulkAction() {
+    const action = document.querySelector('.bulk-action-select').value;
+    const checkedBoxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]:checked');
+    const ticketIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+    
+    if (!action || ticketIds.length === 0) {
+        showNotification('Please select an action and tickets', 'error');
         return;
     }
+    
+    console.log('Bulk action:', action, 'on tickets:', ticketIds);
+    // Implementation for bulk actions
+}
 
-    // Load ticket messages
-    const messagesResult = await AdminDB.messages.getByTicketId(ticketId);
-    const messages = messagesResult.success ? messagesResult.data : [];
+// Update ticket property
+async function updateTicketProperty(property, value) {
+    if (!currentTicketId) return;
+    
+    try {
+        const updateData = {};
+        updateData[property] = value;
+        
+        if (property === 'status' && value === 'completed') {
+            updateData.completed_at = new Date().toISOString();
+        }
+        
+        await AdminDB.tickets.update(currentTicketId, updateData);
+        
+        // Update local data
+        const ticketIndex = allTickets.findIndex(t => t.id === currentTicketId);
+        if (ticketIndex !== -1) {
+            Object.assign(allTickets[ticketIndex], updateData);
+        }
+        
+        // Update UI
+        updateDashboardStats();
+        updateSidebarCounts();
+        updateCurrentView();
+        
+        showNotification(`Ticket ${property} updated`, 'success');
+        
+    } catch (error) {
+        console.error(`Error updating ticket ${property}:`, error);
+        showNotification(`Failed to update ticket ${property}`, 'error');
+    }
+}
 
-    const content = `
-        <div class="ticket-details">
-            <div class="detail-section">
-                <h4>Ticket Information</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <label>Ticket ID:</label>
-                        <span>#${ticket.id.slice(-8)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Customer:</label>
-                        <span>${escapeHtml(ticket.customers?.full_name || 'Unknown')}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Status:</label>
-                        <span class="status-badge status-${ticket.status}">
-                            ${capitalizeFirst(ticket.status)}
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Priority:</label>
-                        <span class="priority-badge priority-${ticket.priority}">
-                            ${capitalizeFirst(ticket.priority)}
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Created:</label>
-                        <span>${formatDateTime(ticket.created_at)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Updated:</label>
-                        <span>${formatDateTime(ticket.updated_at)}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Description</h4>
-                <div class="message-content">
-                    ${escapeHtml(ticket.description).replace(/\n/g, '<br>')}
-                </div>
-            </div>
-            ${ticket.staff_notes ? `
-                <div class="detail-section">
-                    <h4>Staff Notes</h4>
-                    <div class="message-content">
-                        ${escapeHtml(ticket.staff_notes).replace(/\n/g, '<br>')}
-                    </div>
-                </div>
-            ` : ''}
-            <div class="detail-section">
-                <h4>Messages (${messages.length})</h4>
-                <div class="messages-list">
-                    ${messages.length > 0 ? messages.map(msg => `
-                        <div class="message ${msg.is_from_staff ? 'staff-message' : 'customer-message'}">
-                            <div class="message-header">
-                                <strong>${escapeHtml(msg.is_from_staff ? (msg.staff_name || 'Staff') : ticket.customers?.full_name || 'Customer')}</strong>
-                                <span class="message-time">${formatDateTime(msg.created_at)}</span>
-                                ${msg.is_internal ? '<span class="internal-badge">Internal</span>' : ''}
-                            </div>
-                            <div class="message-content">
-                                ${escapeHtml(msg.message).replace(/\n/g, '<br>')}
-                            </div>
-                        </div>
-                    `).join('') : '<p class="no-messages">No messages yet</p>'}
-                </div>
-                
-                <!-- Add Message Form -->
-                <div class="message-form">
-                    <form id="addMessageForm" onsubmit="addTicketMessage(event, '${ticket.id}')">
-                        <div class="form-group">
-                            <textarea id="newMessage" placeholder="Type your message..." required></textarea>
-                        </div>
-                        <div class="form-row">
-                            <label>
-                                <input type="checkbox" id="isInternal"> Internal message (not visible to customer)
-                            </label>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="ph-light ph-paper-plane"></i>
-                                Send Message
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="editTicket('${ticket.id}')">
-                    <i class="ph-light ph-pencil-simple"></i>
-                    Edit Ticket
-                </button>
-                <button class="btn btn-secondary" onclick="document.getElementById('ticketDetailsModal').style.display = 'none'">
-                    Close
-                </button>
-            </div>
-        </div>
+// Add ticket tag
+function addTicketTag(tag) {
+    if (!tag || !currentTicketId) return;
+    
+    const tagsContainer = document.getElementById('ticketTags');
+    const tagElement = document.createElement('span');
+    tagElement.className = 'tag';
+    tagElement.innerHTML = `
+        ${escapeHtml(tag)}
+        <button class="tag-remove" onclick="removeTicketTag(this)">×</button>
     `;
-
-    document.getElementById('ticketDetailsContent').innerHTML = content;
-    document.getElementById('ticketDetailsModal').style.display = 'flex';
+    tagsContainer.appendChild(tagElement);
 }
 
-async function addTicketMessage(event, ticketId) {
-    event.preventDefault();
-    
-    const messageText = document.getElementById('newMessage').value;
-    const isInternal = document.getElementById('isInternal').checked;
-    
-    if (!messageText.trim()) {
-        showNotification('Please enter a message', 'error');
-        return;
-    }
+// Remove ticket tag
+function removeTicketTag(button) {
+    button.closest('.tag').remove();
+}
 
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+// Refresh current view
+async function refreshCurrentView() {
+    await loadDashboardData();
+    showNotification('Data refreshed', 'success');
+}
 
-    const result = await AdminDB.messages.create({
-        ticket_id: ticketId,
-        message: messageText
-    }, isInternal);
-
-    if (result.success) {
-        showNotification('Message sent successfully', 'success');
-        // Refresh the ticket details view
-        await viewTicketDetails(ticketId);
-    } else {
-        showNotification('Failed to send message: ' + result.error, 'error');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Send Message';
+// Handle sign out
+function handleSignOut() {
+    if (confirm('Are you sure you want to sign out?')) {
+        AdminAuth.signOut();
+        window.location.href = 'admin-login.html';
     }
 }
 
-async function editTicket(ticketId) {
-    const ticket = currentData.tickets.find(t => t.id === ticketId);
-    if (!ticket) return;
-
-    const newStatus = prompt(
-        `Current status: ${ticket.status}\nEnter new status (open, in-progress, resolved, closed):`,
-        ticket.status
-    );
-    
-    if (newStatus && ['open', 'in-progress', 'resolved', 'closed'].includes(newStatus.toLowerCase())) {
-        const result = await AdminDB.tickets.update(ticketId, { 
-            status: newStatus.toLowerCase(),
-            updated_at: new Date().toISOString()
-        });
-        
-        if (result.success) {
-            showNotification('Ticket updated successfully', 'success');
-            await loadTickets();
-            updateStats();
-            // Refresh details view if open
-            document.getElementById('ticketDetailsModal').style.display = 'none';
-        } else {
-            showNotification('Failed to update ticket: ' + result.error, 'error');
+// Setup auto-refresh
+function setupAutoRefresh() {
+    // Refresh data every 5 minutes
+    setInterval(async () => {
+        try {
+            await loadDashboardData();
+        } catch (error) {
+            console.error('Auto-refresh failed:', error);
         }
-    } else if (newStatus !== null) {
-        showNotification('Invalid status. Use: open, in-progress, resolved, or closed', 'error');
-    }
-}
-
-async function viewCustomerTickets(customerId) {
-    const customer = currentData.customers.find(c => c.id === customerId);
-    if (!customer) return;
-
-    const customerTickets = currentData.tickets.filter(t => t.customer_id === customerId);
-    
-    const content = `
-        <div class="customer-details">
-            <div class="detail-section">
-                <h4>Customer Information</h4>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <label>Name:</label>
-                        <span>${escapeHtml(customer.full_name)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Email:</label>
-                        <span>${escapeHtml(customer.email)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Phone:</label>
-                        <span>${escapeHtml(customer.phone || 'N/A')}</span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Address:</label>
-                        <span>${escapeHtml(customer.address || 'N/A')}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="detail-section">
-                <h4>Service Tickets (${customerTickets.length})</h4>
-                ${customerTickets.length > 0 ? `
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Title</th>
-                                    <th>Status</th>
-                                    <th>Priority</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${customerTickets.map(ticket => `
-                                    <tr>
-                                        <td>#${ticket.id.slice(-8)}</td>
-                                        <td>${escapeHtml(ticket.title)}</td>
-                                        <td>
-                                            <span class="status-badge status-${ticket.status}">
-                                                ${capitalizeFirst(ticket.status)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span class="priority-badge priority-${ticket.priority}">
-                                                ${capitalizeFirst(ticket.priority)}
-                                            </span>
-                                        </td>
-                                        <td>${formatDate(ticket.created_at)}</td>
-                                        <td>
-                                            <button class="btn-icon" onclick="viewTicketDetails('${ticket.id}')" title="View Details">
-                                                <i class="ph-light ph-eye"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                ` : '<p class="no-data">No tickets found for this customer</p>'}
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-primary" onclick="createTicketForCustomer('${customer.id}')">
-                    <i class="ph-light ph-plus"></i>
-                    Create New Ticket
-                </button>
-                <button class="btn btn-secondary" onclick="editCustomer('${customer.id}')">
-                    <i class="ph-light ph-pencil-simple"></i>
-                    Edit Customer
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.getElementById('contactDetailsContent').innerHTML = content;
-    document.getElementById('contactDetailsModal').style.display = 'flex';
-}
-
-async function createTicketForCustomer(customerId) {
-    // Pre-select the customer in create ticket form
-    document.getElementById('ticketCustomer').value = customerId;
-    
-    // Close customer modal and show ticket modal
-    document.getElementById('contactDetailsModal').style.display = 'none';
-    await showCreateTicketModal();
-}
-
-async function editCustomer(customerId) {
-    const customer = currentData.customers.find(c => c.id === customerId);
-    if (!customer) return;
-
-    const newPhone = prompt(`Current phone: ${customer.phone || 'None'}\nEnter new phone number:`, customer.phone || '');
-    const newAddress = prompt(`Current address: ${customer.address || 'None'}\nEnter new address:`, customer.address || '');
-    
-    if (newPhone !== null || newAddress !== null) {
-        const updates = {};
-        if (newPhone !== null) updates.phone = newPhone;
-        if (newAddress !== null) updates.address = newAddress;
-        
-        const result = await AdminDB.customers.update(customerId, updates);
-        
-        if (result.success) {
-            showNotification('Customer updated successfully', 'success');
-            await loadCustomers();
-            // Close modal
-            document.getElementById('contactDetailsModal').style.display = 'none';
-        } else {
-            showNotification('Failed to update customer: ' + result.error, 'error');
-        }
-    }
-}
-
-async function editAppointment(appointmentId) {
-    const appointment = currentData.appointments.find(a => a.id === appointmentId);
-    if (!appointment) return;
-
-    const newStatus = prompt(
-        `Current status: ${appointment.status}\nEnter new status (scheduled, confirmed, completed, cancelled):`,
-        appointment.status
-    );
-    
-    if (newStatus && ['scheduled', 'confirmed', 'completed', 'cancelled'].includes(newStatus.toLowerCase())) {
-        const result = await AdminDB.appointments.update(appointmentId, { 
-            status: newStatus.toLowerCase(),
-            updated_at: new Date().toISOString()
-        });
-        
-        if (result.success) {
-            showNotification('Appointment updated successfully', 'success');
-            await loadAppointments();
-            updateStats();
-        } else {
-            showNotification('Failed to update appointment: ' + result.error, 'error');
-        }
-    } else if (newStatus !== null) {
-        showNotification('Invalid status. Use: scheduled, confirmed, completed, or cancelled', 'error');
-    }
-}
-
-async function cancelAppointment(appointmentId) {
-    if (!confirm('Cancel this appointment?')) return;
-    
-    const result = await AdminDB.appointments.update(appointmentId, { 
-        status: 'cancelled',
-        updated_at: new Date().toISOString()
-    });
-    
-    if (result.success) {
-        showNotification('Appointment cancelled successfully', 'success');
-        await loadAppointments();
-        updateStats();
-    } else {
-        showNotification('Failed to cancel appointment: ' + result.error, 'error');
-    }
-}
-
-async function deleteAppointment(appointmentId) {
-    const appointment = currentData.appointments.find(a => a.id === appointmentId);
-    if (!appointment) return;
-
-    if (!confirm('Permanently delete this cancelled appointment? This action cannot be undone.')) return;
-    
-    const result = await AdminDB.appointments.delete(appointmentId);
-    
-    if (result.success) {
-        showNotification('Appointment deleted successfully', 'success');
-        await loadAppointments();
-        updateStats();
-    } else {
-        showNotification('Failed to delete appointment: ' + result.error, 'error');
-    }
-}
-
-// Approve cancellation request
-async function approveCancellationRequest(requestId) {
-    const request = currentData.appointmentCancellationRequests.find(r => r.id === requestId);
-    if (!request) return;
-
-    if (!confirm('Approve this cancellation request? This will cancel the appointment.')) return;
-
-    const result = await AdminDB.appointmentCancellationRequests.approve(requestId);
-    
-    if (result.success) {
-        showNotification('Cancellation request approved and appointment cancelled!', 'success');
-        await loadAppointmentCancellationRequests();
-        await loadAppointments();
-        updateStats();
-    } else {
-        showNotification('Failed to approve cancellation request: ' + result.error, 'error');
-    }
-}
-
-// Reject cancellation request
-async function rejectCancellationRequest(requestId) {
-    const staffResponse = prompt('Please provide a reason for rejection (optional):');
-    if (staffResponse === null) return; // User cancelled
-
-    const result = await AdminDB.appointmentCancellationRequests.reject(requestId, staffResponse || 'Cancellation request rejected by staff');
-    
-    if (result.success) {
-        showNotification('Cancellation request rejected', 'success');
-        await loadAppointmentCancellationRequests();
-        updateStats();
-    } else {
-        showNotification('Failed to reject cancellation request: ' + result.error, 'error');
-    }
-}
-
-// View cancellation request details
-async function viewCancellationRequestDetails(requestId) {
-    const request = currentData.appointmentCancellationRequests.find(r => r.id === requestId);
-    if (!request) return;
-
-    const customer = request.customers;
-    const appointment = request.appointments;
-
-    let details = `Cancellation Request Details:\n\n`;
-    details += `Customer: ${customer?.full_name || 'Unknown'}\n`;
-    details += `Email: ${customer?.email || 'N/A'}\n`;
-    details += `Phone: ${customer?.phone || 'N/A'}\n\n`;
-    details += `Appointment Date: ${formatDate(appointment?.appointment_date)}\n`;
-    details += `Appointment Time: ${formatTime(appointment?.appointment_time)}\n`;
-    details += `Duration: ${appointment?.duration_minutes || 60} minutes\n`;
-    details += `Status: ${capitalizeFirst(request.status)}\n`;
-    details += `Reason: ${request.reason || 'No reason provided'}\n\n`;
-    
-    if (request.staff_response) {
-        details += `Staff Response: ${request.staff_response}\n`;
-    }
-    
-    details += `Requested on: ${formatDateTime(request.created_at)}`;
-
-    alert(details);
+    }, 5 * 60 * 1000);
 }
 
 // Utility functions
-function showLoading(elementId) {
-    document.getElementById(elementId).innerHTML = '<tr><td colspan="10" class="loading">Loading...</td></tr>';
+function showLoading() {
+    // You can implement a loading spinner here
+    console.log('Loading...');
 }
 
-function showError(elementId, message) {
-    document.getElementById(elementId).innerHTML = `<tr><td colspan="10" class="error">${message}</td></tr>`;
+function hideLoading() {
+    console.log('Loading complete');
 }
 
 function showNotification(message, type = 'info') {
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="ph-light ${type === 'success' ? 'ph-check-circle' : type === 'error' ? 'ph-warning-circle' : 'ph-info'}"></i>
+            <span>${escapeHtml(message)}</span>
+        </div>
+        <button class="notification-close">&times;</button>
+    `;
+    
+    // Add close handler
+    notification.querySelector('.notification-close').addEventListener('click', function() {
+        notification.remove();
+    });
+    
     // Add to page
     document.body.appendChild(notification);
-
-    // Show notification
-    setTimeout(() => notification.classList.add('show'), 100);
-
-    // Remove notification
+    
+    // Auto-remove after 5 seconds
     setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-function formatDateTime(dateString) {
-    return new Date(dateString).toLocaleString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-    });
-}
-
-function formatTime(timeString) {
-    const [hours, minutes] = timeString.split(':');
-    const formattedTime = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
-    return formattedTime;
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
 function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
 function capitalizeFirst(str) {
+    if (!str) return '';
     return str.charAt(0).toUpperCase() + str.slice(1);
-} 
+}
+
+function getStatusDisplay(status) {
+    const statusMap = {
+        'new': 'New',
+        'in_progress': 'In Progress',
+        'completed': 'Completed',
+        'cancelled': 'Cancelled'
+    };
+    return statusMap[status] || status;
+}
+
+function getTimeAgo(date) {
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString();
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Global functions for onclick handlers
+window.openTicketDetail = openTicketDetail;
+window.editTicket = function(ticketId) {
+    console.log('Edit ticket:', ticketId);
+    // Implementation for editing tickets
+};
+window.removeTicketTag = removeTicketTag; 

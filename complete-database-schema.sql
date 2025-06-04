@@ -159,6 +159,7 @@ DROP POLICY IF EXISTS "Admins can manage all appointments" ON appointments;
 DROP POLICY IF EXISTS "Users can view own appointment cancellation requests" ON appointment_cancellation_requests;
 DROP POLICY IF EXISTS "Users can create appointment cancellation requests" ON appointment_cancellation_requests;
 DROP POLICY IF EXISTS "Users can update own appointment cancellation requests" ON appointment_cancellation_requests;
+DROP POLICY IF EXISTS "Admins can manage all appointment cancellation requests" ON appointment_cancellation_requests;
 
 DROP POLICY IF EXISTS "Users can create contact submissions" ON contact_submissions;
 DROP POLICY IF EXISTS "Users can view own contact submissions" ON contact_submissions;
@@ -416,6 +417,17 @@ CREATE TRIGGER update_admin_users_updated_at BEFORE UPDATE ON admin_users
 -- ============================================================================
 -- SETUP COMPLETE
 -- ============================================================================
+
+-- Ensure created_by_staff column exists (add if missing)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'service_tickets' AND column_name = 'created_by_staff'
+    ) THEN
+        ALTER TABLE service_tickets ADD COLUMN created_by_staff BOOLEAN DEFAULT true;
+    END IF;
+END $$;
 
 -- The database is now fully configured and ready to use!
 -- 

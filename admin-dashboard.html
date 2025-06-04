@@ -27,8 +27,8 @@
         </div>
     </div>
     
-    <header>
-        <div class="container">
+    <header class="admin-header">
+        <div class="admin-header-content">
             <div class="logo">
                 <a href="admin-dashboard.html" class="logo-container">
                     <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
@@ -39,7 +39,25 @@
                     </div>
                 </a>
             </div>
-            <div class="header-cta">
+            
+            <!-- Global Search -->
+            <div class="global-search">
+                <div class="search-container">
+                    <i class="ph-light ph-magnifying-glass"></i>
+                    <input type="text" id="globalSearch" placeholder="Search tickets, customers, or contacts..." />
+                    <div class="search-filters">
+                        <button class="btn-icon" title="Search Filters">
+                            <i class="ph-light ph-funnel"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <button id="createTicketBtn" class="btn btn-primary">
+                    <i class="ph-light ph-plus"></i>
+                    New Ticket
+                </button>
                 <a href="index.html" class="btn btn-secondary" target="_blank">
                     <i class="ph-light ph-globe"></i>
                     View Website
@@ -48,252 +66,451 @@
         </div>
     </header>
 
-    <main class="admin-main">
-        <div class="container">
-            <!-- Dashboard Stats -->
-            <section class="admin-stats">
-                <h2>Dashboard Overview</h2>
-                <div class="stats-grid">
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">
-                            <i class="ph-light ph-envelope"></i>
+    <!-- Zendesk-style Layout -->
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="admin-sidebar">
+            <nav class="sidebar-nav">
+                <!-- Dashboard Stats Summary -->
+                <div class="sidebar-stats">
+                    <div class="stats-summary">
+                        <div class="stat-item">
+                            <span class="stat-count" id="sidebarActiveTickets">0</span>
+                            <span class="stat-label">Open Tickets</span>
                         </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="pendingContactsCount">0</div>
-                            <div class="stat-label">Pending Contacts</div>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">
-                            <i class="ph-light ph-ticket"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="activeTicketsCount">0</div>
-                            <div class="stat-label">Active Tickets</div>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">
-                            <i class="ph-light ph-calendar"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="upcomingAppointmentsCount">0</div>
-                            <div class="stat-label">Upcoming Appointments</div>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">
-                            <i class="ph-light ph-calendar-x"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="pendingRequestsCount">0</div>
-                            <div class="stat-label">Cancellation Requests</div>
-                        </div>
-                    </div>
-                    <div class="stat-card glass-card">
-                        <div class="stat-icon">
-                            <i class="ph-light ph-users"></i>
-                        </div>
-                        <div class="stat-content">
-                            <div class="stat-number" id="totalCustomersCount">0</div>
-                            <div class="stat-label">Total Customers</div>
+                        <div class="stat-item">
+                            <span class="stat-count" id="sidebarPendingContacts">0</span>
+                            <span class="stat-label">Pending Contacts</span>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Admin Tabs -->
-            <section class="admin-tabs">
-                <div class="tab-headers">
-                    <button class="tab-header active" data-tab="contacts">
-                        <i class="ph-light ph-envelope"></i>
-                        Contact Submissions
-                    </button>
-                    <button class="tab-header" data-tab="tickets">
-                        <i class="ph-light ph-ticket"></i>
-                        Service Tickets
-                    </button>
-                    <button class="tab-header" data-tab="customers">
-                        <i class="ph-light ph-users"></i>
-                        Customers
-                    </button>
-                    <button class="tab-header" data-tab="appointments">
-                        <i class="ph-light ph-calendar"></i>
-                        Appointments
-                    </button>
-                    <button class="tab-header" data-tab="appointment-requests">
-                        <i class="ph-light ph-calendar-x"></i>
-                        Cancellation Requests
-                    </button>
-                </div>
-
-                <!-- Contact Submissions Tab -->
-                <div id="contactsTab" class="tab-content active">
-                    <div class="tab-header">
-                        <h3>Contact Submissions</h3>
-                        <div class="tab-actions">
-                            <button id="refreshContacts" class="btn btn-secondary">
-                                <i class="ph-light ph-arrow-clockwise"></i>
-                                Refresh
+                <!-- Ticket Views -->
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Tickets</h4>
+                    <ul class="nav-menu">
+                        <li>
+                            <button class="nav-item active" data-view="unsolved-tickets">
+                                <i class="ph-light ph-ticket"></i>
+                                <span>Your unsolved tickets</span>
+                                <span class="count" id="unsolvedTicketsCount">0</span>
                             </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="unassigned-tickets">
+                                <i class="ph-light ph-user-minus"></i>
+                                <span>Unassigned tickets</span>
+                                <span class="count" id="unassignedTicketsCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="all-tickets">
+                                <i class="ph-light ph-stack"></i>
+                                <span>All tickets</span>
+                                <span class="count" id="allTicketsCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="recently-solved">
+                                <i class="ph-light ph-check-circle"></i>
+                                <span>Recently solved</span>
+                                <span class="count" id="recentlySolvedCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="pending-tickets">
+                                <i class="ph-light ph-clock"></i>
+                                <span>Pending tickets</span>
+                                <span class="count" id="pendingTicketsCount">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact & Customer Views -->
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Customers</h4>
+                    <ul class="nav-menu">
+                        <li>
+                            <button class="nav-item" data-view="contact-submissions">
+                                <i class="ph-light ph-envelope"></i>
+                                <span>Contact submissions</span>
+                                <span class="count" id="contactSubmissionsCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="all-customers">
+                                <i class="ph-light ph-users"></i>
+                                <span>All customers</span>
+                                <span class="count" id="allCustomersCount">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Appointment Views -->
+                <div class="nav-section">
+                    <h4 class="nav-section-title">Appointments</h4>
+                    <ul class="nav-menu">
+                        <li>
+                            <button class="nav-item" data-view="upcoming-appointments">
+                                <i class="ph-light ph-calendar"></i>
+                                <span>Upcoming appointments</span>
+                                <span class="count" id="upcomingAppointmentsCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="cancellation-requests">
+                                <i class="ph-light ph-calendar-x"></i>
+                                <span>Cancellation requests</span>
+                                <span class="count" id="cancellationRequestsCount">0</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button class="nav-item" data-view="all-appointments">
+                                <i class="ph-light ph-calendar-blank"></i>
+                                <span>All appointments</span>
+                                <span class="count" id="allAppointmentsCount">0</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main-content">
+            <!-- View Header with Title and Actions -->
+            <div class="view-header">
+                <div class="view-title">
+                    <h2 id="currentViewTitle">Your unsolved tickets</h2>
+                    <span class="view-count" id="currentViewCount">0 tickets</span>
+                </div>
+                <div class="view-actions">
+                    <div class="view-controls">
+                        <button class="btn-icon" id="refreshCurrentView" title="Refresh">
+                            <i class="ph-light ph-arrow-clockwise"></i>
+                        </button>
+                        <button class="btn-icon" title="View Options">
+                            <i class="ph-light ph-dots-three"></i>
+                        </button>
+                    </div>
+                    <div class="bulk-actions" style="display: none;">
+                        <select class="bulk-action-select">
+                            <option value="">Bulk actions</option>
+                            <option value="mark-solved">Mark as solved</option>
+                            <option value="assign">Assign to...</option>
+                            <option value="priority">Change priority</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                        <button class="btn btn-secondary" id="applyBulkAction">Apply</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area (List View or Detail View) -->
+            <div class="content-area">
+                <!-- Ticket List View -->
+                <div id="ticketListView" class="list-view active">
+                    <div class="list-controls">
+                        <div class="list-filters">
+                            <div class="filter-group">
+                                <select id="statusFilter" class="filter-select">
+                                    <option value="">All statuses</option>
+                                    <option value="new">New</option>
+                                    <option value="in_progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                                <select id="priorityFilter" class="filter-select">
+                                    <option value="">All priorities</option>
+                                    <option value="low">Low</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High</option>
+                                    <option value="urgent">Urgent</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="list-sort">
+                            <select id="sortBy" class="filter-select">
+                                <option value="created_at_desc">Latest first</option>
+                                <option value="created_at_asc">Oldest first</option>
+                                <option value="priority_desc">Priority (high to low)</option>
+                                <option value="priority_asc">Priority (low to high)</option>
+                                <option value="status">Status</option>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div class="admin-table-container">
-                        <table class="admin-table">
+
+                    <!-- Tickets Table -->
+                    <div class="tickets-table-container">
+                        <table class="tickets-table">
                             <thead>
                                 <tr>
-                                    <th>Date</th>
-                                    <th>Name</th>
-                                    <th>Contact</th>
-                                    <th>Service</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contactsTableBody">
-                                <!-- Contact submissions will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Service Tickets Tab -->
-                <div id="ticketsTab" class="tab-content">
-                    <div class="tab-header">
-                        <h3>Service Tickets</h3>
-                        <div class="tab-actions">
-                            <button id="createTicketBtn" class="btn btn-primary">
-                                <i class="ph-light ph-plus"></i>
-                                Create Ticket
-                            </button>
-                            <button id="refreshTickets" class="btn btn-secondary">
-                                <i class="ph-light ph-arrow-clockwise"></i>
-                                Refresh
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Customer</th>
-                                    <th>Title</th>
-                                    <th>Status</th>
-                                    <th>Priority</th>
-                                    <th>Created</th>
-                                    <th>Actions</th>
+                                    <th class="checkbox-col">
+                                        <input type="checkbox" id="selectAllTickets">
+                                    </th>
+                                    <th class="id-col">ID</th>
+                                    <th class="subject-col">Subject</th>
+                                    <th class="requester-col">Requester</th>
+                                    <th class="requested-col">Requested</th>
+                                    <th class="type-col">Type</th>
+                                    <th class="priority-col">Priority</th>
+                                    <th class="status-col">Status</th>
+                                    <th class="actions-col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="ticketsTableBody">
                                 <!-- Tickets will be loaded here -->
                             </tbody>
                         </table>
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="empty-state" style="display: none;">
+                            <div class="empty-state-content">
+                                <i class="ph-light ph-ticket"></i>
+                                <h3>No tickets found</h3>
+                                <p>There are no tickets matching your current filter criteria.</p>
+                                <button class="btn btn-primary" id="createFirstTicket">
+                                    <i class="ph-light ph-plus"></i>
+                                    Create your first ticket
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Customers Tab -->
-                <div id="customersTab" class="tab-content">
-                    <div class="tab-header">
-                        <h3>Customers</h3>
-                        <div class="tab-actions">
-                            <button id="refreshCustomers" class="btn btn-secondary">
-                                <i class="ph-light ph-arrow-clockwise"></i>
-                                Refresh
-                            </button>
+                <!-- Other List Views (contacts, customers, appointments) -->
+                <div id="contactListView" class="list-view">
+                    <!-- Contact submissions table will go here -->
+                </div>
+                
+                <div id="customerListView" class="list-view">
+                    <!-- Customers table will go here -->
+                </div>
+                
+                <div id="appointmentListView" class="list-view">
+                    <!-- Appointments table will go here -->
+                </div>
+            </div>
+        </main>
+
+        <!-- Ticket Detail Sidebar (Zendesk-style) -->
+        <aside id="ticketDetailSidebar" class="ticket-detail-sidebar" style="display: none;">
+            <div class="sidebar-header">
+                <div class="ticket-info">
+                    <h3 id="ticketDetailId">#12345</h3>
+                    <span class="ticket-status-badge" id="ticketDetailStatus">Open</span>
+                </div>
+                <button class="btn-icon close-detail-sidebar">
+                    <i class="ph-light ph-x"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <!-- Customer Information -->
+                <div class="sidebar-section">
+                    <h4>Requester</h4>
+                    <div class="customer-info">
+                        <div class="customer-avatar">
+                            <i class="ph-light ph-user-circle"></i>
                         </div>
-                    </div>
-                    
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Address</th>
-                                    <th>Joined</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="customersTableBody">
-                                <!-- Customers will be loaded here -->
-                            </tbody>
-                        </table>
+                        <div class="customer-details">
+                            <div class="customer-name" id="customerName">Customer Name</div>
+                            <div class="customer-email" id="customerEmail">customer@email.com</div>
+                            <div class="customer-phone" id="customerPhone">+1 (555) 123-4567</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Appointments Tab -->
-                <div id="appointmentsTab" class="tab-content">
-                    <div class="tab-header">
-                        <h3>Appointments</h3>
-                        <div class="tab-actions">
-                            <button id="refreshAppointments" class="btn btn-secondary">
-                                <i class="ph-light ph-arrow-clockwise"></i>
-                                Refresh
-                            </button>
+                <!-- Ticket Properties -->
+                <div class="sidebar-section">
+                    <h4>Properties</h4>
+                    <div class="properties-list">
+                        <div class="property-item">
+                            <label>Status</label>
+                            <select id="ticketStatusSelect" class="property-select">
+                                <option value="new">New</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
                         </div>
-                    </div>
-                    
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Customer</th>
-                                    <th>Service</th>
-                                    <th>Ticket</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="appointmentsTableBody">
-                                <!-- Appointments will be loaded here -->
-                            </tbody>
-                        </table>
+                        <div class="property-item">
+                            <label>Priority</label>
+                            <select id="ticketPrioritySelect" class="property-select">
+                                <option value="low">Low</option>
+                                <option value="normal">Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="property-item">
+                            <label>Type</label>
+                            <select id="ticketTypeSelect" class="property-select">
+                                <option value="question">Question</option>
+                                <option value="problem">Problem</option>
+                                <option value="task">Task</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Appointment Cancellation Requests Tab -->
-                <div id="appointment-requestsTab" class="tab-content">
-                    <div class="tab-header">
-                        <h3>Appointment Cancellation Requests</h3>
-                        <div class="tab-actions">
-                            <button id="refreshAppointmentRequests" class="btn btn-secondary">
-                                <i class="ph-light ph-arrow-clockwise"></i>
-                                Refresh
+                <!-- Ticket Tags -->
+                <div class="sidebar-section">
+                    <h4>Tags</h4>
+                    <div class="tags-container">
+                        <div id="ticketTags" class="tags-list">
+                            <!-- Tags will be added here -->
+                        </div>
+                        <input type="text" id="addTagInput" placeholder="Add tag..." class="tag-input">
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Ticket Detail Modal (full view) -->
+    <div id="ticketDetailModal" class="modal" style="display: none;">
+        <div class="modal-content ticket-detail-modal">
+            <!-- Ticket Detail Header -->
+            <div class="ticket-detail-header">
+                <div class="ticket-title-section">
+                    <h2 id="modalTicketSubject">Ticket Subject</h2>
+                    <div class="ticket-meta">
+                        <span class="ticket-id" id="modalTicketId">#12345</span>
+                        <span class="ticket-created" id="modalTicketCreated">Created 2 hours ago</span>
+                    </div>
+                </div>
+                <div class="ticket-actions">
+                    <button class="btn btn-secondary" id="editTicketBtn">
+                        <i class="ph-light ph-pencil-simple"></i>
+                        Edit
+                    </button>
+                    <button class="modal-close btn-icon">
+                        <i class="ph-light ph-x"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ticket Detail Content -->
+            <div class="ticket-detail-content">
+                <!-- Conversation Area -->
+                <div class="conversation-area">
+                    <div class="conversation-header">
+                        <h3>Conversation</h3>
+                        <div class="conversation-controls">
+                            <button class="btn-icon" title="Conversation settings">
+                                <i class="ph-light ph-gear"></i>
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Appointment Details</th>
-                                    <th>Customer</th>
-                                    <th>Reason</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="appointmentRequestsTableBody">
-                                <!-- Appointment cancellation requests will be loaded here -->
-                            </tbody>
-                        </table>
+
+                    <!-- Messages List -->
+                    <div id="conversationMessages" class="conversation-messages">
+                        <!-- Messages will be loaded here -->
+                    </div>
+
+                    <!-- Reply Form -->
+                    <div class="reply-form">
+                        <div class="reply-header">
+                            <div class="reply-type">
+                                <button class="reply-type-btn active" data-type="public">
+                                    <i class="ph-light ph-chat-circle"></i>
+                                    Public reply
+                                </button>
+                                <button class="reply-type-btn" data-type="internal">
+                                    <i class="ph-light ph-lock"></i>
+                                    Internal note
+                                </button>
+                            </div>
+                        </div>
+                        <form id="replyForm" class="reply-form-content">
+                            <div class="reply-editor">
+                                <textarea id="replyMessage" placeholder="Leave a comment..." rows="4"></textarea>
+                            </div>
+                            <div class="reply-actions">
+                                <div class="reply-options">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="solveTicket">
+                                        <span>Submit as solved</span>
+                                    </label>
+                                </div>
+                                <div class="reply-submit">
+                                    <button type="button" class="btn btn-secondary">Save as draft</button>
+                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
-            </section>
+
+                <!-- Sidebar with customer info and properties -->
+                <div class="ticket-detail-sidebar-content">
+                    <!-- Customer Card -->
+                    <div class="customer-card">
+                        <div class="customer-header">
+                            <div class="customer-avatar">
+                                <i class="ph-light ph-user-circle"></i>
+                            </div>
+                            <div class="customer-info">
+                                <h4 id="modalCustomerName">Customer Name</h4>
+                                <span id="modalCustomerEmail">customer@email.com</span>
+                            </div>
+                        </div>
+                        <div class="customer-details">
+                            <div class="detail-item">
+                                <i class="ph-light ph-phone"></i>
+                                <span id="modalCustomerPhone">+1 (555) 123-4567</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="ph-light ph-map-pin"></i>
+                                <span id="modalCustomerLocation">Location</span>
+                            </div>
+                        </div>
+                        <div class="customer-actions">
+                            <button class="btn btn-secondary btn-sm">
+                                <i class="ph-light ph-user"></i>
+                                View profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Ticket Properties -->
+                    <div class="properties-card">
+                        <h4>Ticket properties</h4>
+                        <div class="properties-grid">
+                            <div class="property-item">
+                                <label>Status</label>
+                                <span class="property-value" id="modalTicketStatus">Open</span>
+                            </div>
+                            <div class="property-item">
+                                <label>Priority</label>
+                                <span class="property-value" id="modalTicketPriority">Normal</span>
+                            </div>
+                            <div class="property-item">
+                                <label>Type</label>
+                                <span class="property-value" id="modalTicketType">Question</span>
+                            </div>
+                            <div class="property-item">
+                                <label>Created</label>
+                                <span class="property-value" id="modalTicketCreatedDate">2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </main>
+    </div>
 
     <!-- Create Ticket Modal -->
     <div id="createTicketModal" class="modal" style="display: none;">
         <div class="modal-content large">
             <div class="modal-header">
-                <h3>Create New Service Ticket</h3>
+                <h3>
+                    <i class="ph-light ph-ticket"></i>
+                    Create New Service Ticket
+                </h3>
                 <button class="modal-close">&times;</button>
             </div>
             <form id="createTicketForm">
@@ -303,84 +520,84 @@
                         <select id="ticketCustomer" required>
                             <option value="">Select Customer</option>
                         </select>
-                        <small class="form-help">Choose the customer for this ticket</small>
+                        <small class="form-help">Choose the customer for this service ticket</small>
                     </div>
                     <div class="form-group">
                         <label for="ticketType">Service Type</label>
                         <select id="ticketType">
                             <option value="IT Support">IT Support</option>
                             <option value="Hardware Repair">Hardware Repair</option>
-                            <option value="Software Installation">Software Installation</option>
                             <option value="Network Setup">Network Setup</option>
+                            <option value="Software Installation">Software Installation</option>
                             <option value="Data Recovery">Data Recovery</option>
-                            <option value="Security Setup">Security Setup</option>
-                            <option value="Consultation">Consultation</option>
+                            <option value="Consulting">Consulting</option>
                             <option value="Other">Other</option>
                         </select>
+                        <small class="form-help">Select the type of service requested</small>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ticketTitle">Subject/Title *</label>
+                    <input type="text" id="ticketTitle" required placeholder="Brief description of the issue or request">
+                    <small class="form-help">Enter a clear, concise subject line (minimum 5 characters)</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ticketDescription">Detailed Description *</label>
+                    <textarea id="ticketDescription" required rows="6" placeholder="Provide detailed information about the issue, steps to reproduce, expected vs actual behavior, etc."></textarea>
+                    <small class="form-help">Detailed description helps in faster resolution (minimum 20 characters)</small>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="ticketPriority">Priority *</label>
-                        <select id="ticketPriority" required>
-                            <option value="low">🟢 Low - General questions, minor issues</option>
-                            <option value="normal" selected>🟡 Normal - Standard service requests</option>
-                            <option value="high">🟠 High - Important issues affecting productivity</option>
-                            <option value="urgent">🔴 Urgent - Critical issues, business down</option>
+                        <label for="ticketPriority">Priority Level</label>
+                        <select id="ticketPriority">
+                            <option value="low">🟢 Low - General inquiry or minor issue</option>
+                            <option value="normal" selected>🟡 Normal - Standard support request</option>
+                            <option value="high">🟠 High - Important business impact</option>
+                            <option value="urgent">🔴 Urgent - Critical system down</option>
                         </select>
+                        <small class="form-help">Select priority based on business impact</small>
                     </div>
                     <div class="form-group">
                         <label for="ticketStatus">Initial Status</label>
                         <select id="ticketStatus">
-                            <option value="new" selected>New - Just created</option>
-                            <option value="in_progress">In Progress - Being worked on</option>
+                            <option value="new" selected>New - Just created, needs review</option>
+                            <option value="in_progress">In Progress - Currently being worked on</option>
                         </select>
+                        <small class="form-help">Set the initial status for this ticket</small>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="ticketTitle">Subject *</label>
-                    <input type="text" id="ticketTitle" required placeholder="Brief, descriptive title of the issue or request">
-                    <small class="form-help">Keep it concise but descriptive</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="ticketDescription">Description *</label>
-                    <textarea id="ticketDescription" required placeholder="Detailed description of the issue, service request, or problem:
-
-• What exactly is happening?
-• When did it start?
-• What steps have been tried?
-• Any error messages?
-• Environment details (OS, software versions, etc.)"></textarea>
-                    <small class="form-help">Include as much detail as possible for faster resolution</small>
-                </div>
-
+                
                 <div class="form-group">
                     <label for="ticketNotes">Internal Staff Notes</label>
-                    <textarea id="ticketNotes" placeholder="Internal notes for staff (not visible to customer):
-
-• Initial assessment
-• Assignment notes
-• Special instructions
-• Technical details"></textarea>
+                    <textarea id="ticketNotes" rows="3" placeholder="Internal notes, assignment details, or additional context (not visible to customer)"></textarea>
                     <small class="form-help">These notes are only visible to staff members</small>
                 </div>
-
+                
                 <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="ticketAssignToMe"> 
-                        Assign this ticket to me
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="ticketAssignToMe">
+                        <span>Assign this ticket to me</span>
                     </label>
+                    <small class="form-help">Check this box to automatically assign the ticket to yourself</small>
                 </div>
-
+                
                 <div class="form-submit">
-                    <button type="button" class="btn btn-secondary modal-close">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ph-light ph-plus"></i>
-                        Create Ticket
-                    </button>
+                    <div class="form-submit-info">
+                        <small>Customer will be notified via email when the ticket is created</small>
+                    </div>
+                    <div class="form-submit-actions">
+                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('createTicketModal').style.display = 'none'">
+                            <i class="ph-light ph-x"></i>
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ph-light ph-plus"></i>
+                            Create Ticket
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -399,30 +616,9 @@
         </div>
     </div>
 
-    <!-- Ticket Details Modal -->
-    <div id="ticketDetailsModal" class="modal" style="display: none;">
-        <div class="modal-content large">
-            <div class="modal-header">
-                <h3>Ticket Details</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div id="ticketDetailsContent">
-                <!-- Ticket details will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="container">
-            <div class="footer-bottom">
-                <p>Copyright © 2025 SpyderNet IT - Admin Dashboard - Internal Use Only</p>
-            </div>
-        </div>
-    </footer>
-
+    <!-- Scripts -->
     <script src="js/supabase-client.js"></script>
     <script src="js/admin-auth.js"></script>
     <script src="js/admin-dashboard.js"></script>
 </body>
-</html> 
 </html> 
