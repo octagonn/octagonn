@@ -499,11 +499,19 @@ CREATE INDEX IF NOT EXISTS idx_service_tickets_anonymous_email ON service_ticket
 -- Enable Row Level Security on web_form_submissions table
 ALTER TABLE web_form_submissions ENABLE ROW LEVEL SECURITY;
 
--- Drop existing policies for web_form_submissions to avoid conflicts
-DROP POLICY IF EXISTS "Allow anonymous inserts" ON web_form_submissions;
-DROP POLICY IF EXISTS "Allow authenticated reads" ON web_form_submissions;
-DROP POLICY IF EXISTS "Allow authenticated updates" ON web_form_submissions;
-DROP POLICY IF EXISTS "Allow authenticated deletes" ON web_form_submissions;
+-- Drop existing policies for web_form_submissions to avoid conflicts (using DO block for safety)
+DO $$ 
+BEGIN
+    -- Drop policies if they exist
+    DROP POLICY IF EXISTS "Allow anonymous inserts" ON web_form_submissions;
+    DROP POLICY IF EXISTS "Allow authenticated reads" ON web_form_submissions;
+    DROP POLICY IF EXISTS "Allow authenticated updates" ON web_form_submissions;
+    DROP POLICY IF EXISTS "Allow authenticated deletes" ON web_form_submissions;
+    DROP POLICY IF EXISTS "Admins can manage all web form submissions" ON web_form_submissions;
+EXCEPTION
+    WHEN undefined_object THEN
+        NULL; -- Policy doesn't exist, continue
+END $$;
 
 -- RLS Policies for web_form_submissions table
 
