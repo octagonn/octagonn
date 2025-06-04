@@ -1,945 +1,826 @@
-// Admin Dashboard JavaScript - Zendesk Style Layout
-let currentView = 'unsolved-tickets';
-let currentTicketId = null;
+// Admin Dashboard JavaScript - Zendesk-Inspired Professional Interface
+let currentAdmin = null;
+let currentUser = null;
 let allTickets = [];
-let allCustomers = [];
 let allContacts = [];
+let allCustomers = [];
 let allAppointments = [];
-let allCancellationRequests = [];
+let currentSection = 'dashboard';
+let currentTicketId = null;
+let replyMode = 'public'; // 'public' or 'internal'
 
-// Initialize dashboard when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize dashboard when DOM loads
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('Admin Dashboard initializing...');
     
-    // Check admin authentication
-    if (!AdminAuth.getCurrentAdmin()) {
-        console.log('No admin session found, redirecting to login');
-        window.location.href = 'admin-login.html';
-        return;
+    // Check authentication
+    await checkAuthentication();
+    
+    // Initialize dashboard if authenticated
+    if (currentUser && currentAdmin) {
+        await initializeDashboard();
     }
-
-    initializeDashboard();
 });
 
-// Initialize the dashboard
-async function initializeDashboard() {
+/**
+ * Check if user is authenticated and has admin access
+ */
+async function checkAuthentication() {
     try {
-        // Setup UI components
-        setupEventHandlers();
+        // Check if supabase is available
+        if (!supabase) {
+            console.error('Supabase not initialized');
+            redirectToLogin();
+            return;
+        }
+
+        // Get current user
+        currentUser = await auth.getCurrentUser();
         
-        // Load admin info
-        await loadAdminInfo();
+        if (!currentUser) {
+            console.log('No authenticated user found');
+            redirectToLogin();
+            return;
+        }
+
+        console.log('Authenticated user:', currentUser.email);
+
+        // Check if user is admin/staff
+        const staffResult = await db.staff.getByUserId(currentUser.id);
+        if (staffResult.success) {
+            currentAdmin = staffResult.data;
+            console.log('Admin access confirmed:', currentAdmin);
+        } else {
+            console.error('Admin access denied');
+            showNotification('Access denied. Admin privileges required.', 'error');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 2000);
+        }
         
-        // Load initial data
-        await loadDashboardData();
-        
-        // Set up auto-refresh
-        setupAutoRefresh();
-        
-        console.log('Dashboard initialized successfully');
     } catch (error) {
-        console.error('Failed to initialize dashboard:', error);
-        showNotification('Failed to initialize dashboard', 'error');
+        console.error('Authentication check failed:', error);
+        redirectToLogin();
     }
 }
 
-// Setup all event handlers
-function setupEventHandlers() {
-    // Navigation handlers
-    setupNavigationHandlers();
+/**
+ * Redirect to login page
+ */
+function redirectToLogin() {
+    window.location.href = 'admin-login.html';
+}
+
+/**
+ * Initialize dashboard functionality
+ */
+async function initializeDashboard() {
+    try {
+        console.log('Initializing dashboard for admin:', currentAdmin.full_name);
+        
+        // Set admin info in UI
+        updateAdminInfo();
+        
+        // Setup navigation
+        setupNavigation();
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Load initial dashboard data
+        await loadSection('dashboard');
+        
+        console.log('Dashboard initialized successfully');
+        
+    } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        showNotification('Error initializing dashboard', 'error');
+    }
+}
+
+/**
+ * Update admin info in sidebar
+ */
+function updateAdminInfo() {
+    const adminName = document.getElementById('adminName');
+    const adminRole = document.getElementById('adminRole');
+    const adminAvatar = document.getElementById('adminAvatar');
     
-    // Modal handlers
+    if (adminName) adminName.textContent = currentAdmin.full_name || 'Admin User';
+    if (adminRole) adminRole.textContent = currentAdmin.role || 'Administrator';
+    if (adminAvatar) {
+        const initials = (currentAdmin.full_name || 'A').split(' ').map(n => n[0]).join('').toUpperCase();
+        adminAvatar.textContent = initials;
+    }
+}
+
+/**
+ * Setup navigation functionality
+ */
+function setupNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            const section = this.getAttribute('data-section');
+            if (section) {
+                switchSection(section);
+            }
+        });
+    });
+}
+
+/**
+ * Setup all event listeners
+ */
+function setupEventListeners() {
+    // Global search
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch) {
+        globalSearch.addEventListener('input', handleGlobalSearch);
+    }
+    
+    // Filter dropdowns
+    setupFilterListeners();
+    
+    // Modal close handlers
     setupModalHandlers();
     
-    // Form handlers
-    setupFormHandlers();
-    
-    // Search handlers
-    setupSearchHandlers();
-    
-    // Table handlers
-    setupTableHandlers();
-    
-    // Ticket detail handlers
-    setupTicketDetailHandlers();
+    // Reply tabs
+    setupReplyTabs();
 }
 
-// Setup navigation event handlers
-function setupNavigationHandlers() {
-    // Sidebar navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const view = this.dataset.view;
-            if (view) {
-                switchView(view);
-            }
-        });
-    });
+/**
+ * Setup filter dropdown listeners
+ */
+function setupFilterListeners() {
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    const sortBy = document.getElementById('sortBy');
+    const contactStatusFilter = document.getElementById('contactStatusFilter');
+    const appointmentStatusFilter = document.getElementById('appointmentStatusFilter');
     
-    // Sign out
-    document.getElementById('signOutBtn')?.addEventListener('click', handleSignOut);
-    
-    // Refresh current view
-    document.getElementById('refreshCurrentView')?.addEventListener('click', function() {
-        refreshCurrentView();
-    });
+    if (statusFilter) statusFilter.addEventListener('change', () => filterTickets());
+    if (priorityFilter) priorityFilter.addEventListener('change', () => filterTickets());
+    if (sortBy) sortBy.addEventListener('change', () => filterTickets());
+    if (contactStatusFilter) contactStatusFilter.addEventListener('change', () => filterContacts());
+    if (appointmentStatusFilter) appointmentStatusFilter.addEventListener('change', () => filterAppointments());
 }
 
-// Setup modal event handlers
+/**
+ * Setup modal event handlers
+ */
 function setupModalHandlers() {
-    // Modal close buttons
-    document.querySelectorAll('.modal-close').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        });
-    });
-    
     // Close modals when clicking outside
-    document.querySelectorAll('.modal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.style.display = 'none';
-            }
-        });
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('modal')) {
+            closeModal(e.target.id);
+        }
     });
     
-    // Ticket detail sidebar close
-    document.querySelector('.close-detail-sidebar')?.addEventListener('click', function() {
-        document.getElementById('ticketDetailSidebar').style.display = 'none';
-    });
-}
-
-// Setup form event handlers
-function setupFormHandlers() {
     // Create ticket form
     const createTicketForm = document.getElementById('createTicketForm');
     if (createTicketForm) {
         createTicketForm.addEventListener('submit', handleCreateTicket);
     }
-    
-    // Create ticket button
-    document.getElementById('createTicketBtn')?.addEventListener('click', function() {
-        showCreateTicketModal();
-    });
-    
-    // Reply form
-    const replyForm = document.getElementById('replyForm');
-    if (replyForm) {
-        replyForm.addEventListener('submit', handleReplySubmit);
-    }
-    
-    // Reply type buttons
-    document.querySelectorAll('.reply-type-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.reply-type-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
 }
 
-// Setup search handlers
-function setupSearchHandlers() {
-    const globalSearch = document.getElementById('globalSearch');
-    if (globalSearch) {
-        globalSearch.addEventListener('input', debounce(handleGlobalSearch, 300));
-    }
-    
-    // Filter handlers
-    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
-    document.getElementById('priorityFilter')?.addEventListener('change', applyFilters);
-    document.getElementById('sortBy')?.addEventListener('change', applySorting);
-}
-
-// Setup table handlers
-function setupTableHandlers() {
-    // Select all checkbox
-    document.getElementById('selectAllTickets')?.addEventListener('change', function() {
-        const checkboxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]');
-        checkboxes.forEach(cb => cb.checked = this.checked);
-        updateBulkActions();
-    });
-    
-    // Bulk actions
-    document.getElementById('applyBulkAction')?.addEventListener('click', handleBulkAction);
-}
-
-// Setup ticket detail handlers
-function setupTicketDetailHandlers() {
-    // Property updates
-    document.getElementById('ticketStatusSelect')?.addEventListener('change', function() {
-        updateTicketProperty('status', this.value);
-    });
-    
-    document.getElementById('ticketPrioritySelect')?.addEventListener('change', function() {
-        updateTicketProperty('priority', this.value);
-    });
-    
-    document.getElementById('ticketTypeSelect')?.addEventListener('change', function() {
-        updateTicketProperty('type', this.value);
-    });
-    
-    // Tag input
-    document.getElementById('addTagInput')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            addTicketTag(this.value.trim());
-            this.value = '';
+/**
+ * Setup reply tabs functionality
+ */
+function setupReplyTabs() {
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('reply-tab')) {
+            switchReplyMode(e.target.dataset.mode);
         }
     });
 }
 
-// Load admin information
-async function loadAdminInfo() {
-    try {
-        const admin = AdminAuth.getCurrentAdmin();
-        if (admin && admin.name) {
-            document.getElementById('adminName').textContent = admin.name;
-        }
-    } catch (error) {
-        console.error('Error loading admin info:', error);
-    }
-}
-
-// Load all dashboard data
-async function loadDashboardData() {
-    try {
-        showLoading();
-        
-        // Load all data in parallel
-        const [tickets, customers, contacts, appointments, cancellationRequests] = await Promise.all([
-            AdminDB.tickets.getAll(),
-            AdminDB.customers.getAll(),
-            AdminDB.contacts.getAll(),
-            AdminDB.appointments.getAll(),
-            AdminDB.appointmentCancellationRequests.getAll()
-        ]);
-        
-        // Store data globally
-        allTickets = tickets || [];
-        allCustomers = customers || [];
-        allContacts = contacts || [];
-        allAppointments = appointments || [];
-        allCancellationRequests = cancellationRequests || [];
-        
-        // Update UI
-        updateDashboardStats();
-        updateSidebarCounts();
-        updateCurrentView();
-        
-        // Load customers into create ticket dropdown
-        loadCustomerDropdown();
-        
-        hideLoading();
-    } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        showNotification('Failed to load dashboard data', 'error');
-        hideLoading();
-    }
-}
-
-// Update dashboard statistics
-function updateDashboardStats() {
-    const activeTickets = allTickets.filter(t => t.status !== 'completed' && t.status !== 'cancelled').length;
-    const pendingContacts = allContacts.filter(c => c.status === 'pending').length;
+/**
+ * Switch between dashboard sections
+ */
+function switchSection(sectionName) {
+    console.log('Switching to section:', sectionName);
     
-    // Update sidebar stats
-    document.getElementById('sidebarActiveTickets').textContent = activeTickets;
-    document.getElementById('sidebarPendingContacts').textContent = pendingContacts;
-}
-
-// Update sidebar counts
-function updateSidebarCounts() {
-    const now = new Date();
-    
-    // Ticket counts
-    const unsolvedTickets = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress').length;
-    const unassignedTickets = allTickets.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'cancelled').length;
-    const recentlySolved = allTickets.filter(t => {
-        if (t.status !== 'completed') return false;
-        const completedDate = new Date(t.completed_at || t.updated_at);
-        const daysDiff = (now - completedDate) / (1000 * 60 * 60 * 24);
-        return daysDiff <= 7;
-    }).length;
-    const pendingTickets = allTickets.filter(t => t.status === 'new').length;
-    
-    // Contact and customer counts
-    const contactSubmissions = allContacts.filter(c => c.status === 'pending').length;
-    const allCustomersCount = allCustomers.length;
-    
-    // Appointment counts
-    const upcomingAppointments = allAppointments.filter(a => {
-        const appointmentDate = new Date(a.appointment_date + 'T' + a.appointment_time);
-        return appointmentDate > now && a.status !== 'cancelled';
-    }).length;
-    const cancellationRequestsCount = allCancellationRequests.filter(r => r.status === 'pending').length;
-    const allAppointmentsCount = allAppointments.length;
-    
-    // Update counts in sidebar
-    document.getElementById('unsolvedTicketsCount').textContent = unsolvedTickets;
-    document.getElementById('unassignedTicketsCount').textContent = unassignedTickets;
-    document.getElementById('allTicketsCount').textContent = allTickets.length;
-    document.getElementById('recentlySolvedCount').textContent = recentlySolved;
-    document.getElementById('pendingTicketsCount').textContent = pendingTickets;
-    document.getElementById('contactSubmissionsCount').textContent = contactSubmissions;
-    document.getElementById('allCustomersCount').textContent = allCustomersCount;
-    document.getElementById('upcomingAppointmentsCount').textContent = upcomingAppointments;
-    document.getElementById('cancellationRequestsCount').textContent = cancellationRequestsCount;
-    document.getElementById('allAppointmentsCount').textContent = allAppointmentsCount;
-}
-
-// Switch between views
-function switchView(view) {
-    currentView = view;
-    
-    // Update active navigation item
+    // Update navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
-        if (item.dataset.view === view) {
-            item.classList.add('active');
-        }
     });
     
-    // Update view title and content
-    updateCurrentView();
-}
-
-// Update current view content
-function updateCurrentView() {
-    const viewTitle = document.getElementById('currentViewTitle');
-    const viewCount = document.getElementById('currentViewCount');
-    
-    // Hide all list views
-    document.querySelectorAll('.list-view').forEach(view => {
-        view.classList.remove('active');
-    });
-    
-    let filteredData = [];
-    let viewTitleText = '';
-    let countText = '';
-    
-    switch (currentView) {
-        case 'unsolved-tickets':
-            filteredData = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress');
-            viewTitleText = 'Your unsolved tickets';
-            countText = `${filteredData.length} tickets`;
-            showTicketListView(filteredData);
-            break;
-            
-        case 'unassigned-tickets':
-            filteredData = allTickets.filter(t => !t.assigned_to && t.status !== 'completed' && t.status !== 'cancelled');
-            viewTitleText = 'Unassigned tickets';
-            countText = `${filteredData.length} tickets`;
-            showTicketListView(filteredData);
-            break;
-            
-        case 'all-tickets':
-            filteredData = allTickets;
-            viewTitleText = 'All tickets';
-            countText = `${filteredData.length} tickets`;
-            showTicketListView(filteredData);
-            break;
-            
-        case 'recently-solved':
-            const now = new Date();
-            filteredData = allTickets.filter(t => {
-                if (t.status !== 'completed') return false;
-                const completedDate = new Date(t.completed_at || t.updated_at);
-                const daysDiff = (now - completedDate) / (1000 * 60 * 60 * 24);
-                return daysDiff <= 7;
-            });
-            viewTitleText = 'Recently solved tickets';
-            countText = `${filteredData.length} tickets`;
-            showTicketListView(filteredData);
-            break;
-            
-        case 'pending-tickets':
-            filteredData = allTickets.filter(t => t.status === 'new');
-            viewTitleText = 'Pending tickets';
-            countText = `${filteredData.length} tickets`;
-            showTicketListView(filteredData);
-            break;
-            
-        case 'contact-submissions':
-            filteredData = allContacts;
-            viewTitleText = 'Contact submissions';
-            countText = `${filteredData.length} submissions`;
-            showContactListView(filteredData);
-            break;
-            
-        case 'all-customers':
-            filteredData = allCustomers;
-            viewTitleText = 'All customers';
-            countText = `${filteredData.length} customers`;
-            showCustomerListView(filteredData);
-            break;
-            
-        case 'upcoming-appointments':
-            const upcoming = allAppointments.filter(a => {
-                const appointmentDate = new Date(a.appointment_date + 'T' + a.appointment_time);
-                return appointmentDate > new Date() && a.status !== 'cancelled';
-            });
-            filteredData = upcoming;
-            viewTitleText = 'Upcoming appointments';
-            countText = `${filteredData.length} appointments`;
-            showAppointmentListView(filteredData);
-            break;
-            
-        case 'cancellation-requests':
-            filteredData = allCancellationRequests;
-            viewTitleText = 'Cancellation requests';
-            countText = `${filteredData.length} requests`;
-            showCancellationRequestsView(filteredData);
-            break;
-            
-        case 'all-appointments':
-            filteredData = allAppointments;
-            viewTitleText = 'All appointments';
-            countText = `${filteredData.length} appointments`;
-            showAppointmentListView(filteredData);
-            break;
+    const activeNavItem = document.querySelector(`[data-section="${sectionName}"]`);
+    if (activeNavItem) {
+        activeNavItem.classList.add('active');
     }
     
-    viewTitle.textContent = viewTitleText;
-    viewCount.textContent = countText;
+    // Update page title
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) {
+        pageTitle.textContent = getSectionTitle(sectionName);
+    }
+    
+    // Show/hide sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    const targetSection = document.getElementById(sectionName + '-section');
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+    
+    // Load section data
+    currentSection = sectionName;
+    loadSection(sectionName);
 }
 
-// Show ticket list view
-function showTicketListView(tickets) {
-    const ticketListView = document.getElementById('ticketListView');
-    const ticketsTableBody = document.getElementById('ticketsTableBody');
-    const emptyState = document.getElementById('emptyState');
+/**
+ * Get section title for display
+ */
+function getSectionTitle(sectionName) {
+    const titles = {
+        'dashboard': 'Dashboard',
+        'tickets': 'Support Tickets',
+        'contacts': 'Contact Requests',
+        'customers': 'Customer Management',
+        'appointments': 'Appointments',
+        'analytics': 'Analytics',
+        'reports': 'Reports'
+    };
+    return titles[sectionName] || 'Dashboard';
+}
+
+/**
+ * Load data for specific section
+ */
+async function loadSection(sectionName) {
+    try {
+        switch (sectionName) {
+            case 'dashboard':
+                await loadDashboard();
+                break;
+            case 'tickets':
+                await loadTickets();
+                break;
+            case 'contacts':
+                await loadContacts();
+                break;
+            case 'customers':
+                await loadCustomers();
+                break;
+            case 'appointments':
+                await loadAppointments();
+                break;
+            case 'analytics':
+            case 'reports':
+                // These sections show placeholder content
+                break;
+        }
+    } catch (error) {
+        console.error(`Error loading ${sectionName}:`, error);
+        showNotification(`Error loading ${sectionName}`, 'error');
+    }
+}
+
+/**
+ * Load dashboard overview data
+ */
+async function loadDashboard() {
+    console.log('Loading dashboard data...');
     
-    ticketListView.classList.add('active');
+    try {
+        // Load tickets for stats
+        const ticketsResult = await db.tickets.getAll();
+        if (ticketsResult.success) {
+            allTickets = ticketsResult.data || [];
+            updateDashboardStats();
+        }
+        
+        // Load contacts for badges
+        const contactsResult = await db.contacts.getAll();
+        if (contactsResult.success) {
+            allContacts = contactsResult.data || [];
+            updateNavigationBadges();
+        }
+        
+        // Load recent activity
+        await loadRecentActivity();
+        
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+    }
+}
+
+/**
+ * Update dashboard statistics
+ */
+function updateDashboardStats() {
+    const totalTickets = allTickets.length;
+    const openTickets = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress').length;
+    const urgentTickets = allTickets.filter(t => t.priority === 'urgent').length;
+    
+    document.getElementById('totalTickets').textContent = totalTickets;
+    document.getElementById('openTickets').textContent = openTickets;
+    document.getElementById('urgentTickets').textContent = urgentTickets;
+    
+    // Calculate average response time (placeholder)
+    document.getElementById('avgResponseTime').textContent = '2.4h';
+}
+
+/**
+ * Update navigation badges
+ */
+function updateNavigationBadges() {
+    const openTickets = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress').length;
+    const unprocessedContacts = allContacts.filter(c => !c.processed).length;
+    
+    const ticketsBadge = document.getElementById('ticketsBadge');
+    const contactsBadge = document.getElementById('contactsBadge');
+    
+    if (ticketsBadge) ticketsBadge.textContent = openTickets;
+    if (contactsBadge) contactsBadge.textContent = unprocessedContacts;
+}
+
+/**
+ * Load recent activity
+ */
+async function loadRecentActivity() {
+    const activityContainer = document.getElementById('recentActivity');
+    
+    try {
+        // Get recent tickets, contacts, and messages
+        const recentTickets = allTickets.slice(-5).reverse();
+        const recentContacts = allContacts.slice(-3).reverse();
+        
+        const activities = [];
+        
+        // Add ticket activities
+        recentTickets.forEach(ticket => {
+            activities.push({
+                type: 'ticket',
+                icon: 'ph-ticket',
+                title: `New ticket: ${ticket.title}`,
+                meta: `Priority: ${ticket.priority} • Customer: ${ticket.customer_name || 'Unknown'}`,
+                time: formatTimeAgo(ticket.created_at)
+            });
+        });
+        
+        // Add contact activities
+        recentContacts.forEach(contact => {
+            activities.push({
+                type: 'contact',
+                icon: 'ph-envelope',
+                title: `New contact: ${contact.subject}`,
+                meta: `From: ${contact.name} • ${contact.email}`,
+                time: formatTimeAgo(contact.created_at)
+            });
+        });
+        
+        // Sort by most recent
+        activities.sort((a, b) => new Date(b.time) - new Date(a.time));
+        
+        if (activities.length === 0) {
+            activityContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: rgba(255, 255, 255, 0.6);">
+                    <i class="ph-light ph-clock" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                    <p>No recent activity</p>
+                </div>
+            `;
+            return;
+        }
+        
+        activityContainer.innerHTML = activities.slice(0, 8).map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon">
+                    <i class="ph-light ${activity.icon}"></i>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">${activity.title}</div>
+                    <div class="activity-meta">${activity.meta}</div>
+                </div>
+                <div class="activity-time">${activity.time}</div>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading recent activity:', error);
+        activityContainer.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem;">
+                <i class="ph-light ph-warning"></i>
+                Error loading recent activity
+            </div>
+        `;
+    }
+}
+
+/**
+ * Load and display tickets
+ */
+async function loadTickets() {
+    const ticketsTable = document.getElementById('ticketsTable');
+    
+    try {
+        ticketsTable.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading tickets...</div>';
+        
+        const result = await db.tickets.getAll();
+        
+        if (result.success) {
+            allTickets = result.data || [];
+            displayTickets(allTickets);
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error loading tickets:', error);
+        ticketsTable.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem;">
+                <i class="ph-light ph-warning"></i>
+                Error loading tickets: ${error.message}
+            </div>
+        `;
+    }
+}
+
+/**
+ * Display tickets in table
+ */
+function displayTickets(tickets) {
+    const ticketsTable = document.getElementById('ticketsTable');
     
     if (tickets.length === 0) {
-        ticketsTableBody.innerHTML = '';
-        emptyState.style.display = 'flex';
+        ticketsTable.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                <i class="ph-light ph-ticket" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <h4>No Tickets Found</h4>
+                <p>Create your first ticket to get started.</p>
+            </div>
+        `;
         return;
     }
     
-    emptyState.style.display = 'none';
+    ticketsTable.innerHTML = tickets.map(ticket => `
+        <div class="table-row" onclick="openTicketDetail('${ticket.id}')">
+            <div class="table-cell">#${ticket.id.substring(0, 8)}</div>
+            <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
+            <div class="table-cell">
+                <span class="status-badge status-${ticket.status}">
+                    ${formatStatus(ticket.status)}
+                </span>
+            </div>
+            <div class="table-cell priority priority-${ticket.priority}">
+                ${formatPriority(ticket.priority)}
+            </div>
+            <div class="table-cell">${ticket.customer_name || 'Unknown'}</div>
+            <div class="table-cell">${formatDate(ticket.created_at)}</div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Filter tickets based on current filters
+ */
+function filterTickets() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const sortBy = document.getElementById('sortBy').value;
     
-    ticketsTableBody.innerHTML = tickets.map(ticket => {
-        const customer = allCustomers.find(c => c.id === ticket.customer_id);
-        const customerName = customer ? customer.name : 'Unknown Customer';
-        const customerEmail = customer ? customer.email : '';
-        
-        const createdDate = new Date(ticket.created_at);
-        const timeAgo = getTimeAgo(createdDate);
-        
-        const typeClass = ticket.service_type ? `type-${ticket.service_type.toLowerCase().replace(/\s+/g, '-')}` : 'type-question';
-        
-        return `
-            <tr data-ticket-id="${ticket.id}" class="ticket-row">
-                <td class="checkbox-col">
-                    <input type="checkbox" value="${ticket.id}">
-                </td>
-                <td class="id-col">#${ticket.id}</td>
-                <td class="subject-col">
-                    <a href="#" class="ticket-subject" onclick="openTicketDetail(${ticket.id})">${escapeHtml(ticket.title)}</a>
-                </td>
-                <td class="requester-col">
-                    <div class="requester-info">
-                        <div class="requester-name">${escapeHtml(customerName)}</div>
-                        <div class="requester-email">${escapeHtml(customerEmail)}</div>
-                    </div>
-                </td>
-                <td class="requested-col">${timeAgo}</td>
-                <td class="type-col">
-                    <span class="type-badge ${typeClass}">${ticket.service_type || 'Question'}</span>
-                </td>
-                <td class="priority-col">
-                    <span class="priority-badge priority-${ticket.priority}">${capitalizeFirst(ticket.priority)}</span>
-                </td>
-                <td class="status-col">
-                    <span class="status-badge status-${ticket.status}">${getStatusDisplay(ticket.status)}</span>
-                </td>
-                <td class="actions-col">
-                    <button class="btn-icon" onclick="openTicketDetail(${ticket.id})" title="View ticket">
-                        <i class="ph-light ph-eye"></i>
-                    </button>
-                    <button class="btn-icon" onclick="editTicket(${ticket.id})" title="Edit ticket">
-                        <i class="ph-light ph-pencil-simple"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-    }).join('');
+    let filtered = [...allTickets];
     
-    // Add click handlers for rows
-    document.querySelectorAll('.ticket-row').forEach(row => {
-        row.addEventListener('click', function(e) {
-            if (e.target.type !== 'checkbox' && !e.target.closest('button')) {
-                const ticketId = this.dataset.ticketId;
-                openTicketDetail(parseInt(ticketId));
-            }
-        });
+    // Apply filters
+    if (statusFilter) {
+        filtered = filtered.filter(ticket => ticket.status === statusFilter);
+    }
+    
+    if (priorityFilter) {
+        filtered = filtered.filter(ticket => ticket.priority === priorityFilter);
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+        switch (sortBy) {
+            case 'priority':
+                const priorityOrder = { 'urgent': 4, 'high': 3, 'normal': 2, 'low': 1 };
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            case 'status':
+                return a.status.localeCompare(b.status);
+            case 'created_at':
+            default:
+                return new Date(b.created_at) - new Date(a.created_at);
+        }
     });
     
-    // Add checkbox change handlers
-    document.querySelectorAll('.tickets-table tbody input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', updateBulkActions);
-    });
+    displayTickets(filtered);
 }
 
-// Show contact list view (placeholder)
-function showContactListView(contacts) {
-    // For now, redirect to ticket view - you can implement this later
-    console.log('Contact list view - showing', contacts.length, 'contacts');
-    // Implementation would be similar to ticket list view
-}
-
-// Show customer list view (placeholder)
-function showCustomerListView(customers) {
-    // For now, redirect to ticket view - you can implement this later
-    console.log('Customer list view - showing', customers.length, 'customers');
-    // Implementation would be similar to ticket list view
-}
-
-// Show appointment list view (placeholder)
-function showAppointmentListView(appointments) {
-    // For now, redirect to ticket view - you can implement this later
-    console.log('Appointment list view - showing', appointments.length, 'appointments');
-    // Implementation would be similar to ticket list view
-}
-
-// Show cancellation requests view (placeholder)
-function showCancellationRequestsView(requests) {
-    // For now, redirect to ticket view - you can implement this later
-    console.log('Cancellation requests view - showing', requests.length, 'requests');
-    // Implementation would be similar to ticket list view
-}
-
-// Open ticket detail modal
+/**
+ * Open ticket detail panel
+ */
 async function openTicketDetail(ticketId) {
+    console.log('Opening ticket detail:', ticketId);
+    currentTicketId = ticketId;
+    
+    const panel = document.getElementById('ticketDetailPanel');
+    const content = document.getElementById('ticketDetailContent');
+    
+    // Show panel
+    panel.classList.add('open');
+    
+    // Reset content
+    content.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading ticket details...</div>';
+    
     try {
-        currentTicketId = ticketId;
-        const ticket = allTickets.find(t => t.id === ticketId);
-        const customer = allCustomers.find(c => c.id === ticket.customer_id);
-        
-        if (!ticket) {
-            showNotification('Ticket not found', 'error');
-            return;
+        // Get ticket details
+        const ticketResult = await db.tickets.getById(ticketId);
+        if (!ticketResult.success) {
+            throw new Error(ticketResult.error);
         }
         
-        // Update modal content
-        document.getElementById('modalTicketSubject').textContent = ticket.title;
-        document.getElementById('modalTicketId').textContent = `#${ticket.id}`;
-        document.getElementById('modalTicketCreated').textContent = `Created ${getTimeAgo(new Date(ticket.created_at))}`;
-        document.getElementById('modalTicketStatus').textContent = getStatusDisplay(ticket.status);
-        document.getElementById('modalTicketPriority').textContent = capitalizeFirst(ticket.priority);
-        document.getElementById('modalTicketType').textContent = ticket.service_type || 'Question';
-        document.getElementById('modalTicketCreatedDate').textContent = getTimeAgo(new Date(ticket.created_at));
+        const ticket = ticketResult.data;
         
-        // Update customer info
-        if (customer) {
-            document.getElementById('modalCustomerName').textContent = customer.name;
-            document.getElementById('modalCustomerEmail').textContent = customer.email;
-            document.getElementById('modalCustomerPhone').textContent = customer.phone || 'N/A';
-            document.getElementById('modalCustomerLocation').textContent = customer.address || 'N/A';
+        // Update panel title
+        document.getElementById('detailTitle').textContent = `#${ticket.id.substring(0, 8)} - ${ticket.title}`;
+        
+        // Get customer info
+        let customerInfo = 'Unknown Customer';
+        if (ticket.customer_id) {
+            const customerResult = await db.customers.getById(ticket.customer_id);
+            if (customerResult.success) {
+                customerInfo = customerResult.data.full_name;
+            }
         }
         
-        // Load conversation
-        await loadTicketConversation(ticketId);
+        // Get messages
+        const messagesResult = await db.ticketMessages.getByTicketId(ticketId);
+        const messages = messagesResult.success ? messagesResult.data : [];
         
-        // Show modal
-        document.getElementById('ticketDetailModal').style.display = 'flex';
-        
-    } catch (error) {
-        console.error('Error opening ticket detail:', error);
-        showNotification('Failed to load ticket details', 'error');
-    }
-}
-
-// Load ticket conversation
-async function loadTicketConversation(ticketId) {
-    try {
-        const messages = await AdminDB.messages.getByTicketId(ticketId);
-        const conversationDiv = document.getElementById('conversationMessages');
-        
-        if (!messages || messages.length === 0) {
-            conversationDiv.innerHTML = `
-                <div class="conversation-message staff-message">
-                    <div class="message-header">
-                        <span class="message-author">System</span>
-                        <span class="message-time">Ticket created</span>
-                    </div>
-                    <div class="message-content">
-                        This ticket was created and is ready for your response.
+        // Display ticket details
+        content.innerHTML = `
+            <div class="ticket-properties">
+                <div class="property-item">
+                    <div class="property-label">Status</div>
+                    <div class="property-value">
+                        <span class="status-badge status-${ticket.status}">${formatStatus(ticket.status)}</span>
                     </div>
                 </div>
-            `;
-            return;
-        }
-        
-        conversationDiv.innerHTML = messages.map(message => {
-            const isFromStaff = message.is_from_staff;
-            const isInternal = message.is_internal;
-            const messageClass = isInternal ? 'internal-message' : (isFromStaff ? 'staff-message' : 'customer-message');
+                <div class="property-item">
+                    <div class="property-label">Priority</div>
+                    <div class="property-value priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Customer</div>
+                    <div class="property-value">${customerInfo}</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Created</div>
+                    <div class="property-value">${formatDateTime(ticket.created_at)}</div>
+                </div>
+            </div>
             
-            return `
-                <div class="conversation-message ${messageClass}">
-                    <div class="message-header">
-                        <span class="message-author">
-                            ${escapeHtml(isFromStaff ? (message.staff_name || 'Staff') : message.customer_name || 'Customer')}
-                            ${isInternal ? '<span class="internal-badge">Internal</span>' : ''}
-                        </span>
-                        <span class="message-time">${getTimeAgo(new Date(message.created_at))}</span>
-                    </div>
-                    <div class="message-content">
-                        ${escapeHtml(message.message).replace(/\n/g, '<br>')}
-                    </div>
+            <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h4 style="color: #ffffff; margin-bottom: 0.5rem;">Description</h4>
+                <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.5; margin: 0;">${escapeHtml(ticket.description)}</p>
+            </div>
+            
+            <div class="conversation">
+                <div class="conversation-header">Conversation</div>
+                <div id="messagesContainer">
+                    ${messages.length === 0 ? 
+                        '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">No messages yet</p>' :
+                        messages.map(message => `
+                            <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
+                                <div class="message-header">
+                                    <span class="message-author">
+                                        ${message.is_from_staff ? 
+                                            (message.staff_name || 'Support Team') : 
+                                            (customerInfo || 'Customer')
+                                        }
+                                    </span>
+                                    <span class="message-time">${formatDateTime(message.created_at)}</span>
+                                </div>
+                                <div class="message-content">${escapeHtml(message.message)}</div>
+                            </div>
+                        `).join('')
+                    }
                 </div>
-            `;
-        }).join('');
-        
-        // Scroll to bottom
-        conversationDiv.scrollTop = conversationDiv.scrollHeight;
+            </div>
+            
+            <div class="reply-section">
+                <div class="reply-tabs">
+                    <button class="reply-tab active" data-mode="public">Public Reply</button>
+                    <button class="reply-tab" data-mode="internal">Internal Note</button>
+                </div>
+                <form id="replyForm" onsubmit="handleReplySubmit(event)">
+                    <textarea class="reply-textarea" id="replyMessage" placeholder="Type your ${replyMode} message here..." required></textarea>
+                    <div class="reply-actions">
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-paper-plane-right"></i>
+                            Send ${replyMode === 'public' ? 'Reply' : 'Note'}
+                        </button>
+                        <button type="button" class="btn secondary" onclick="closeTicketDetail()">Close</button>
+                    </div>
+                </form>
+            </div>
+        `;
         
     } catch (error) {
-        console.error('Error loading conversation:', error);
-        showNotification('Failed to load conversation', 'error');
+        console.error('Error loading ticket details:', error);
+        content.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem;">
+                <i class="ph-light ph-warning"></i>
+                Error loading ticket details: ${error.message}
+            </div>
+        `;
     }
 }
 
-// Handle reply form submission
+/**
+ * Close ticket detail panel
+ */
+function closeTicketDetail() {
+    document.getElementById('ticketDetailPanel').classList.remove('open');
+    currentTicketId = null;
+}
+
+/**
+ * Switch reply mode between public and internal
+ */
+function switchReplyMode(mode) {
+    replyMode = mode;
+    
+    // Update tabs
+    document.querySelectorAll('.reply-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    const activeTab = document.querySelector(`[data-mode="${mode}"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+    }
+    
+    // Update placeholder and button text
+    const textarea = document.getElementById('replyMessage');
+    const submitBtn = document.querySelector('#replyForm .btn.primary');
+    
+    if (textarea) {
+        textarea.placeholder = `Type your ${mode} message here...`;
+    }
+    
+    if (submitBtn) {
+        submitBtn.innerHTML = `
+            <i class="ph-light ph-paper-plane-right"></i>
+            Send ${mode === 'public' ? 'Reply' : 'Note'}
+        `;
+    }
+}
+
+/**
+ * Handle reply form submission
+ */
 async function handleReplySubmit(e) {
     e.preventDefault();
     
-    if (!currentTicketId) {
-        showNotification('No ticket selected', 'error');
-        return;
-    }
+    if (!currentTicketId) return;
     
-    const message = document.getElementById('replyMessage').value.trim();
+    const messageInput = document.getElementById('replyMessage');
+    const submitBtn = e.target.querySelector('.btn.primary');
+    const message = messageInput.value.trim();
+    
     if (!message) {
         showNotification('Please enter a message', 'error');
         return;
     }
     
-    const isInternal = document.querySelector('.reply-type-btn.active').dataset.type === 'internal';
-    const solveTicket = document.getElementById('solveTicket').checked;
-    
     try {
-        const admin = AdminAuth.getCurrentAdmin();
+        // Disable form
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Sending...';
         
-        // Create message
-        await AdminDB.messages.create({
+        // Create message data
+        const messageData = {
             ticket_id: currentTicketId,
+            staff_id: currentAdmin.id,
             message: message,
             is_from_staff: true,
-            is_internal: isInternal,
-            staff_name: admin.name || 'Staff'
-        });
+            is_internal: replyMode === 'internal'
+        };
         
-        // Update ticket status if solving
-        if (solveTicket) {
-            await AdminDB.tickets.update(currentTicketId, {
-                status: 'completed',
-                completed_at: new Date().toISOString()
-            });
+        // Send message
+        const result = await db.ticketMessages.create(messageData);
+        
+        if (result.success) {
+            // Clear form
+            messageInput.value = '';
+            
+            // Reload ticket details to show new message
+            await openTicketDetail(currentTicketId);
+            
+            showNotification('Message sent successfully', 'success');
+            
+        } else {
+            throw new Error(result.error);
         }
-        
-        // Clear form
-        document.getElementById('replyMessage').value = '';
-        document.getElementById('solveTicket').checked = false;
-        
-        // Reload conversation and data
-        await loadTicketConversation(currentTicketId);
-        await loadDashboardData();
-        
-        showNotification('Reply sent successfully', 'success');
         
     } catch (error) {
-        console.error('Error sending reply:', error);
-        showNotification('Failed to send reply', 'error');
+        console.error('Error sending message:', error);
+        showNotification('Error sending message: ' + error.message, 'error');
+    } finally {
+        // Re-enable form
+        submitBtn.disabled = false;
+        switchReplyMode(replyMode); // Reset button text
     }
 }
 
-// Show create ticket modal
-async function showCreateTicketModal() {
-    await loadCustomerDropdown();
-    document.getElementById('createTicketModal').style.display = 'flex';
-}
-
-// Load customers into dropdown
-async function loadCustomerDropdown() {
-    const customerSelect = document.getElementById('ticketCustomer');
-    if (!customerSelect) return;
-    
-    customerSelect.innerHTML = '<option value="">Select Customer</option>';
-    
-    allCustomers.forEach(customer => {
-        const option = document.createElement('option');
-        option.value = customer.id;
-        option.textContent = `${customer.name} (${customer.email})`;
-        customerSelect.appendChild(option);
-    });
-}
-
-// Handle create ticket form submission
-async function handleCreateTicket(e) {
-    e.preventDefault();
-    
-    console.log('Creating ticket...');
-    
-    const admin = AdminAuth.getCurrentAdmin();
-    
-    const formData = {
-        customer_id: document.getElementById('ticketCustomer').value,
-        title: document.getElementById('ticketTitle').value.trim(),
-        description: document.getElementById('ticketDescription').value.trim(),
-        priority: document.getElementById('ticketPriority').value,
-        status: document.getElementById('ticketStatus').value,
-        service_type: document.getElementById('ticketType').value
-    };
-
-    // Add staff notes to description if provided
-    const staffNotes = document.getElementById('ticketNotes').value.trim();
-    if (staffNotes) {
-        formData.staff_notes = staffNotes;
-    }
-
-    // Validation
-    if (!formData.customer_id) {
-        showNotification('Please select a customer', 'error');
-        return;
-    }
-    
-    if (formData.title.length < 5) {
-        showNotification('Title must be at least 5 characters long', 'error');
-        return;
-    }
-    
-    if (formData.description.length < 20) {
-        showNotification('Description must be at least 20 characters long', 'error');
-        return;
-    }
-
-    try {
-        console.log('Creating ticket with data:', formData);
-        
-        // Create the ticket
-        const newTicket = await AdminDB.tickets.create(formData);
-        console.log('Ticket created successfully:', newTicket);
-        
-        // Assign to current admin if checkbox is checked
-        if (document.getElementById('ticketAssignToMe').checked) {
-            await AdminDB.tickets.update(newTicket.id, {
-                assigned_to: admin.email
-            });
-        }
-        
-        // Close modal and reset form
-        document.getElementById('createTicketModal').style.display = 'none';
-        document.getElementById('createTicketForm').reset();
-        
-        // Refresh data
-        await loadDashboardData();
-        
-        showNotification('Ticket created successfully!', 'success');
-        
-        // Open the new ticket
-        setTimeout(() => {
-            openTicketDetail(newTicket.id);
-        }, 500);
-        
-    } catch (error) {
-        console.error('Error creating ticket:', error);
-        let errorMessage = 'Failed to create ticket';
-        
-        if (error.message && error.message.includes('could not find the')) {
-            errorMessage = 'Database schema error. Please run the column fix script first.';
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        
-        showNotification(errorMessage, 'error');
-    }
-}
-
-// Handle global search
-function handleGlobalSearch(searchTerm) {
-    console.log('Searching for:', searchTerm);
-    // Implementation for global search across all data
-    // This would filter the current view based on the search term
-}
-
-// Apply filters
-function applyFilters() {
-    const statusFilter = document.getElementById('statusFilter')?.value;
-    const priorityFilter = document.getElementById('priorityFilter')?.value;
-    
-    // Re-filter current view data
-    updateCurrentView();
-}
-
-// Apply sorting
-function applySorting() {
-    const sortBy = document.getElementById('sortBy')?.value;
-    
-    // Re-sort current view data
-    updateCurrentView();
-}
-
-// Update bulk actions visibility
-function updateBulkActions() {
-    const checkedBoxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]:checked');
-    const bulkActions = document.querySelector('.bulk-actions');
-    
-    if (checkedBoxes.length > 0) {
-        bulkActions.style.display = 'flex';
-    } else {
-        bulkActions.style.display = 'none';
-    }
-}
-
-// Handle bulk actions
-function handleBulkAction() {
-    const action = document.querySelector('.bulk-action-select').value;
-    const checkedBoxes = document.querySelectorAll('.tickets-table tbody input[type="checkbox"]:checked');
-    const ticketIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
-    
-    if (!action || ticketIds.length === 0) {
-        showNotification('Please select an action and tickets', 'error');
-        return;
-    }
-    
-    console.log('Bulk action:', action, 'on tickets:', ticketIds);
-    // Implementation for bulk actions
-}
-
-// Update ticket property
-async function updateTicketProperty(property, value) {
-    if (!currentTicketId) return;
+/**
+ * Load contacts
+ */
+async function loadContacts() {
+    const contactsTable = document.getElementById('contactsTable');
     
     try {
-        const updateData = {};
-        updateData[property] = value;
+        contactsTable.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading contacts...</div>';
         
-        if (property === 'status' && value === 'completed') {
-            updateData.completed_at = new Date().toISOString();
+        const result = await db.contacts.getAll();
+        
+        if (result.success) {
+            allContacts = result.data || [];
+            displayContacts(allContacts);
+        } else {
+            throw new Error(result.error);
         }
-        
-        await AdminDB.tickets.update(currentTicketId, updateData);
-        
-        // Update local data
-        const ticketIndex = allTickets.findIndex(t => t.id === currentTicketId);
-        if (ticketIndex !== -1) {
-            Object.assign(allTickets[ticketIndex], updateData);
-        }
-        
-        // Update UI
-        updateDashboardStats();
-        updateSidebarCounts();
-        updateCurrentView();
-        
-        showNotification(`Ticket ${property} updated`, 'success');
         
     } catch (error) {
-        console.error(`Error updating ticket ${property}:`, error);
-        showNotification(`Failed to update ticket ${property}`, 'error');
+        console.error('Error loading contacts:', error);
+        contactsTable.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem;">
+                <i class="ph-light ph-warning"></i>
+                Error loading contacts: ${error.message}
+            </div>
+        `;
     }
 }
 
-// Add ticket tag
-function addTicketTag(tag) {
-    if (!tag || !currentTicketId) return;
+/**
+ * Display contacts in table
+ */
+function displayContacts(contacts) {
+    const contactsTable = document.getElementById('contactsTable');
     
-    const tagsContainer = document.getElementById('ticketTags');
-    const tagElement = document.createElement('span');
-    tagElement.className = 'tag';
-    tagElement.innerHTML = `
-        ${escapeHtml(tag)}
-        <button class="tag-remove" onclick="removeTicketTag(this)">×</button>
-    `;
-    tagsContainer.appendChild(tagElement);
-}
-
-// Remove ticket tag
-function removeTicketTag(button) {
-    button.closest('.tag').remove();
-}
-
-// Refresh current view
-async function refreshCurrentView() {
-    await loadDashboardData();
-    showNotification('Data refreshed', 'success');
-}
-
-// Handle sign out
-function handleSignOut() {
-    if (confirm('Are you sure you want to sign out?')) {
-        AdminAuth.signOut();
-        window.location.href = 'admin-login.html';
+    if (contacts.length === 0) {
+        contactsTable.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                <i class="ph-light ph-envelope" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <h4>No Contact Requests</h4>
+                <p>Contact requests will appear here.</p>
+            </div>
+        `;
+        return;
     }
-}
-
-// Setup auto-refresh
-function setupAutoRefresh() {
-    // Refresh data every 5 minutes
-    setInterval(async () => {
-        try {
-            await loadDashboardData();
-        } catch (error) {
-            console.error('Auto-refresh failed:', error);
-        }
-    }, 5 * 60 * 1000);
-}
-
-// Utility functions
-function showLoading() {
-    // You can implement a loading spinner here
-    console.log('Loading...');
-}
-
-function hideLoading() {
-    console.log('Loading complete');
-}
-
-function showNotification(message, type = 'info') {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="ph-light ${type === 'success' ? 'ph-check-circle' : type === 'error' ? 'ph-warning-circle' : 'ph-info'}"></i>
-            <span>${escapeHtml(message)}</span>
+    
+    contactsTable.innerHTML = contacts.map(contact => `
+        <div class="table-row">
+            <div class="table-cell subject">${escapeHtml(contact.subject)}</div>
+            <div class="table-cell">${escapeHtml(contact.name)}</div>
+            <div class="table-cell">${escapeHtml(contact.email)}</div>
+            <div class="table-cell">
+                <span class="status-badge ${contact.processed ? 'status-completed' : 'status-new'}">
+                    ${contact.processed ? 'Processed' : 'New'}
+                </span>
+            </div>
+            <div class="table-cell">${formatDate(contact.created_at)}</div>
+            <div class="table-cell">
+                ${!contact.processed ? 
+                    `<button class="btn secondary" onclick="convertToTicket('${contact.id}')">
+                        <i class="ph-light ph-ticket"></i> Convert to Ticket
+                    </button>` : 
+                    '<span style="color: rgba(255, 255, 255, 0.5);">Processed</span>'
+                }
+            </div>
         </div>
-        <button class="notification-close">&times;</button>
-    `;
-    
-    // Add close handler
-    notification.querySelector('.notification-close').addEventListener('click', function() {
-        notification.remove();
-    });
-    
-    // Add to page
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.remove();
-        }
-    }, 5000);
+    `).join('');
 }
 
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+/**
+ * Filter contacts
+ */
+function filterContacts() {
+    const statusFilter = document.getElementById('contactStatusFilter').value;
+    
+    let filtered = [...allContacts];
+    
+    if (statusFilter !== '') {
+        const isProcessed = statusFilter === 'true';
+        filtered = filtered.filter(contact => contact.processed === isProcessed);
+    }
+    
+    displayContacts(filtered);
 }
 
-function capitalizeFirst(str) {
-    if (!str) return '';
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
+/**
+ * Utility Functions
+ */
 
-function getStatusDisplay(status) {
+// Format status for display
+function formatStatus(status) {
     const statusMap = {
         'new': 'New',
         'in_progress': 'In Progress',
@@ -949,37 +830,234 @@ function getStatusDisplay(status) {
     return statusMap[status] || status;
 }
 
-function getTimeAgo(date) {
+// Format priority for display  
+function formatPriority(priority) {
+    return priority.charAt(0).toUpperCase() + priority.slice(1);
+}
+
+// Format date
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+// Format date and time
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Format time ago
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} minutes ago`;
-    if (diffHours < 24) return `${diffHours} hours ago`;
-    if (diffDays < 7) return `${diffDays} days ago`;
-    
-    return date.toLocaleDateString();
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
 }
 
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
+// Escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="ph-light ph-${type === 'error' ? 'warning' : type === 'success' ? 'check-circle' : 'info'}"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
+
+/**
+ * Global Functions
+ */
+
+// Refresh current view
+function refreshCurrentView() {
+    loadSection(currentSection);
+    showNotification('Data refreshed', 'info');
+}
+
+// Refresh activity
+function refreshActivity() {
+    loadRecentActivity();
+    showNotification('Activity refreshed', 'info');
+}
+
+// Handle global search
+function handleGlobalSearch(e) {
+    const query = e.target.value.toLowerCase();
+    
+    if (currentSection === 'tickets') {
+        const filtered = allTickets.filter(ticket => 
+            ticket.title.toLowerCase().includes(query) ||
+            ticket.description.toLowerCase().includes(query) ||
+            (ticket.customer_name && ticket.customer_name.toLowerCase().includes(query))
+        );
+        displayTickets(filtered);
+    }
+    // Add other section search logic as needed
+}
+
+// Show create ticket modal
+function showCreateTicketModal() {
+    const modal = document.getElementById('createTicketModal');
+    modal.style.display = 'block';
+    
+    // Load customers for dropdown
+    loadCustomersDropdown();
+}
+
+// Close modal
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Handle create ticket
+async function handleCreateTicket(e) {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('.btn.primary');
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Creating...';
+        
+        const formData = {
+            customer_id: document.getElementById('ticketCustomer').value,
+            title: document.getElementById('ticketTitle').value,
+            description: document.getElementById('ticketDescription').value,
+            priority: document.getElementById('ticketPriority').value,
+            staff_notes: document.getElementById('ticketNotes').value,
+            created_by_staff: true,
+            assigned_to: currentAdmin.id
         };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+        
+        const result = await db.tickets.create(formData);
+        
+        if (result.success) {
+            showNotification('Ticket created successfully', 'success');
+            closeModal('createTicketModal');
+            
+            // Refresh tickets if we're on that view
+            if (currentSection === 'tickets') {
+                await loadTickets();
+            }
+            
+            // Reset form
+            e.target.reset();
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error creating ticket:', error);
+        showNotification('Error creating ticket: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ph-light ph-plus"></i> Create Ticket';
+    }
 }
 
-// Global functions for onclick handlers
-window.openTicketDetail = openTicketDetail;
-window.editTicket = function(ticketId) {
-    console.log('Edit ticket:', ticketId);
-    // Implementation for editing tickets
-};
-window.removeTicketTag = removeTicketTag; 
+// Load customers for dropdown
+async function loadCustomersDropdown() {
+    try {
+        const result = await db.customers.getAll();
+        if (result.success) {
+            const select = document.getElementById('ticketCustomer');
+            if (select) {
+                select.innerHTML = '<option value="">Select Customer</option>' +
+                    result.data.map(customer => 
+                        `<option value="${customer.id}">${customer.full_name} (${customer.email})</option>`
+                    ).join('');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading customers:', error);
+    }
+}
+
+// Handle logout
+async function handleLogout() {
+    try {
+        const result = await auth.signOut();
+        if (result.success) {
+            window.location.href = 'index.html';
+        } else {
+            console.error('Logout error:', result.error);
+            // Force redirect anyway
+            window.location.href = 'index.html';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Force redirect anyway
+        window.location.href = 'index.html';
+    }
+}
+
+// Placeholder functions for future features
+function loadCustomers() {
+    const customersTable = document.getElementById('customersTable');
+    customersTable.innerHTML = `
+        <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+            <i class="ph-light ph-users" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <h4>Customer Management</h4>
+            <p>Customer management features coming soon.</p>
+        </div>
+    `;
+}
+
+function loadAppointments() {
+    const appointmentsTable = document.getElementById('appointmentsTable');
+    appointmentsTable.innerHTML = `
+        <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+            <i class="ph-light ph-calendar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <h4>Appointment Management</h4>
+            <p>Appointment management features coming soon.</p>
+        </div>
+    `;
+}
+
+function filterAppointments() {
+    // Placeholder
+}
+
+function showAddCustomerModal() {
+    showNotification('Customer management features coming soon', 'info');
+}
+
+function showCreateAppointmentModal() {
+    showNotification('Appointment management features coming soon', 'info');
+}
+
+function convertToTicket(contactId) {
+    showNotification('Contact conversion features coming soon', 'info');
+} 

@@ -4,614 +4,1276 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SpyderNet IT</title>
-    <meta name="robots" content="noindex, nofollow">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://supabase.com/dashboard/api/js"></script>
+    <style>
+        /* Admin Dashboard Zendesk-Inspired Styles */
+        .admin-dashboard {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .admin-dashboard::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .sidebar-logo img {
+            width: 35px;
+            height: 35px;
+        }
+
+        .sidebar-logo .logo-text {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #7877c6, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(120, 119, 198, 0.2);
+            color: #ffffff;
+            border-right: 3px solid #7877c6;
+        }
+
+        .nav-item i {
+            font-size: 1.1rem;
+            min-width: 20px;
+        }
+
+        .nav-badge {
+            background: #7877c6;
+            color: #ffffff;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            margin-left: auto;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .admin-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .admin-details {
+            flex: 1;
+        }
+
+        .admin-name {
+            color: #ffffff;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .admin-role {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.75rem;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .main-header {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .global-search {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            color: #ffffff;
+            width: 300px;
+            font-size: 0.9rem;
+        }
+
+        .global-search:focus {
+            outline: none;
+            border-color: #7877c6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .header-btn.primary {
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            color: #ffffff;
+        }
+
+        .header-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(120, 119, 198, 0.3);
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Dashboard Overview */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #7877c6, #9d4edd);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            color: #7877c6;
+            font-size: 1.25rem;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            color: #28a745;
+        }
+
+        .stat-change.negative {
+            color: #dc3545;
+        }
+
+        /* Recent Activity */
+        .activity-section {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(120, 119, 198, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7877c6;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .activity-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
+
+        /* Table Styles */
+        .data-table {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .filter-dropdown, .sort-dropdown {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 0.5rem;
+            color: #ffffff;
+            font-size: 0.85rem;
+        }
+
+        .table-content {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto auto auto auto;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .table-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .table-cell {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9rem;
+        }
+
+        .table-cell.priority {
+            font-weight: 600;
+        }
+
+        .table-cell.subject {
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-new { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-in-progress { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status-cancelled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+        .priority-urgent { color: #dc3545; }
+        .priority-high { color: #fd7e14; }
+        .priority-normal { color: #ffffff; }
+        .priority-low { color: #6c757d; }
+
+        /* Ticket Detail Panel */
+        .ticket-detail-panel {
+            position: fixed;
+            top: 0;
+            right: -600px;
+            width: 600px;
+            height: 100vh;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ticket-detail-panel.open {
+            right: 0;
+        }
+
+        .detail-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-title {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .close-detail {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .ticket-properties {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .property-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .property-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .property-value {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .conversation {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .conversation-header {
+            color: #ffffff;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 3px solid #7877c6;
+        }
+
+        .message.staff {
+            background: rgba(120, 119, 198, 0.1);
+            border-left-color: #7877c6;
+        }
+
+        .message.customer {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-author {
+            color: #7877c6;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .message-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
+        }
+
+        .message-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+
+        .reply-section {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        .reply-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .reply-tab {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .reply-tab.active {
+            background: #7877c6;
+            color: #ffffff;
+        }
+
+        .reply-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+            min-height: 100px;
+            resize: vertical;
+            margin-bottom: 1rem;
+        }
+
+        .reply-textarea:focus {
+            outline: none;
+            border-color: #7877c6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            color: #ffffff;
+        }
+
+        .btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(120, 119, 198, 0.3);
+        }
+
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #7877c6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .global-search {
+                width: 200px;
+            }
+            
+            .ticket-detail-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-dashboard {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                min-height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            
+            .main-content {
+                min-height: calc(100vh - 200px);
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .header-actions {
+                justify-content: space-between;
+            }
+            
+            .global-search {
+                width: 100%;
+            }
+        }
+
+        /* Loading and Animation States */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 3000;
+            max-width: 400px;
+            animation: slideInRight 0.3s ease;
+        }
+
+        .notification.success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #28a745;
+        }
+
+        .notification.error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+        }
+
+        .notification.info {
+            background: rgba(120, 119, 198, 0.2);
+            border: 1px solid rgba(120, 119, 198, 0.3);
+            color: #7877c6;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
-<body>
-    <div class="top-bar">
-        <div class="container">
-            <div class="top-bar-left">
-                <div class="contact-item">
-                    <i class="ph-light ph-shield-check"></i>
-                    <span>Admin Portal - <span id="adminName">Loading...</span></span>
-                </div>
-            </div>
-            <div class="top-bar-right">
-                <button id="signOutBtn" class="text-link">
-                    <i class="ph-light ph-sign-out"></i>
-                    Sign Out
+<body class="admin-dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="sidebar-logo">
+                <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet IT">
+                <span class="logo-text">SpyderNet IT</span>
+            </a>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Overview</div>
+                <button class="nav-item active" data-section="dashboard">
+                    <i class="ph-light ph-squares-four"></i>
+                    <span>Dashboard</span>
                 </button>
             </div>
-        </div>
-    </div>
-    
-    <header class="admin-header">
-        <div class="admin-header-content">
-            <div class="logo">
-                <a href="admin-dashboard.html" class="logo-container">
-                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
-                    <div class="logo-text-container">
-                        <span class="logo-main-text">SpyderNet</span>
-                        <span class="logo-sub-text">IT</span>
-                        <span class="logo-tagline">Admin Dashboard</span>
-                    </div>
-                </a>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Support</div>
+                <button class="nav-item" data-section="tickets">
+                    <i class="ph-light ph-ticket"></i>
+                    <span>Tickets</span>
+                    <span class="nav-badge" id="ticketsBadge">0</span>
+                </button>
+                <button class="nav-item" data-section="contacts">
+                    <i class="ph-light ph-envelope"></i>
+                    <span>Contact Requests</span>
+                    <span class="nav-badge" id="contactsBadge">0</span>
+                </button>
             </div>
             
-            <!-- Global Search -->
-            <div class="global-search">
-                <div class="search-container">
-                    <i class="ph-light ph-magnifying-glass"></i>
-                    <input type="text" id="globalSearch" placeholder="Search tickets, customers, or contacts..." />
-                    <div class="search-filters">
-                        <button class="btn-icon" title="Search Filters">
-                            <i class="ph-light ph-funnel"></i>
-                        </button>
-                    </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <button class="nav-item" data-section="customers">
+                    <i class="ph-light ph-users"></i>
+                    <span>Customers</span>
+                </button>
+                <button class="nav-item" data-section="appointments">
+                    <i class="ph-light ph-calendar"></i>
+                    <span>Appointments</span>
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Analytics</div>
+                <button class="nav-item" data-section="analytics">
+                    <i class="ph-light ph-chart-line"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" data-section="reports">
+                    <i class="ph-light ph-file-text"></i>
+                    <span>Reports</span>
+                </button>
+            </div>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="admin-info">
+                <div class="admin-avatar" id="adminAvatar">A</div>
+                <div class="admin-details">
+                    <div class="admin-name" id="adminName">Admin User</div>
+                    <div class="admin-role" id="adminRole">Administrator</div>
                 </div>
             </div>
-            
+            <button class="logout-btn" onclick="handleLogout()">
+                <i class="ph-light ph-sign-out"></i>
+                Sign Out
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="main-header">
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
             <div class="header-actions">
-                <button id="createTicketBtn" class="btn btn-primary">
+                <div class="search-container">
+                    <i class="ph-light ph-magnifying-glass search-icon"></i>
+                    <input type="text" class="global-search" placeholder="Search tickets, customers..." id="globalSearch">
+                </div>
+                <button class="header-btn" onclick="refreshCurrentView()">
+                    <i class="ph-light ph-arrow-clockwise"></i>
+                    Refresh
+                </button>
+                <button class="header-btn primary" onclick="showCreateTicketModal()">
                     <i class="ph-light ph-plus"></i>
                     New Ticket
                 </button>
-                <a href="index.html" class="btn btn-secondary" target="_blank">
-                    <i class="ph-light ph-globe"></i>
-                    View Website
-                </a>
             </div>
         </div>
-    </header>
 
-    <!-- Zendesk-style Layout -->
-    <div class="admin-layout">
-        <!-- Sidebar Navigation -->
-        <aside class="admin-sidebar">
-            <nav class="sidebar-nav">
-                <!-- Dashboard Stats Summary -->
-                <div class="sidebar-stats">
-                    <div class="stats-summary">
-                        <div class="stat-item">
-                            <span class="stat-count" id="sidebarActiveTickets">0</span>
-                            <span class="stat-label">Open Tickets</span>
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Section -->
+            <div id="dashboard-section" class="content-section active">
+                <div class="dashboard-stats">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Total Tickets</span>
+                            <i class="ph-light ph-ticket stat-icon"></i>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-count" id="sidebarPendingContacts">0</span>
-                            <span class="stat-label">Pending Contacts</span>
+                        <div class="stat-value" id="totalTickets">0</div>
+                        <div class="stat-change">+12% from last month</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Open Tickets</span>
+                            <i class="ph-light ph-clock stat-icon"></i>
                         </div>
+                        <div class="stat-value" id="openTickets">0</div>
+                        <div class="stat-change">-5% from last week</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Urgent Tickets</span>
+                            <i class="ph-light ph-warning stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="urgentTickets">0</div>
+                        <div class="stat-change negative">+3 new today</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Avg Response Time</span>
+                            <i class="ph-light ph-timer stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="avgResponseTime">2.4h</div>
+                        <div class="stat-change">-15min from last week</div>
                     </div>
                 </div>
 
-                <!-- Ticket Views -->
-                <div class="nav-section">
-                    <h4 class="nav-section-title">Tickets</h4>
-                    <ul class="nav-menu">
-                        <li>
-                            <button class="nav-item active" data-view="unsolved-tickets">
-                                <i class="ph-light ph-ticket"></i>
-                                <span>Your unsolved tickets</span>
-                                <span class="count" id="unsolvedTicketsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="unassigned-tickets">
-                                <i class="ph-light ph-user-minus"></i>
-                                <span>Unassigned tickets</span>
-                                <span class="count" id="unassignedTicketsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="all-tickets">
-                                <i class="ph-light ph-stack"></i>
-                                <span>All tickets</span>
-                                <span class="count" id="allTicketsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="recently-solved">
-                                <i class="ph-light ph-check-circle"></i>
-                                <span>Recently solved</span>
-                                <span class="count" id="recentlySolvedCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="pending-tickets">
-                                <i class="ph-light ph-clock"></i>
-                                <span>Pending tickets</span>
-                                <span class="count" id="pendingTicketsCount">0</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Contact & Customer Views -->
-                <div class="nav-section">
-                    <h4 class="nav-section-title">Customers</h4>
-                    <ul class="nav-menu">
-                        <li>
-                            <button class="nav-item" data-view="contact-submissions">
-                                <i class="ph-light ph-envelope"></i>
-                                <span>Contact submissions</span>
-                                <span class="count" id="contactSubmissionsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="all-customers">
-                                <i class="ph-light ph-users"></i>
-                                <span>All customers</span>
-                                <span class="count" id="allCustomersCount">0</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Appointment Views -->
-                <div class="nav-section">
-                    <h4 class="nav-section-title">Appointments</h4>
-                    <ul class="nav-menu">
-                        <li>
-                            <button class="nav-item" data-view="upcoming-appointments">
-                                <i class="ph-light ph-calendar"></i>
-                                <span>Upcoming appointments</span>
-                                <span class="count" id="upcomingAppointmentsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="cancellation-requests">
-                                <i class="ph-light ph-calendar-x"></i>
-                                <span>Cancellation requests</span>
-                                <span class="count" id="cancellationRequestsCount">0</span>
-                            </button>
-                        </li>
-                        <li>
-                            <button class="nav-item" data-view="all-appointments">
-                                <i class="ph-light ph-calendar-blank"></i>
-                                <span>All appointments</span>
-                                <span class="count" id="allAppointmentsCount">0</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-        </aside>
-
-        <!-- Main Content Area -->
-        <main class="admin-main-content">
-            <!-- View Header with Title and Actions -->
-            <div class="view-header">
-                <div class="view-title">
-                    <h2 id="currentViewTitle">Your unsolved tickets</h2>
-                    <span class="view-count" id="currentViewCount">0 tickets</span>
-                </div>
-                <div class="view-actions">
-                    <div class="view-controls">
-                        <button class="btn-icon" id="refreshCurrentView" title="Refresh">
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Activity</h2>
+                        <button class="header-btn" onclick="refreshActivity()">
                             <i class="ph-light ph-arrow-clockwise"></i>
-                        </button>
-                        <button class="btn-icon" title="View Options">
-                            <i class="ph-light ph-dots-three"></i>
+                            Refresh
                         </button>
                     </div>
-                    <div class="bulk-actions" style="display: none;">
-                        <select class="bulk-action-select">
-                            <option value="">Bulk actions</option>
-                            <option value="mark-solved">Mark as solved</option>
-                            <option value="assign">Assign to...</option>
-                            <option value="priority">Change priority</option>
-                            <option value="delete">Delete</option>
-                        </select>
-                        <button class="btn btn-secondary" id="applyBulkAction">Apply</button>
+                    <div id="recentActivity">
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading recent activity...
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Content Area (List View or Detail View) -->
-            <div class="content-area">
-                <!-- Ticket List View -->
-                <div id="ticketListView" class="list-view active">
-                    <div class="list-controls">
-                        <div class="list-filters">
-                            <div class="filter-group">
-                                <select id="statusFilter" class="filter-select">
-                                    <option value="">All statuses</option>
-                                    <option value="new">New</option>
-                                    <option value="in_progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="cancelled">Cancelled</option>
-                                </select>
-                                <select id="priorityFilter" class="filter-select">
-                                    <option value="">All priorities</option>
-                                    <option value="low">Low</option>
-                                    <option value="normal">Normal</option>
-                                    <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="list-sort">
-                            <select id="sortBy" class="filter-select">
-                                <option value="created_at_desc">Latest first</option>
-                                <option value="created_at_asc">Oldest first</option>
-                                <option value="priority_desc">Priority (high to low)</option>
-                                <option value="priority_asc">Priority (low to high)</option>
-                                <option value="status">Status</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Tickets Table -->
-                    <div class="tickets-table-container">
-                        <table class="tickets-table">
-                            <thead>
-                                <tr>
-                                    <th class="checkbox-col">
-                                        <input type="checkbox" id="selectAllTickets">
-                                    </th>
-                                    <th class="id-col">ID</th>
-                                    <th class="subject-col">Subject</th>
-                                    <th class="requester-col">Requester</th>
-                                    <th class="requested-col">Requested</th>
-                                    <th class="type-col">Type</th>
-                                    <th class="priority-col">Priority</th>
-                                    <th class="status-col">Status</th>
-                                    <th class="actions-col">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ticketsTableBody">
-                                <!-- Tickets will be loaded here -->
-                            </tbody>
-                        </table>
-                        
-                        <!-- Empty State -->
-                        <div id="emptyState" class="empty-state" style="display: none;">
-                            <div class="empty-state-content">
-                                <i class="ph-light ph-ticket"></i>
-                                <h3>No tickets found</h3>
-                                <p>There are no tickets matching your current filter criteria.</p>
-                                <button class="btn btn-primary" id="createFirstTicket">
-                                    <i class="ph-light ph-plus"></i>
-                                    Create your first ticket
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Other List Views (contacts, customers, appointments) -->
-                <div id="contactListView" class="list-view">
-                    <!-- Contact submissions table will go here -->
-                </div>
-                
-                <div id="customerListView" class="list-view">
-                    <!-- Customers table will go here -->
-                </div>
-                
-                <div id="appointmentListView" class="list-view">
-                    <!-- Appointments table will go here -->
-                </div>
-            </div>
-        </main>
-
-        <!-- Ticket Detail Sidebar (Zendesk-style) -->
-        <aside id="ticketDetailSidebar" class="ticket-detail-sidebar" style="display: none;">
-            <div class="sidebar-header">
-                <div class="ticket-info">
-                    <h3 id="ticketDetailId">#12345</h3>
-                    <span class="ticket-status-badge" id="ticketDetailStatus">Open</span>
-                </div>
-                <button class="btn-icon close-detail-sidebar">
-                    <i class="ph-light ph-x"></i>
-                </button>
-            </div>
-
-            <div class="sidebar-content">
-                <!-- Customer Information -->
-                <div class="sidebar-section">
-                    <h4>Requester</h4>
-                    <div class="customer-info">
-                        <div class="customer-avatar">
-                            <i class="ph-light ph-user-circle"></i>
-                        </div>
-                        <div class="customer-details">
-                            <div class="customer-name" id="customerName">Customer Name</div>
-                            <div class="customer-email" id="customerEmail">customer@email.com</div>
-                            <div class="customer-phone" id="customerPhone">+1 (555) 123-4567</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ticket Properties -->
-                <div class="sidebar-section">
-                    <h4>Properties</h4>
-                    <div class="properties-list">
-                        <div class="property-item">
-                            <label>Status</label>
-                            <select id="ticketStatusSelect" class="property-select">
+            <!-- Tickets Section -->
+            <div id="tickets-section" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="section-title">Support Tickets</h2>
+                        <div class="table-controls">
+                            <select class="filter-dropdown" id="statusFilter">
+                                <option value="">All Statuses</option>
                                 <option value="new">New</option>
                                 <option value="in_progress">In Progress</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
                             </select>
-                        </div>
-                        <div class="property-item">
-                            <label>Priority</label>
-                            <select id="ticketPrioritySelect" class="property-select">
-                                <option value="low">Low</option>
-                                <option value="normal">Normal</option>
-                                <option value="high">High</option>
+                            <select class="filter-dropdown" id="priorityFilter">
+                                <option value="">All Priorities</option>
                                 <option value="urgent">Urgent</option>
+                                <option value="high">High</option>
+                                <option value="normal">Normal</option>
+                                <option value="low">Low</option>
                             </select>
-                        </div>
-                        <div class="property-item">
-                            <label>Type</label>
-                            <select id="ticketTypeSelect" class="property-select">
-                                <option value="question">Question</option>
-                                <option value="problem">Problem</option>
-                                <option value="task">Task</option>
+                            <select class="sort-dropdown" id="sortBy">
+                                <option value="created_at">Date Created</option>
+                                <option value="priority">Priority</option>
+                                <option value="status">Status</option>
                             </select>
                         </div>
                     </div>
-                </div>
-
-                <!-- Ticket Tags -->
-                <div class="sidebar-section">
-                    <h4>Tags</h4>
-                    <div class="tags-container">
-                        <div id="ticketTags" class="tags-list">
-                            <!-- Tags will be added here -->
+                    <div class="table-content" id="ticketsTable">
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading tickets...
                         </div>
-                        <input type="text" id="addTagInput" placeholder="Add tag..." class="tag-input">
                     </div>
                 </div>
             </div>
-        </aside>
+
+            <!-- Contacts Section -->
+            <div id="contacts-section" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="section-title">Contact Requests</h2>
+                        <div class="table-controls">
+                            <select class="filter-dropdown" id="contactStatusFilter">
+                                <option value="">All Requests</option>
+                                <option value="false">Unprocessed</option>
+                                <option value="true">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-content" id="contactsTable">
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading contact requests...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Section -->
+            <div id="customers-section" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="section-title">Customer Management</h2>
+                        <div class="table-controls">
+                            <button class="header-btn primary" onclick="showAddCustomerModal()">
+                                <i class="ph-light ph-plus"></i>
+                                Add Customer
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content" id="customersTable">
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading customers...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Section -->
+            <div id="appointments-section" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="section-title">Appointments</h2>
+                        <div class="table-controls">
+                            <select class="filter-dropdown" id="appointmentStatusFilter">
+                                <option value="">All Appointments</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button class="header-btn primary" onclick="showCreateAppointmentModal()">
+                                <i class="ph-light ph-plus"></i>
+                                New Appointment
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content" id="appointmentsTable">
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading appointments...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div id="analytics-section" class="content-section">
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Analytics Dashboard</h2>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Comprehensive insights into your support operations</p>
+                    </div>
+                    <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                        <i class="ph-light ph-chart-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        <h3>Analytics Coming Soon</h3>
+                        <p>Advanced analytics and reporting features will be available in the next update.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div id="reports-section" class="content-section">
+                <div class="activity-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Reports</h2>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Generate and export detailed reports</p>
+                    </div>
+                    <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                        <i class="ph-light ph-file-text" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                        <h3>Reports Coming Soon</h3>
+                        <p>Custom report generation will be available in the next update.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Ticket Detail Modal (full view) -->
-    <div id="ticketDetailModal" class="modal" style="display: none;">
-        <div class="modal-content ticket-detail-modal">
-            <!-- Ticket Detail Header -->
-            <div class="ticket-detail-header">
-                <div class="ticket-title-section">
-                    <h2 id="modalTicketSubject">Ticket Subject</h2>
-                    <div class="ticket-meta">
-                        <span class="ticket-id" id="modalTicketId">#12345</span>
-                        <span class="ticket-created" id="modalTicketCreated">Created 2 hours ago</span>
-                    </div>
-                </div>
-                <div class="ticket-actions">
-                    <button class="btn btn-secondary" id="editTicketBtn">
-                        <i class="ph-light ph-pencil-simple"></i>
-                        Edit
-                    </button>
-                    <button class="modal-close btn-icon">
-                        <i class="ph-light ph-x"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Ticket Detail Content -->
-            <div class="ticket-detail-content">
-                <!-- Conversation Area -->
-                <div class="conversation-area">
-                    <div class="conversation-header">
-                        <h3>Conversation</h3>
-                        <div class="conversation-controls">
-                            <button class="btn-icon" title="Conversation settings">
-                                <i class="ph-light ph-gear"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Messages List -->
-                    <div id="conversationMessages" class="conversation-messages">
-                        <!-- Messages will be loaded here -->
-                    </div>
-
-                    <!-- Reply Form -->
-                    <div class="reply-form">
-                        <div class="reply-header">
-                            <div class="reply-type">
-                                <button class="reply-type-btn active" data-type="public">
-                                    <i class="ph-light ph-chat-circle"></i>
-                                    Public reply
-                                </button>
-                                <button class="reply-type-btn" data-type="internal">
-                                    <i class="ph-light ph-lock"></i>
-                                    Internal note
-                                </button>
-                            </div>
-                        </div>
-                        <form id="replyForm" class="reply-form-content">
-                            <div class="reply-editor">
-                                <textarea id="replyMessage" placeholder="Leave a comment..." rows="4"></textarea>
-                            </div>
-                            <div class="reply-actions">
-                                <div class="reply-options">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="solveTicket">
-                                        <span>Submit as solved</span>
-                                    </label>
-                                </div>
-                                <div class="reply-submit">
-                                    <button type="button" class="btn btn-secondary">Save as draft</button>
-                                    <button type="submit" class="btn btn-primary">Submit</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Sidebar with customer info and properties -->
-                <div class="ticket-detail-sidebar-content">
-                    <!-- Customer Card -->
-                    <div class="customer-card">
-                        <div class="customer-header">
-                            <div class="customer-avatar">
-                                <i class="ph-light ph-user-circle"></i>
-                            </div>
-                            <div class="customer-info">
-                                <h4 id="modalCustomerName">Customer Name</h4>
-                                <span id="modalCustomerEmail">customer@email.com</span>
-                            </div>
-                        </div>
-                        <div class="customer-details">
-                            <div class="detail-item">
-                                <i class="ph-light ph-phone"></i>
-                                <span id="modalCustomerPhone">+1 (555) 123-4567</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="ph-light ph-map-pin"></i>
-                                <span id="modalCustomerLocation">Location</span>
-                            </div>
-                        </div>
-                        <div class="customer-actions">
-                            <button class="btn btn-secondary btn-sm">
-                                <i class="ph-light ph-user"></i>
-                                View profile
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Ticket Properties -->
-                    <div class="properties-card">
-                        <h4>Ticket properties</h4>
-                        <div class="properties-grid">
-                            <div class="property-item">
-                                <label>Status</label>
-                                <span class="property-value" id="modalTicketStatus">Open</span>
-                            </div>
-                            <div class="property-item">
-                                <label>Priority</label>
-                                <span class="property-value" id="modalTicketPriority">Normal</span>
-                            </div>
-                            <div class="property-item">
-                                <label>Type</label>
-                                <span class="property-value" id="modalTicketType">Question</span>
-                            </div>
-                            <div class="property-item">
-                                <label>Created</label>
-                                <span class="property-value" id="modalTicketCreatedDate">2 hours ago</span>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Ticket Detail Panel -->
+    <div id="ticketDetailPanel" class="ticket-detail-panel">
+        <div class="detail-header">
+            <h3 class="detail-title" id="detailTitle">Ticket Details</h3>
+            <button class="close-detail" onclick="closeTicketDetail()">&times;</button>
+        </div>
+        <div class="detail-content">
+            <div id="ticketDetailContent">
+                <div class="loading">
+                    <i class="ph-light ph-spinner"></i>
+                    Loading ticket details...
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Create Ticket Modal -->
-    <div id="createTicketModal" class="modal" style="display: none;">
-        <div class="modal-content large">
-            <div class="modal-header">
-                <h3>
-                    <i class="ph-light ph-ticket"></i>
-                    Create New Service Ticket
-                </h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <form id="createTicketForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ticketCustomer">Customer *</label>
-                        <select id="ticketCustomer" required>
-                            <option value="">Select Customer</option>
-                        </select>
-                        <small class="form-help">Choose the customer for this service ticket</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="ticketType">Service Type</label>
-                        <select id="ticketType">
-                            <option value="IT Support">IT Support</option>
-                            <option value="Hardware Repair">Hardware Repair</option>
-                            <option value="Network Setup">Network Setup</option>
-                            <option value="Software Installation">Software Installation</option>
-                            <option value="Data Recovery">Data Recovery</option>
-                            <option value="Consulting">Consulting</option>
-                            <option value="Other">Other</option>
-                        </select>
-                        <small class="form-help">Select the type of service requested</small>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ticketTitle">Subject/Title *</label>
-                    <input type="text" id="ticketTitle" required placeholder="Brief description of the issue or request">
-                    <small class="form-help">Enter a clear, concise subject line (minimum 5 characters)</small>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ticketDescription">Detailed Description *</label>
-                    <textarea id="ticketDescription" required rows="6" placeholder="Provide detailed information about the issue, steps to reproduce, expected vs actual behavior, etc."></textarea>
-                    <small class="form-help">Detailed description helps in faster resolution (minimum 20 characters)</small>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ticketPriority">Priority Level</label>
-                        <select id="ticketPriority">
-                            <option value="low">🟢 Low - General inquiry or minor issue</option>
-                            <option value="normal" selected>🟡 Normal - Standard support request</option>
-                            <option value="high">🟠 High - Important business impact</option>
-                            <option value="urgent">🔴 Urgent - Critical system down</option>
-                        </select>
-                        <small class="form-help">Select priority based on business impact</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="ticketStatus">Initial Status</label>
-                        <select id="ticketStatus">
-                            <option value="new" selected>New - Just created, needs review</option>
-                            <option value="in_progress">In Progress - Currently being worked on</option>
-                        </select>
-                        <small class="form-help">Set the initial status for this ticket</small>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="ticketNotes">Internal Staff Notes</label>
-                    <textarea id="ticketNotes" rows="3" placeholder="Internal notes, assignment details, or additional context (not visible to customer)"></textarea>
-                    <small class="form-help">These notes are only visible to staff members</small>
-                </div>
-                
-                <div class="form-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="ticketAssignToMe">
-                        <span>Assign this ticket to me</span>
-                    </label>
-                    <small class="form-help">Check this box to automatically assign the ticket to yourself</small>
-                </div>
-                
-                <div class="form-submit">
-                    <div class="form-submit-info">
-                        <small>Customer will be notified via email when the ticket is created</small>
-                    </div>
-                    <div class="form-submit-actions">
-                        <button type="button" class="btn btn-secondary" onclick="document.getElementById('createTicketModal').style.display = 'none'">
-                            <i class="ph-light ph-x"></i>
-                            Cancel
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="ph-light ph-plus"></i>
-                            Create Ticket
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Contact Details Modal -->
-    <div id="contactDetailsModal" class="modal" style="display: none;">
+    <div id="createTicketModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Contact Submission Details</h3>
-                <button class="modal-close">&times;</button>
+                <h3 class="modal-title">Create New Ticket</h3>
+                <button class="modal-close" onclick="closeModal('createTicketModal')">&times;</button>
             </div>
-            <div id="contactDetailsContent">
-                <!-- Contact details will be loaded here -->
+            <div class="modal-body">
+                <form id="createTicketForm">
+                    <div class="form-group">
+                        <label class="form-label">Customer</label>
+                        <select class="form-select" id="ticketCustomer" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" id="ticketTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" id="ticketPriority" required>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="ticketDescription" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Staff Notes (Internal)</label>
+                        <textarea class="form-textarea" id="ticketNotes"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn secondary" onclick="closeModal('createTicketModal')">Cancel</button>
+                        <button type="submit" class="btn primary">Create Ticket</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
