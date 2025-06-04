@@ -1201,26 +1201,19 @@
                 </div>
             </div>
 
-            <!-- Ticket Requests Section -->
-            <div class="tab-content" id="contacts">
-                <div class="tab-header">
-                    <h2 class="section-title">Customer Contact Requests</h2> 
-                    <p class="section-description">Manage contact submissions from the customer portal. These are requests from logged-in customers.</p>
-                    <div class="tab-actions">
-                        <!-- ... existing code ... -->
-                    </div>
-                </div>
+            <!-- Customer Requests Section -->
+            <div id="contacts-section" class="content-section">
                 <div class="data-table">
                     <div class="table-header">
-                        <h2 class="section-title">Ticket Requests</h2>
+                        <h2 class="section-title">Customer Contact Requests</h2>
                         <div class="table-controls">
                             <select class="filter-dropdown" id="contactStatusFilter">
                                 <option value="">All Requests</option>
                                 <option value="false">Unprocessed</option>
                                 <option value="true">Processed</option>
                             </select>
+                        </div>
                     </div>
-                </div>
                     <div class="table-content" id="contactsTable">
                         <!-- Fixed Table Header -->
                         <div id="contactsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
@@ -1249,12 +1242,12 @@
                         <div id="contactsTableData">
                             <div class="loading">
                                 <i class="ph-light ph-spinner"></i>
-                                Loading ticket requests...
+                                Loading customer requests...
                             </div>
                         </div>
                     </div>
-                        </div>
-                    </div>
+                </div>
+            </div>
 
             <!-- Web Forms Section -->
             <div id="webforms-section" class="content-section">
