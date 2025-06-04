@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
     <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.98/build/spline-viewer.js"></script>
     <script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-client.js"></script>
     <script>
         window.onload = function() {
             var forms = document.getElementsByTagName('form');
@@ -138,16 +140,24 @@
             <div class="contact-columns">
                 <div class="contact-info glass-card scroll-element">
                     <h3><i class="ph-light ph-phone icon-gradient"></i> Call, Text, or Message Below to Schedule Your Service</h3>
-                    <form id="contactForm" action="https://formsubmit.co/spydernetit@gmail.com" method="POST">
+                    
+                    <!-- Success Message -->
+                    <div id="successMessage" style="display: none; background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        Thank you! Your message has been sent successfully. We'll get back to you soon.
+                    </div>
+                    
+                    <!-- Error Message -->
+                    <div id="errorMessage" style="display: none; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                        Sorry, there was an error sending your message. Please try again or call us directly.
+                    </div>
+                    
+                    <form id="contactForm">
                         <input type="text" name="name" placeholder="Name" required>
                         <input type="email" name="email" placeholder="Email*" required>
                         <textarea name="message" placeholder="Message" rows="6" required></textarea>
-                        <input type="hidden" name="_subject" value="New message from SpyderNet IT website">
-                        <input type="hidden" name="_next" value="https://spydernetit.com/thankyou.html">
-                        <input type="hidden" name="_captcha" value="false">
                         
                         <div class="g-recaptcha" data-sitekey="6LcTrSwrAAAAALxxoSmmbopp3LUbG2zKAy8f0CiT"></div>
-                        <button type="submit">Send a Quick Message</button>
+                        <button type="submit" id="submitBtn">Send a Quick Message</button>
                     </form>
                 </div>
                 <div class="contact-info glass-card scroll-element">
@@ -188,6 +198,72 @@
     </footer>
 
     <script src="js/script.js"></script>
+    
+    <script>
+        // Handle contact form submission
+        document.getElementById('contactForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMsg = document.getElementById('successMessage');
+            const errorMsg = document.getElementById('errorMessage');
+            
+            // Check reCAPTCHA
+            const response = grecaptcha.getResponse();
+            if (response.length === 0) {
+                alert('Please check the reCAPTCHA box to verify you are not a robot.');
+                return;
+            }
+            
+            // Hide messages
+            successMsg.style.display = 'none';
+            errorMsg.style.display = 'none';
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending...';
+            
+            try {
+                // Get form data
+                const formData = {
+                    form_type: 'Contact Form',
+                    name: document.querySelector('input[name="name"]').value,
+                    email: document.querySelector('input[name="email"]').value,
+                    subject: 'New message from SpyderNet IT website',
+                    message: document.querySelector('textarea[name="message"]').value,
+                    processed: false,
+                    created_at: new Date().toISOString()
+                };
+                
+                // Submit to Supabase
+                const { data, error } = await supabase
+                    .from('web_form_submissions')
+                    .insert([formData]);
+                
+                if (error) throw error;
+                
+                // Show success message
+                successMsg.style.display = 'block';
+                
+                // Reset form and reCAPTCHA
+                document.getElementById('contactForm').reset();
+                grecaptcha.reset();
+                
+                // Scroll to success message
+                successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                
+            } catch (error) {
+                console.error('Form submission error:', error);
+                errorMsg.style.display = 'block';
+                errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } finally {
+                // Re-enable submit button
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send a Quick Message';
+            }
+        });
+    </script>
+    
     <!-- Zapier Chatbot -->
     <script async type='module' src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
     <zapier-interfaces-chatbot-embed is-popup='true' chatbot-id='cma82c9ya006c93e2cbb1kuql'></zapier-interfaces-chatbot-embed>
