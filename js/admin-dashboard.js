@@ -463,49 +463,107 @@ async function handleCreateTicket(e) {
     
     console.log('Creating ticket...');
     
+    // Get the current admin user
+    const admin = AdminAuth.getCurrentAdmin();
+    
     const formData = {
         customer_id: document.getElementById('ticketCustomer').value,
-        title: document.getElementById('ticketTitle').value,
-        description: document.getElementById('ticketDescription').value,
+        title: document.getElementById('ticketTitle').value.trim(),
+        description: document.getElementById('ticketDescription').value.trim(),
         priority: document.getElementById('ticketPriority').value,
-        status: 'open',
+        status: document.getElementById('ticketStatus').value,
         created_by_staff: true,
-        staff_notes: document.getElementById('ticketNotes').value || null
+        staff_notes: document.getElementById('ticketNotes').value.trim() || null
     };
+
+    // Add service type to staff notes if provided
+    const serviceType = document.getElementById('ticketType').value;
+    if (serviceType && serviceType !== 'Other') {
+        const serviceTypeNote = `Service Type: ${serviceType}`;
+        formData.staff_notes = formData.staff_notes 
+            ? `${serviceTypeNote}\n\n${formData.staff_notes}`
+            : serviceTypeNote;
+    }
+
+    // Add assignment info if admin assigned to themselves
+    const assignToMe = document.getElementById('ticketAssignToMe').checked;
+    if (assignToMe && admin) {
+        const assignmentNote = `Assigned to: ${admin.full_name} (${admin.email})`;
+        formData.staff_notes = formData.staff_notes 
+            ? `${assignmentNote}\n\n${formData.staff_notes}`
+            : assignmentNote;
+    }
 
     console.log('Form data:', formData);
 
-    // Validate required fields
+    // Enhanced validation
+    const errors = [];
+    
     if (!formData.customer_id) {
-        showNotification('Please select a customer', 'error');
-        return;
+        errors.push('Please select a customer');
     }
     if (!formData.title) {
-        showNotification('Please enter a ticket title', 'error');
-        return;
+        errors.push('Please enter a ticket subject/title');
+    }
+    if (formData.title.length < 5) {
+        errors.push('Subject must be at least 5 characters long');
     }
     if (!formData.description) {
-        showNotification('Please enter a ticket description', 'error');
+        errors.push('Please enter a detailed description');
+    }
+    if (formData.description.length < 20) {
+        errors.push('Description must be at least 20 characters long for proper context');
+    }
+
+    if (errors.length > 0) {
+        showNotification(errors.join('\n'), 'error');
         return;
     }
 
     const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Creating...';
+    submitBtn.innerHTML = '<i class="ph-light ph-circle-notch" style="animation: spin 1s linear infinite;"></i> Creating...';
 
     try {
         const result = await AdminDB.tickets.create(formData);
         console.log('Create ticket result:', result);
         
         if (result.success) {
+            // Close modal and reset form
             document.getElementById('createTicketModal').style.display = 'none';
             document.getElementById('createTicketForm').reset();
-            showNotification('Ticket created successfully!', 'success');
+            
+            // Show success notification with ticket ID
+            const ticketId = result.data.id.slice(-8);
+            showNotification(`✅ Ticket #${ticketId} created successfully!`, 'success');
+            
+            // Refresh data and stats
             await loadTickets();
             updateStats();
+            
+            // Switch to tickets tab to show the new ticket
+            switchTab('tickets');
+            
+            // Optionally auto-open the ticket details
+            setTimeout(() => {
+                viewTicketDetails(result.data.id);
+            }, 500);
+            
         } else {
             console.error('Ticket creation failed:', result.error);
-            showNotification('Failed to create ticket: ' + result.error, 'error');
+            let errorMessage = 'Failed to create ticket: ' + result.error;
+            
+            // Provide more helpful error messages
+            if (result.error.includes('foreign key')) {
+                errorMessage = 'Selected customer is invalid. Please refresh and try again.';
+            } else if (result.error.includes('check constraint')) {
+                errorMessage = 'Invalid status or priority value. Please contact technical support.';
+            } else if (result.error.includes('not-null')) {
+                errorMessage = 'Missing required information. Please fill in all required fields.';
+            }
+            
+            showNotification(errorMessage, 'error');
         }
     } catch (error) {
         console.error('Unexpected error creating ticket:', error);
@@ -513,7 +571,7 @@ async function handleCreateTicket(e) {
     }
 
     submitBtn.disabled = false;
-    submitBtn.textContent = 'Create Ticket';
+    submitBtn.innerHTML = originalText;
 }
 
 // Action functions

@@ -291,7 +291,7 @@
 
     <!-- Create Ticket Modal -->
     <div id="createTicketModal" class="modal" style="display: none;">
-        <div class="modal-content">
+        <div class="modal-content large">
             <div class="modal-header">
                 <h3>Create New Service Ticket</h3>
                 <button class="modal-close">&times;</button>
@@ -299,36 +299,88 @@
             <form id="createTicketForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="ticketCustomer">Customer</label>
+                        <label for="ticketCustomer">Customer *</label>
                         <select id="ticketCustomer" required>
                             <option value="">Select Customer</option>
                         </select>
+                        <small class="form-help">Choose the customer for this ticket</small>
                     </div>
                     <div class="form-group">
-                        <label for="ticketPriority">Priority</label>
-                        <select id="ticketPriority" required>
-                            <option value="low">Low</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
+                        <label for="ticketType">Service Type</label>
+                        <select id="ticketType">
+                            <option value="IT Support">IT Support</option>
+                            <option value="Hardware Repair">Hardware Repair</option>
+                            <option value="Software Installation">Software Installation</option>
+                            <option value="Network Setup">Network Setup</option>
+                            <option value="Data Recovery">Data Recovery</option>
+                            <option value="Security Setup">Security Setup</option>
+                            <option value="Consultation">Consultation</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="ticketTitle">Title</label>
-                    <input type="text" id="ticketTitle" required placeholder="Brief description of the issue">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ticketPriority">Priority *</label>
+                        <select id="ticketPriority" required>
+                            <option value="low">🟢 Low - General questions, minor issues</option>
+                            <option value="normal" selected>🟡 Normal - Standard service requests</option>
+                            <option value="high">🟠 High - Important issues affecting productivity</option>
+                            <option value="urgent">🔴 Urgent - Critical issues, business down</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ticketStatus">Initial Status</label>
+                        <select id="ticketStatus">
+                            <option value="new" selected>New - Just created</option>
+                            <option value="in_progress">In Progress - Being worked on</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label for="ticketDescription">Description</label>
-                    <textarea id="ticketDescription" required placeholder="Detailed description of the issue or service request"></textarea>
+                    <label for="ticketTitle">Subject *</label>
+                    <input type="text" id="ticketTitle" required placeholder="Brief, descriptive title of the issue or request">
+                    <small class="form-help">Keep it concise but descriptive</small>
                 </div>
+
                 <div class="form-group">
-                    <label for="ticketNotes">Staff Notes (Internal)</label>
-                    <textarea id="ticketNotes" placeholder="Internal notes for staff"></textarea>
+                    <label for="ticketDescription">Description *</label>
+                    <textarea id="ticketDescription" required placeholder="Detailed description of the issue, service request, or problem:
+
+• What exactly is happening?
+• When did it start?
+• What steps have been tried?
+• Any error messages?
+• Environment details (OS, software versions, etc.)"></textarea>
+                    <small class="form-help">Include as much detail as possible for faster resolution</small>
                 </div>
+
+                <div class="form-group">
+                    <label for="ticketNotes">Internal Staff Notes</label>
+                    <textarea id="ticketNotes" placeholder="Internal notes for staff (not visible to customer):
+
+• Initial assessment
+• Assignment notes
+• Special instructions
+• Technical details"></textarea>
+                    <small class="form-help">These notes are only visible to staff members</small>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ticketAssignToMe"> 
+                        Assign this ticket to me
+                    </label>
+                </div>
+
                 <div class="form-submit">
                     <button type="button" class="btn btn-secondary modal-close">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Ticket</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="ph-light ph-plus"></i>
+                        Create Ticket
+                    </button>
                 </div>
             </form>
         </div>
@@ -372,4 +424,5 @@
     <script src="js/admin-auth.js"></script>
     <script src="js/admin-dashboard.js"></script>
 </body>
+</html> 
 </html> 
