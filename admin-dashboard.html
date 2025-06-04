@@ -1007,11 +1007,11 @@
                     <span>Tickets</span>
                     <span class="nav-badge" id="ticketsBadge">0</span>
                             </button>
-                <button class="nav-item" data-section="contacts">
-                    <i class="ph-light ph-envelope"></i>
-                    <span>Ticket Requests</span>
-                    <span class="nav-badge" id="contactsBadge">0</span>
-                            </button>
+                <a href="#contacts" class="nav-link" data-section="contacts">
+                    <i class="ph-light ph-ticket"></i>
+                    <span>Customer Requests</span>
+                    <span class="badge" id="contactsBadge">0</span>
+                </a>
                 <button class="nav-item" data-section="webforms">
                     <i class="ph-light ph-file-text"></i>
                     <span>Web Forms</span>
@@ -1201,8 +1201,15 @@
                 </div>
             </div>
 
-            <!-- Contacts Section -->
-            <div id="contacts-section" class="content-section">
+            <!-- Ticket Requests Section -->
+            <div class="tab-content" id="contacts">
+                <div class="tab-header">
+                    <h2 class="section-title">Customer Contact Requests</h2> 
+                    <p class="section-description">Manage contact submissions from the customer portal. These are requests from logged-in customers.</p>
+                    <div class="tab-actions">
+                        <!-- ... existing code ... -->
+                    </div>
+                </div>
                 <div class="data-table">
                     <div class="table-header">
                         <h2 class="section-title">Ticket Requests</h2>

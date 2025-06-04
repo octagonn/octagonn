@@ -242,13 +242,11 @@ function switchSection(sectionName) {
 function getSectionTitle(sectionName) {
     const titles = {
         'dashboard': 'Dashboard',
-        'tickets': 'Support Tickets',
-        'contacts': 'Ticket Requests',
-        'customers': 'Customer Management',
-        'appointments': 'Appointments',
+        'tickets': 'Tickets',
+        'customers': 'Customers', 
         'analytics': 'Analytics',
-        'reports': 'Reports',
-        'webforms': 'Web Form Submissions'
+        'contacts': 'Customer Requests',
+        'webforms': 'Web Forms'
     };
     return titles[sectionName] || 'Dashboard';
 }
@@ -821,10 +819,10 @@ function displayContacts(contacts) {
     
     if (contacts.length === 0) {
         contactsTableData.innerHTML = `
-            <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
-                <i class="ph-light ph-envelope" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                <h4>No Ticket Requests</h4>
-                <p>Ticket requests will appear here.</p>
+            <div class="empty-state">
+                <i class="ph-light ph-user-circle"></i>
+                <h4>No Customer Requests</h4>
+                <p>Contact requests from logged-in customers will appear here.</p>
             </div>
         `;
         return;
@@ -1342,7 +1340,7 @@ async function deleteSelectedTickets() {
 async function deleteSelectedContacts() {
     const checkboxes = document.querySelectorAll('.contact-checkbox:checked');
     if (checkboxes.length === 0) return;
-    if (!confirm('Are you sure you want to delete the selected ticket requests?')) return;
+    if (!confirm('Are you sure you want to delete the selected customer requests?')) return;
     for (const cb of checkboxes) {
         await AdminDB.contactSubmissions.delete(cb.value);
     }

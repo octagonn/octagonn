@@ -3,11 +3,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if user is logged in
     checkUserStatus();
     
-    // Setup form submission
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', handleContactSubmission);
-    }
+    // Note: Contact form submission is now handled by inline JavaScript in each page
+    // This file now only handles customer status checking and UI updates
 });
 
 // Check user authentication status
@@ -95,96 +92,6 @@ function updateFormForLoggedInUser() {
     const submitButton = document.querySelector('button[type="submit"]');
     if (submitButton) {
         submitButton.innerHTML = '<i class="ph-light ph-envelope"></i> Send Message to Support';
-    }
-}
-
-// Handle contact form submission
-async function handleContactSubmission(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(e.target);
-    const submitButton = e.target.querySelector('button[type="submit"]');
-    
-    // Disable submit button
-    submitButton.disabled = true;
-    const originalText = submitButton.innerHTML;
-    submitButton.innerHTML = '<i class="ph-light ph-spinner"></i> Sending...';
-    
-    try {
-        // Check if user is logged in
-        const user = await SpyderNetDB.auth.getCurrentUser();
-        
-        if (user) {
-            // Save contact submission with customer reference
-            await saveContactSubmission(formData, user);
-        } else {
-            // Save regular contact submission
-            await saveContactSubmission(formData, null);
-        }
-        
-    } catch (error) {
-        console.error('Error submitting form:', error);
-        showContactMessage('An error occurred. Please try again.', 'error');
-    } finally {
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalText;
-    }
-}
-
-// Save contact submission to database
-async function saveContactSubmission(formData, user) {
-    try {
-        let customer = null;
-        if (user) {
-            const customerResult = await SpyderNetDB.db.customers.getByUserId(user.id);
-            if (customerResult.success) {
-                customer = customerResult.data;
-            }
-        }
-        
-        // Prepare submission data
-        const submissionData = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            subject: formData.get('subject'),
-            message: formData.get('message'),
-            is_from_customer: !!customer,
-            customer_id: customer ? customer.id : null
-        };
-        
-        // Save to database
-        const result = await SpyderNetDB.db.contactSubmissions.create(submissionData);
-        
-        if (result.success) {
-            if (customer) {
-                showContactMessage(
-                    'Message sent successfully! Our support team will review your request and may create a service ticket if needed. You\'ll be notified through your customer portal.',
-                    'success'
-                );
-                
-                // Show portal link
-                showPortalLink();
-            } else {
-                showContactMessage(
-                    'Thank you for your message! We\'ll get back to you within 24 hours. For faster service and to track requests, consider creating a customer account.',
-                    'success'
-                );
-                
-                // Show signup prompt
-                showSignupPrompt();
-            }
-            
-            // Reset form
-            document.getElementById('contactForm').reset();
-            
-        } else {
-            throw new Error(result.error);
-        }
-        
-    } catch (error) {
-        console.error('Error saving contact submission:', error);
-        showContactMessage('Error sending message: ' + error.message, 'error');
     }
 }
 
