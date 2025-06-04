@@ -383,6 +383,108 @@ const AdminDB = {
                 console.error('Error updating appointment:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async create(appointmentData) {
+            try {
+                const { data, error } = await supabase
+                    .from('appointments')
+                    .insert([appointmentData])
+                    .select();
+                
+                if (error) throw error;
+                return { success: true, data: data[0] };
+            } catch (error) {
+                console.error('Error creating appointment:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    },
+
+    // Appointment Requests
+    appointmentRequests: {
+        async getAll() {
+            try {
+                const { data, error } = await supabase
+                    .from('appointment_requests')
+                    .select(`
+                        *,
+                        customers (
+                            id,
+                            full_name,
+                            email,
+                            phone
+                        ),
+                        service_tickets (
+                            id,
+                            title
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error getting appointment requests:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async update(requestId, updates) {
+            try {
+                const { data, error } = await supabase
+                    .from('appointment_requests')
+                    .update(updates)
+                    .eq('id', requestId)
+                    .select();
+                
+                if (error) throw error;
+                return { success: true, data: data[0] };
+            } catch (error) {
+                console.error('Error updating appointment request:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async approve(requestId, appointmentData) {
+            try {
+                // Create the appointment
+                const appointmentResult = await AdminDB.appointments.create(appointmentData);
+                if (!appointmentResult.success) {
+                    throw new Error(appointmentResult.error);
+                }
+
+                // Update the request status and link to appointment
+                const updateResult = await this.update(requestId, {
+                    status: 'scheduled',
+                    appointment_id: appointmentResult.data.id,
+                    processed_at: new Date().toISOString()
+                });
+
+                if (!updateResult.success) {
+                    throw new Error(updateResult.error);
+                }
+
+                return { success: true, data: { request: updateResult.data, appointment: appointmentResult.data } };
+            } catch (error) {
+                console.error('Error approving appointment request:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async reject(requestId, staffResponse) {
+            try {
+                const result = await this.update(requestId, {
+                    status: 'rejected',
+                    staff_response: staffResponse,
+                    processed_at: new Date().toISOString()
+                });
+
+                return result;
+            } catch (error) {
+                console.error('Error rejecting appointment request:', error);
+                return { success: false, error: error.message };
+            }
         }
     }
 };

@@ -400,61 +400,89 @@ async function loadAppointments() {
     const appointmentsList = document.getElementById('appointmentsList');
     
     try {
-        appointmentsList.innerHTML = '<div class="loading">Loading appointments...</div>';
+        appointmentsList.innerHTML = '<div class="loading">Loading appointments and requests...</div>';
         
-        const result = await SpyderNetDB.db.appointments.getByCustomerId(currentCustomer.id);
+        // Load both appointments and appointment requests
+        const [appointmentsResult, requestsResult] = await Promise.all([
+            SpyderNetDB.db.appointments.getByCustomerId(currentCustomer.id),
+            SpyderNetDB.db.appointmentRequests.getByCustomerId(currentCustomer.id)
+        ]);
         
-        if (result.success) {
-            const appointments = result.data;
-            
-            if (appointments.length === 0) {
-                appointmentsList.innerHTML = `
-                    <div class="empty-state glass-card">
-                        <i class="ph-light ph-calendar"></i>
-                        <h4>No Appointments Scheduled</h4>
-                        <p>You don't have any appointments scheduled yet.</p>
-                        <button class="btn btn-primary" onclick="showAppointmentModal()">Schedule Appointment</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            appointmentsList.innerHTML = appointments.map(appointment => {
-                const appointmentDate = new Date(appointment.appointment_date + ' ' + appointment.appointment_time);
-                const isUpcoming = appointmentDate > new Date();
-                
-                return `
-                    <div class="appointment-card glass-card ${!isUpcoming ? 'past-appointment' : ''}">
-                        <div class="appointment-header">
-                            <div class="appointment-datetime">
-                                <i class="ph-light ph-calendar"></i>
-                                <span class="date">${SpyderNetDB.utils.formatDate(appointment.appointment_date)}</span>
-                                <span class="time">${formatTime(appointment.appointment_time)}</span>
-                            </div>
-                            <span class="status-badge ${SpyderNetDB.utils.getStatusColor(appointment.status)}">
-                                ${SpyderNetDB.utils.formatStatus(appointment.status)}
-                            </span>
-                        </div>
-                        ${appointment.notes ? `<p class="appointment-notes">${appointment.notes}</p>` : ''}
-                        <div class="appointment-meta">
-                            <span class="duration">${appointment.duration_minutes || 60} minutes</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-        } else {
-            appointmentsList.innerHTML = `
-                <div class="error-state glass-card">
-                    <i class="ph-light ph-warning"></i>
-                    <h4>Error Loading Appointments</h4>
-                    <p>${result.error}</p>
-                </div>
-            `;
+        let combinedItems = [];
+        
+        // Add confirmed appointments
+        if (appointmentsResult.success) {
+            appointmentsResult.data.forEach(appointment => {
+                combinedItems.push({
+                    ...appointment,
+                    type: 'appointment',
+                    date: appointment.appointment_date,
+                    time: appointment.appointment_time
+                });
+            });
         }
         
+        // Add appointment requests
+        if (requestsResult.success) {
+            requestsResult.data.forEach(request => {
+                combinedItems.push({
+                    ...request,
+                    type: 'request',
+                    date: request.requested_date,
+                    time: request.requested_time
+                });
+            });
+        }
+        
+        // Sort by date
+        combinedItems.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
+        
+        if (combinedItems.length === 0) {
+            appointmentsList.innerHTML = `
+                <div class="empty-state glass-card">
+                    <i class="ph-light ph-calendar"></i>
+                    <h4>No Appointments or Requests</h4>
+                    <p>You don't have any appointments or requests yet.</p>
+                    <button class="btn btn-primary" onclick="showAppointmentModal()">Request Appointment</button>
+                </div>
+            `;
+            return;
+        }
+        
+        appointmentsList.innerHTML = combinedItems.map(item => {
+            const itemDate = new Date(item.date + ' ' + item.time);
+            const isUpcoming = itemDate > new Date();
+            const isRequest = item.type === 'request';
+            
+            return `
+                <div class="appointment-card glass-card ${!isUpcoming ? 'past-appointment' : ''} ${isRequest ? 'appointment-request' : ''}">
+                    <div class="appointment-header">
+                        <div class="appointment-datetime">
+                            <i class="ph-light ph-calendar"></i>
+                            <span class="date">${SpyderNetDB.utils.formatDate(item.date)}</span>
+                            <span class="time">${formatTime(item.time)}</span>
+                        </div>
+                        <div class="appointment-badges">
+                            ${isRequest ? '<span class="type-badge">Request</span>' : '<span class="type-badge confirmed">Appointment</span>'}
+                            <span class="status-badge ${SpyderNetDB.utils.getStatusColor(item.status)}">
+                                ${SpyderNetDB.utils.formatStatus(item.status)}
+                            </span>
+                        </div>
+                    </div>
+                    ${item.notes ? `<p class="appointment-notes">${item.notes}</p>` : ''}
+                    ${item.staff_response ? `<p class="staff-response"><strong>Staff Response:</strong> ${item.staff_response}</p>` : ''}
+                    <div class="appointment-meta">
+                        ${isRequest ? 
+                            `<span class="request-info">Requested on ${SpyderNetDB.utils.formatDate(item.created_at)}</span>` :
+                            `<span class="duration">${item.duration_minutes || 60} minutes</span>`
+                        }
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
     } catch (error) {
-        console.error('Error loading appointments:', error);
+        console.error('Error loading appointments and requests:', error);
         appointmentsList.innerHTML = `
             <div class="error-state glass-card">
                 <i class="ph-light ph-warning"></i>
@@ -541,7 +569,7 @@ async function showAppointmentModal() {
         }
         
     } catch (error) {
-        console.error('Error loading tickets for appointment:', error);
+        console.error('Error loading tickets for appointment request:', error);
     }
     
     // Set minimum date to today
@@ -556,24 +584,23 @@ async function showAppointmentModal() {
 async function handleAppointmentSubmit(e) {
     e.preventDefault();
     
-    const appointmentData = {
+    const requestData = {
         customer_id: currentCustomer.id,
         ticket_id: document.getElementById('appointmentTicket').value || null,
-        appointment_date: document.getElementById('appointmentDate').value,
-        appointment_time: document.getElementById('appointmentTime').value,
-        notes: document.getElementById('appointmentNotes').value,
-        status: 'scheduled'
+        requested_date: document.getElementById('appointmentDate').value,
+        requested_time: document.getElementById('appointmentTime').value,
+        notes: document.getElementById('appointmentNotes').value
     };
     
     const button = e.target.querySelector('button[type="submit"]');
     button.disabled = true;
-    button.innerHTML = '<i class="ph-light ph-spinner"></i> Scheduling...';
+    button.innerHTML = '<i class="ph-light ph-spinner"></i> Sending Request...';
     
     try {
-        const result = await SpyderNetDB.db.appointments.create(appointmentData);
+        const result = await SpyderNetDB.db.appointmentRequests.create(requestData);
         
         if (result.success) {
-            showNotification('Appointment scheduled successfully!', 'success');
+            showNotification('Appointment request sent successfully! Our staff will review and contact you soon.', 'success');
             closeAllModals();
             document.getElementById('appointmentForm').reset();
             
@@ -583,15 +610,15 @@ async function handleAppointmentSubmit(e) {
                 loadAppointments();
             }
         } else {
-            showNotification('Error scheduling appointment: ' + result.error, 'error');
+            showNotification('Error sending appointment request: ' + result.error, 'error');
         }
         
     } catch (error) {
-        console.error('Error scheduling appointment:', error);
-        showNotification('An error occurred while scheduling your appointment.', 'error');
+        console.error('Error sending appointment request:', error);
+        showNotification('An error occurred while sending your appointment request.', 'error');
     } finally {
         button.disabled = false;
-        button.innerHTML = 'Schedule Appointment';
+        button.innerHTML = 'Request Appointment';
     }
 }
 

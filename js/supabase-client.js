@@ -376,6 +376,63 @@ const db = {
                 return { success: false, error: error.message }
             }
         }
+    },
+
+    // Appointment request operations (customer-facing)
+    appointmentRequests: {
+        async create(requestData) {
+            try {
+                const { data, error } = await supabase
+                    .from('appointment_requests')
+                    .insert([{
+                        customer_id: requestData.customer_id,
+                        ticket_id: requestData.ticket_id,
+                        requested_date: requestData.requested_date,
+                        requested_time: requestData.requested_time,
+                        notes: requestData.notes,
+                        status: 'pending'
+                    }])
+                    .select()
+                
+                if (error) throw error
+                return { success: true, data: data[0] }
+            } catch (error) {
+                console.error('Create appointment request error:', error)
+                return { success: false, error: error.message }
+            }
+        },
+
+        async getByCustomerId(customerId) {
+            try {
+                const { data, error } = await supabase
+                    .from('appointment_requests')
+                    .select('*')
+                    .eq('customer_id', customerId)
+                    .order('created_at', { ascending: false })
+                
+                if (error) throw error
+                return { success: true, data }
+            } catch (error) {
+                console.error('Get appointment requests error:', error)
+                return { success: false, error: error.message }
+            }
+        },
+
+        async update(requestId, updates) {
+            try {
+                const { data, error } = await supabase
+                    .from('appointment_requests')
+                    .update(updates)
+                    .eq('id', requestId)
+                    .select()
+                
+                if (error) throw error
+                return { success: true, data: data[0] }
+            } catch (error) {
+                console.error('Update appointment request error:', error)
+                return { success: false, error: error.message }
+            }
+        }
     }
 }
 
@@ -409,7 +466,10 @@ const utils = {
             'completed': 'Completed',
             'cancelled': 'Cancelled',
             'scheduled': 'Scheduled',
-            'confirmed': 'Confirmed'
+            'confirmed': 'Confirmed',
+            'pending': 'Pending',
+            'approved': 'Approved',
+            'rejected': 'Rejected'
         }
         return statusMap[status] || status
     },
@@ -422,7 +482,10 @@ const utils = {
             'completed': 'status-completed',
             'cancelled': 'status-cancelled',
             'scheduled': 'status-scheduled',
-            'confirmed': 'status-confirmed'
+            'confirmed': 'status-confirmed',
+            'pending': 'status-pending',
+            'approved': 'status-approved',
+            'rejected': 'status-rejected'
         }
         return colorMap[status] || 'status-default'
     }

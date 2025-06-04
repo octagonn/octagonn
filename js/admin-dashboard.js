@@ -13,7 +13,8 @@ let currentData = {
     contacts: [],
     tickets: [],
     customers: [],
-    appointments: []
+    appointments: [],
+    appointmentRequests: []
 };
 
 // Initialize dashboard
@@ -76,6 +77,7 @@ function setupEventListeners() {
     document.getElementById('refreshTickets').addEventListener('click', () => loadTickets());
     document.getElementById('refreshCustomers').addEventListener('click', () => loadCustomers());
     document.getElementById('refreshAppointments').addEventListener('click', () => loadAppointments());
+    document.getElementById('refreshAppointmentRequests').addEventListener('click', () => loadAppointmentRequests());
 
     // Create ticket button
     document.getElementById('createTicketBtn').addEventListener('click', showCreateTicketModal);
@@ -112,7 +114,8 @@ async function loadAllData() {
         loadContacts(),
         loadTickets(),
         loadCustomers(),
-        loadAppointments()
+        loadAppointments(),
+        loadAppointmentRequests()
     ]);
 }
 
@@ -168,6 +171,19 @@ async function loadAppointments() {
     }
 }
 
+// Load appointment requests
+async function loadAppointmentRequests() {
+    showLoading('appointmentRequestsTableBody');
+    
+    const result = await AdminDB.appointmentRequests.getAll();
+    if (result.success) {
+        currentData.appointmentRequests = result.data;
+        renderAppointmentRequestsTable();
+    } else {
+        showError('appointmentRequestsTableBody', 'Failed to load appointment requests');
+    }
+}
+
 // Update dashboard stats
 function updateStats() {
     // Pending contacts
@@ -187,6 +203,10 @@ function updateStats() {
 
     // Total customers
     document.getElementById('totalCustomersCount').textContent = currentData.customers.length;
+
+    // Pending requests
+    const pendingRequests = currentData.appointmentRequests.filter(r => r.status === 'pending').length;
+    document.getElementById('pendingRequestsCount').textContent = pendingRequests;
 }
 
 // Switch tabs
@@ -201,7 +221,26 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
     });
-    document.getElementById(`${tabName}Tab`).classList.add('active');
+    document.getElementById(tabName + 'Tab').classList.add('active');
+
+    // Load data for the active tab if needed
+    switch(tabName) {
+        case 'contacts':
+            if (currentData.contacts.length === 0) loadContacts();
+            break;
+        case 'tickets':
+            if (currentData.tickets.length === 0) loadTickets();
+            break;
+        case 'customers':
+            if (currentData.customers.length === 0) loadCustomers();
+            break;
+        case 'appointments':
+            if (currentData.appointments.length === 0) loadAppointments();
+            break;
+        case 'appointment-requests':
+            if (currentData.appointmentRequests.length === 0) loadAppointmentRequests();
+            break;
+    }
 }
 
 // Render contacts table
@@ -351,6 +390,54 @@ function renderAppointmentsTable() {
                     <button class="btn-icon" onclick="cancelAppointment('${appointment.id}')" title="Cancel">
                         <i class="ph-light ph-x"></i>
                     </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Render appointment requests table
+function renderAppointmentRequestsTable() {
+    const tbody = document.getElementById('appointmentRequestsTableBody');
+    
+    if (currentData.appointmentRequests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No appointment requests found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = currentData.appointmentRequests.map(request => `
+        <tr>
+            <td>
+                <div>${formatDateTime(request.requested_date)} at ${formatTime(request.requested_time)}</div>
+                <div class="text-secondary">Requested: ${formatDate(request.created_at)}</div>
+            </td>
+            <td>${escapeHtml(request.customers?.full_name || 'Unknown')}</td>
+            <td>
+                ${request.service_tickets ? 
+                    `<a href="#" onclick="viewTicketDetails('${request.ticket_id}')">#${request.service_tickets.id.slice(-8)}</a>` : 
+                    'General'
+                }
+            </td>
+            <td>${escapeHtml(request.notes || 'No notes')}</td>
+            <td>
+                <span class="status-badge status-${request.status}">
+                    ${capitalizeFirst(request.status)}
+                </span>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    ${request.status === 'pending' ? `
+                        <button class="btn-icon btn-success" onclick="approveAppointmentRequest('${request.id}')" title="Approve Request">
+                            <i class="ph-light ph-check"></i>
+                        </button>
+                        <button class="btn-icon btn-danger" onclick="rejectAppointmentRequest('${request.id}')" title="Reject Request">
+                            <i class="ph-light ph-x"></i>
+                        </button>
+                    ` : `
+                        <button class="btn-icon" onclick="viewAppointmentRequestDetails('${request.id}')" title="View Details">
+                            <i class="ph-light ph-eye"></i>
+                        </button>
+                    `}
                 </div>
             </td>
         </tr>
@@ -871,6 +958,80 @@ async function cancelAppointment(appointmentId) {
     }
 }
 
+// Approve appointment request
+async function approveAppointmentRequest(requestId) {
+    const request = currentData.appointmentRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    // Create appointment data from the request
+    const appointmentData = {
+        customer_id: request.customer_id,
+        ticket_id: request.ticket_id,
+        appointment_date: request.requested_date,
+        appointment_time: request.requested_time,
+        notes: request.notes,
+        status: 'scheduled',
+        created_by_staff: true
+    };
+
+    const result = await AdminDB.appointmentRequests.approve(requestId, appointmentData);
+    
+    if (result.success) {
+        showNotification('Appointment request approved and appointment created!', 'success');
+        await loadAppointmentRequests();
+        await loadAppointments();
+        updateStats();
+    } else {
+        showNotification('Failed to approve appointment request: ' + result.error, 'error');
+    }
+}
+
+// Reject appointment request
+async function rejectAppointmentRequest(requestId) {
+    const staffResponse = prompt('Please provide a reason for rejection (optional):');
+    if (staffResponse === null) return; // User cancelled
+
+    const result = await AdminDB.appointmentRequests.reject(requestId, staffResponse || 'Request rejected by staff');
+    
+    if (result.success) {
+        showNotification('Appointment request rejected', 'success');
+        await loadAppointmentRequests();
+        updateStats();
+    } else {
+        showNotification('Failed to reject appointment request: ' + result.error, 'error');
+    }
+}
+
+// View appointment request details
+async function viewAppointmentRequestDetails(requestId) {
+    const request = currentData.appointmentRequests.find(r => r.id === requestId);
+    if (!request) return;
+
+    const customer = request.customers;
+    const ticket = request.service_tickets;
+
+    let details = `Appointment Request Details:\n\n`;
+    details += `Customer: ${customer?.full_name || 'Unknown'}\n`;
+    details += `Email: ${customer?.email || 'N/A'}\n`;
+    details += `Phone: ${customer?.phone || 'N/A'}\n\n`;
+    details += `Requested Date: ${formatDate(request.requested_date)}\n`;
+    details += `Requested Time: ${formatTime(request.requested_time)}\n`;
+    details += `Status: ${capitalizeFirst(request.status)}\n`;
+    details += `Notes: ${request.notes || 'No notes'}\n\n`;
+    
+    if (ticket) {
+        details += `Related Ticket: #${ticket.id.slice(-8)} - ${ticket.title}\n`;
+    }
+    
+    if (request.staff_response) {
+        details += `Staff Response: ${request.staff_response}\n`;
+    }
+    
+    details += `Requested on: ${formatDateTime(request.created_at)}`;
+
+    alert(details);
+}
+
 // Utility functions
 function showLoading(elementId) {
     document.getElementById(elementId).innerHTML = '<tr><td colspan="10" class="loading">Loading...</td></tr>';
@@ -916,6 +1077,12 @@ function formatDateTime(dateString) {
         minute: '2-digit',
         hour12: true
     });
+}
+
+function formatTime(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    const formattedTime = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+    return formattedTime;
 }
 
 function escapeHtml(text) {

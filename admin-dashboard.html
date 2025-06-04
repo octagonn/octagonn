@@ -83,6 +83,15 @@
                     </div>
                     <div class="stat-card glass-card">
                         <div class="stat-icon">
+                            <i class="ph-light ph-calendar-plus"></i>
+                        </div>
+                        <div class="stat-content">
+                            <div class="stat-number" id="pendingRequestsCount">0</div>
+                            <div class="stat-label">Pending Requests</div>
+                        </div>
+                    </div>
+                    <div class="stat-card glass-card">
+                        <div class="stat-icon">
                             <i class="ph-light ph-users"></i>
                         </div>
                         <div class="stat-content">
@@ -111,6 +120,10 @@
                     <button class="tab-header" data-tab="appointments">
                         <i class="ph-light ph-calendar"></i>
                         Appointments
+                    </button>
+                    <button class="tab-header" data-tab="appointment-requests">
+                        <i class="ph-light ph-calendar-plus"></i>
+                        Appointment Requests
                     </button>
                 </div>
 
@@ -238,6 +251,37 @@
                             </thead>
                             <tbody id="appointmentsTableBody">
                                 <!-- Appointments will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Appointment Requests Tab -->
+                <div id="appointment-requestsTab" class="tab-content">
+                    <div class="tab-header">
+                        <h3>Appointment Requests</h3>
+                        <div class="tab-actions">
+                            <button id="refreshAppointmentRequests" class="btn btn-secondary">
+                                <i class="ph-light ph-arrow-clockwise"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Requested Date & Time</th>
+                                    <th>Customer</th>
+                                    <th>Ticket</th>
+                                    <th>Notes</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointmentRequestsTableBody">
+                                <!-- Appointment requests will be loaded here -->
                             </tbody>
                         </table>
                     </div>

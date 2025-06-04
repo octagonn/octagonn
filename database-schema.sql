@@ -49,8 +49,25 @@ CREATE TABLE IF NOT EXISTS appointments (
     duration_minutes INTEGER DEFAULT 60,
     status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'confirmed', 'completed', 'cancelled')),
     notes TEXT,
+    created_by_staff BOOLEAN DEFAULT true, -- Track if appointment was created by staff
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Create appointment_requests table for customer requests
+CREATE TABLE IF NOT EXISTS appointment_requests (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    ticket_id UUID REFERENCES service_tickets(id) ON DELETE SET NULL,
+    requested_date DATE NOT NULL,
+    requested_time TIME NOT NULL,
+    notes TEXT,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'scheduled')),
+    staff_response TEXT, -- Staff response/notes when processing the request
+    appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL, -- Link to created appointment if approved
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    processed_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Create contact_submissions table for regular contact form submissions
@@ -75,6 +92,9 @@ CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(tick
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_customer_id ON ticket_messages(customer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_customer_id ON appointments(customer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
+CREATE INDEX IF NOT EXISTS idx_appointment_requests_customer_id ON appointment_requests(customer_id);
+CREATE INDEX IF NOT EXISTS idx_appointment_requests_status ON appointment_requests(status);
+CREATE INDEX IF NOT EXISTS idx_appointment_requests_date ON appointment_requests(requested_date);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_email ON contact_submissions(email);
 
 -- Enable Row Level Security (RLS) on all tables
@@ -82,6 +102,7 @@ ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE appointment_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies to avoid conflicts
@@ -99,6 +120,10 @@ DROP POLICY IF EXISTS "Users can create messages on own tickets" ON ticket_messa
 DROP POLICY IF EXISTS "Users can view own appointments" ON appointments;
 DROP POLICY IF EXISTS "Users can create own appointments" ON appointments;
 DROP POLICY IF EXISTS "Users can update own appointments" ON appointments;
+
+DROP POLICY IF EXISTS "Users can view own appointment requests" ON appointment_requests;
+DROP POLICY IF EXISTS "Users can create appointment requests" ON appointment_requests;
+DROP POLICY IF EXISTS "Users can update own appointment requests" ON appointment_requests;
 
 DROP POLICY IF EXISTS "Users can create contact submissions" ON contact_submissions;
 DROP POLICY IF EXISTS "Users can view own contact submissions" ON contact_submissions;
@@ -138,7 +163,7 @@ CREATE POLICY "Users can create messages on own tickets" ON ticket_messages
         ) AND is_from_staff = false AND is_internal = false
     );
 
--- Create RLS policies for appointments table
+-- Create RLS policies for appointments table (READ ONLY for customers)
 CREATE POLICY "Users can view own appointments" ON appointments
     FOR SELECT USING (
         customer_id IN (
@@ -146,18 +171,28 @@ CREATE POLICY "Users can view own appointments" ON appointments
         )
     );
 
-CREATE POLICY "Users can create own appointments" ON appointments
+-- No INSERT/UPDATE policies for customers on appointments (only staff can create/modify)
+
+-- Create RLS policies for appointment_requests table
+CREATE POLICY "Users can view own appointment requests" ON appointment_requests
+    FOR SELECT USING (
+        customer_id IN (
+            SELECT id FROM customers WHERE user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can create appointment requests" ON appointment_requests
     FOR INSERT WITH CHECK (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
         )
     );
 
-CREATE POLICY "Users can update own appointments" ON appointments
+CREATE POLICY "Users can update own appointment requests" ON appointment_requests
     FOR UPDATE USING (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
-        )
+        ) AND status = 'pending' -- Only allow updates to pending requests
     );
 
 -- Create RLS policies for contact_submissions table
@@ -211,4 +246,8 @@ CREATE TRIGGER update_service_tickets_updated_at BEFORE UPDATE ON service_ticket
 
 DROP TRIGGER IF EXISTS update_appointments_updated_at ON appointments;
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments
+    FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_appointment_requests_updated_at ON appointment_requests;
+CREATE TRIGGER update_appointment_requests_updated_at BEFORE UPDATE ON appointment_requests
     FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column(); 
