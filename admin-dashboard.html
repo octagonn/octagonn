@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SpyderNet IT</title>
+    <link rel="icon" type="image/png" href="img/spydernet-spider-logo-gradient.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -313,9 +314,9 @@
         /* Dashboard Overview */
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* Further reduced from 200px */
-            gap: 0.75rem; /* Further reduced from 1rem */
-            margin-bottom: 1rem; /* Further reduced from 1.5rem */
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Increased from 160px to 220px */
+            gap: 1rem; /* Increased back to 1rem for better spacing */
+            margin-bottom: 1.5rem; /* Increased back to 1.5rem */
         }
 
         .stat-card {
@@ -323,9 +324,13 @@
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px; /* Further reduced from 10px */
-            padding: 0.75rem; /* Further reduced from 1rem */
+            padding: 1rem; /* Increased back to 1rem for more space */
             position: relative;
             overflow: hidden;
+            min-height: 120px; /* Add minimum height to ensure consistent card sizes */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .stat-card::before {
@@ -342,30 +347,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem; /* Further reduced from 0.75rem */
+            margin-bottom: 0.75rem; /* Increased back from 0.5rem */
         }
 
         .stat-title {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 0.7rem; /* Further reduced from 0.8rem */
+            font-size: 0.8rem; /* Increased from 0.7rem */
             font-weight: 500;
+            line-height: 1.2;
+            flex: 1;
         }
 
         .stat-icon {
             color: #7877c6;
-            font-size: 0.95rem; /* Further reduced from 1.1rem */
+            font-size: 1.1rem; /* Increased back from 0.95rem */
+            flex-shrink: 0;
         }
 
         .stat-value {
-            font-size: 1.5rem; /* Further reduced from 1.8rem */
+            font-size: 1.8rem; /* Increased back from 1.5rem */
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.3rem; /* Further reduced from 0.4rem */
+            margin-bottom: 0.5rem; /* Increased from 0.3rem */
+            line-height: 1.1;
         }
 
         .stat-change {
-            font-size: 0.65rem; /* Further reduced from 0.75rem */
+            font-size: 0.75rem; /* Increased from 0.65rem */
             color: #28a745;
+            line-height: 1.2;
         }
 
         .stat-change.negative {
@@ -903,16 +913,17 @@
             }
             
             .dashboard-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.5rem; /* Further reduced */
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Slightly smaller for medium screens */
+                gap: 0.875rem;
             }
             
             .stat-card {
-                padding: 0.6rem; /* Further reduced */
+                padding: 0.875rem;
+                min-height: 110px;
             }
             
             .stat-value {
-                font-size: 1.3rem; /* Further reduced */
+                font-size: 1.6rem;
             }
         }
 
@@ -971,20 +982,21 @@
             }
             
             .dashboard-stats {
-                grid-template-columns: 1fr;
-                gap: 0.4rem; /* Further reduced from 0.6rem */
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Smaller for tablets */
+                gap: 0.75rem;
             }
             
             .stat-card {
-                padding: 0.5rem; /* Further reduced from 0.75rem */
+                padding: 0.875rem;
+                min-height: 100px;
             }
             
             .stat-value {
-                font-size: 1.2rem; /* Further reduced from 1.4rem */
+                font-size: 1.5rem;
             }
             
             .stat-title {
-                font-size: 0.65rem; /* Further reduced from 0.75rem */
+                font-size: 0.75rem;
             }
             
             .activity-section {
@@ -1026,32 +1038,39 @@
             }
             
             .dashboard-stats {
-                gap: 0.4rem;
+                grid-template-columns: 1fr; /* Single column on very small screens */
+                gap: 0.75rem;
             }
             
             .stat-card {
-                padding: 0.6rem;
+                padding: 1rem;
+                min-height: 90px;
+                text-align: center; /* Center content on small screens */
             }
             
             .stat-header {
-                margin-bottom: 0.4rem; /* Further reduced */
+                margin-bottom: 0.5rem;
+                justify-content: center;
+                gap: 0.5rem;
             }
             
             .stat-title {
-                font-size: 0.6rem; /* Further reduced */
+                font-size: 0.75rem;
+                text-align: center;
             }
             
             .stat-icon {
-                font-size: 0.8rem; /* Further reduced */
+                font-size: 1rem;
             }
             
             .stat-value {
-                font-size: 1.1rem; /* Further reduced */
-                margin-bottom: 0.2rem; /* Further reduced */
+                font-size: 1.4rem;
+                margin-bottom: 0.25rem;
             }
             
             .stat-change {
-                font-size: 0.6rem; /* Further reduced */
+                font-size: 0.7rem;
+                text-align: center;
             }
             
             .activity-section {
@@ -2370,9 +2389,35 @@
                     
                     <!-- Appointments Table -->
                     <div class="table-content" id="appointmentsTable">
-                        <div class="loading">
-                            <i class="ph-light ph-spinner"></i>
-                            Loading appointments...
+                        <!-- Fixed Table Header -->
+                        <div id="appointmentsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterAppointmentsEditMode()" id="appointmentsEditBtn2" style="display:none;">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="appointmentsEditControls2" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedAppointments()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitAppointmentsEditMode()">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="table-header" id="appointmentsTableHeader">
+                            <div id="appointmentsCheckboxHeaderCell" style="display:none;">
+                                <input type="checkbox" id="selectAllAppointments2" onclick="toggleSelectAll('appointment-checkbox', this.checked)">
+                            </div>
+                            <div>Status</div>
+                            <div>Date & Time</div>
+                            <div>Customer</div>
+                            <div>Duration</div>
+                            <div>Type</div>
+                            <div>Actions</div>
+                        </div>
+                        <!-- Data Content -->
+                        <div id="appointmentsTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading appointments...
+                            </div>
                         </div>
                     </div>
                 </div>
