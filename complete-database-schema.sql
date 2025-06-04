@@ -438,3 +438,128 @@ END $$;
 -- 2. Test the system by creating user accounts through the website
 -- 
 -- 3. Access the admin dashboard with your admin credentials 
+
+-- ============================================================================
+-- WEB FORMS FEATURE - ADDITIONAL TABLES AND UPDATES
+-- ============================================================================
+
+-- Create web_form_submissions table for direct form submissions (replaces FormSubmit)
+CREATE TABLE IF NOT EXISTS web_form_submissions (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    form_type VARCHAR(100) NOT NULL DEFAULT 'Contact Form',
+    name VARCHAR(255),
+    email VARCHAR(255),
+    phone VARCHAR(50),
+    subject VARCHAR(500),
+    message TEXT,
+    processed BOOLEAN DEFAULT FALSE,
+    ticket_id UUID REFERENCES service_tickets(id) ON DELETE SET NULL,
+    processed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- Add anonymous customer support columns to service_tickets table
+DO $$ 
+BEGIN
+    -- Add anonymous_customer column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'service_tickets' AND column_name = 'anonymous_customer'
+    ) THEN
+        ALTER TABLE service_tickets ADD COLUMN anonymous_customer BOOLEAN DEFAULT FALSE;
+    END IF;
+    
+    -- Add anonymous_name column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'service_tickets' AND column_name = 'anonymous_name'
+    ) THEN
+        ALTER TABLE service_tickets ADD COLUMN anonymous_name VARCHAR(255);
+    END IF;
+    
+    -- Add anonymous_email column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'service_tickets' AND column_name = 'anonymous_email'
+    ) THEN
+        ALTER TABLE service_tickets ADD COLUMN anonymous_email VARCHAR(255);
+    END IF;
+END $$;
+
+-- Create indexes for performance on web_form_submissions table
+CREATE INDEX IF NOT EXISTS idx_web_form_submissions_processed ON web_form_submissions(processed);
+CREATE INDEX IF NOT EXISTS idx_web_form_submissions_form_type ON web_form_submissions(form_type);
+CREATE INDEX IF NOT EXISTS idx_web_form_submissions_email ON web_form_submissions(email);
+CREATE INDEX IF NOT EXISTS idx_web_form_submissions_created_at ON web_form_submissions(created_at);
+
+-- Create indexes for anonymous customer support
+CREATE INDEX IF NOT EXISTS idx_service_tickets_anonymous_customer ON service_tickets(anonymous_customer);
+CREATE INDEX IF NOT EXISTS idx_service_tickets_anonymous_email ON service_tickets(anonymous_email);
+
+-- Enable Row Level Security on web_form_submissions table
+ALTER TABLE web_form_submissions ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies for web_form_submissions to avoid conflicts
+DROP POLICY IF EXISTS "Allow anonymous inserts" ON web_form_submissions;
+DROP POLICY IF EXISTS "Allow authenticated reads" ON web_form_submissions;
+DROP POLICY IF EXISTS "Allow authenticated updates" ON web_form_submissions;
+DROP POLICY IF EXISTS "Allow authenticated deletes" ON web_form_submissions;
+
+-- RLS Policies for web_form_submissions table
+
+-- Allow anonymous users to submit forms (website visitors)
+CREATE POLICY "Allow anonymous inserts" ON web_form_submissions
+    FOR INSERT TO anon
+    WITH CHECK (true);
+
+-- Allow authenticated users to read all submissions (admin dashboard)
+CREATE POLICY "Allow authenticated reads" ON web_form_submissions
+    FOR SELECT TO authenticated
+    USING (true);
+
+-- Allow admin users full access to web form submissions
+CREATE POLICY "Admins can manage all web form submissions" ON web_form_submissions
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM admin_users 
+            WHERE user_id = auth.uid() AND is_active = true
+        )
+    );
+
+-- Trigger to automatically update updated_at timestamp for web_form_submissions
+-- (Note: web_form_submissions doesn't have updated_at column, but we can add it for consistency)
+DO $$ 
+BEGIN
+    -- Add updated_at column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'web_form_submissions' AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE web_form_submissions ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL;
+    END IF;
+END $$;
+
+-- Create trigger for web_form_submissions updated_at
+DROP TRIGGER IF EXISTS update_web_form_submissions_updated_at ON web_form_submissions;
+CREATE TRIGGER update_web_form_submissions_updated_at BEFORE UPDATE ON web_form_submissions
+    FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
+
+-- ============================================================================
+-- WEB FORMS FEATURE SETUP COMPLETE
+-- ============================================================================
+
+-- Web Forms feature is now ready!
+-- 
+-- Features added:
+-- 1. web_form_submissions table for direct form submissions
+-- 2. Anonymous customer support in service_tickets table
+-- 3. Proper RLS policies for security
+-- 4. Performance indexes
+-- 5. Updated triggers for timestamp management
+--
+-- Usage:
+-- - Website forms can submit directly to web_form_submissions table
+-- - Admin dashboard can view, filter, and convert web forms to tickets
+-- - Tickets can be created for anonymous users (no customer account required)
+-- - Full CRUD operations available for admin users
+-- - Bulk operations and search functionality included 

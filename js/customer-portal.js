@@ -22,19 +22,23 @@ document.addEventListener('DOMContentLoaded', async function() {
  */
 async function checkAuthentication() {
     try {
+        console.log('Checking authentication...');
+        
         // Check if supabase is available
         if (!supabase) {
             console.error('Supabase not initialized');
-            redirectToLogin();
+            showAuthError('Database connection not available. Please refresh the page.');
             return;
         }
+
+        console.log('Supabase is available, checking user...');
 
         // Get current user
         currentUser = await auth.getCurrentUser();
         
         if (!currentUser) {
             console.log('No authenticated user found');
-            redirectToLogin();
+            showAuthError('Please sign in to access your customer portal.');
             return;
         }
 
@@ -47,21 +51,70 @@ async function checkAuthentication() {
             console.log('Customer data loaded:', currentCustomer);
         } else {
             console.error('Error getting customer data:', customerResult.error);
-            // Customer might not exist in customers table, redirect to login
-            redirectToLogin();
+            // Customer might not exist in customers table, create one
+            await createCustomerRecord();
         }
         
     } catch (error) {
         console.error('Authentication check failed:', error);
-        redirectToLogin();
+        showAuthError('Authentication failed: ' + error.message);
     }
 }
 
 /**
- * Redirect to login page
+ * Create customer record if it doesn't exist
  */
-function redirectToLogin() {
-    window.location.href = 'login.html';
+async function createCustomerRecord() {
+    try {
+        console.log('Creating customer record for user:', currentUser.id);
+        
+        const customerData = {
+            user_id: currentUser.id,
+            email: currentUser.email,
+            full_name: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
+            phone: currentUser.user_metadata?.phone || '',
+            created_at: new Date().toISOString()
+        };
+        
+        const result = await db.customers.create(customerData);
+        if (result.success) {
+            currentCustomer = result.data;
+            console.log('Customer record created:', currentCustomer);
+        } else {
+            console.error('Failed to create customer record:', result.error);
+            showAuthError('Failed to set up your account. Please contact support.');
+        }
+    } catch (error) {
+        console.error('Error creating customer record:', error);
+        showAuthError('Failed to set up your account. Please contact support.');
+    }
+}
+
+/**
+ * Show authentication error instead of redirect
+ */
+function showAuthError(message) {
+    // Hide the normal portal content
+    document.querySelector('.portal-main').style.display = 'none';
+    
+    // Show error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'auth-error';
+    errorDiv.innerHTML = `
+        <div style="text-align: center; padding: 4rem 2rem; color: rgba(255, 255, 255, 0.9);">
+            <i class="ph-light ph-warning" style="font-size: 4rem; color: #ffc107; margin-bottom: 1rem; display: block;"></i>
+            <h2 style="color: #ffffff; margin-bottom: 1rem;">Authentication Required</h2>
+            <p style="margin-bottom: 2rem; font-size: 1.1rem;">${message}</p>
+            <a href="login.html" class="create-ticket-cta" style="text-decoration: none;">
+                <i class="ph-light ph-sign-in"></i>
+                Go to Login
+            </a>
+        </div>
+    `;
+    
+    // Insert after header
+    const header = document.querySelector('.portal-header');
+    header.parentNode.insertBefore(errorDiv, header.nextSibling);
 }
 
 /**
@@ -80,13 +133,13 @@ async function initializePortal() {
         // Pre-fill create ticket form
         document.getElementById('ticketName').value = currentCustomer.full_name || '';
         document.getElementById('ticketEmail').value = currentCustomer.email || '';
-
-        // Setup event listeners
-        setupEventListeners();
-        
+    
+    // Setup event listeners
+    setupEventListeners();
+    
         // Load dashboard data
-        await loadDashboardData();
-        
+    await loadDashboardData();
+    
         console.log('Portal initialized successfully');
         
     } catch (error) {
@@ -110,7 +163,7 @@ function setupEventListeners() {
     
     // Search functionality
     setupSearchListeners();
-    
+
     // File upload
     setupFileUpload();
 }
@@ -231,7 +284,7 @@ function showSection(sectionName) {
     document.querySelectorAll('.content-section').forEach(section => {
         section.classList.remove('active');
     });
-    
+            
     // Remove active class from all nav links
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
@@ -242,25 +295,25 @@ function showSection(sectionName) {
     if (targetSection) {
         targetSection.classList.add('active');
     }
-    
+            
     // Add active class to corresponding nav link
     const activeLink = document.querySelector(`[data-section="${sectionName}"]`);
     if (activeLink) {
         activeLink.classList.add('active');
     }
-    
+            
     // Load section-specific data
     switch(sectionName) {
         case 'home':
             loadDashboardData();
             break;
         case 'my-tickets':
-            loadTickets();
-            break;
+                    loadTickets();
+                    break;
         case 'create-ticket':
             // Form is already pre-filled
-            break;
-    }
+                    break;
+            }
 }
 
 /**
@@ -338,7 +391,7 @@ async function handleCreateTicket(e) {
         console.log('Submitting contact form:', formData);
         
         // Submit as contact submission (staff will convert to ticket)
-        const result = await db.contacts.create(formData);
+        const result = await db.contactSubmissions.create(formData);
         
         if (result.success) {
             showMessage('Your request has been submitted successfully! Our team will review it and create a support ticket for you.', 'success', messageDiv);
@@ -530,7 +583,7 @@ async function loadTicketConversation(ticketId) {
     const conversationElement = document.getElementById('ticketConversation');
     
     try {
-        const result = await db.ticketMessages.getByTicketId(ticketId);
+        const result = await db.messages.getByTicketId(ticketId);
         
         if (result.success) {
             const messages = result.data || [];
@@ -547,7 +600,7 @@ async function loadTicketConversation(ticketId) {
             
             conversationElement.innerHTML = messages.map(message => `
                 <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
-                    <div class="message-header">
+                <div class="message-header">
                         <span class="message-author">
                             ${message.is_from_staff ? 
                                 (message.staff_name || 'Support Team') : 
@@ -593,8 +646,8 @@ async function handleReplySubmit(e) {
     if (!message) {
         showMessage('Please enter a message', 'error');
         return;
-    }
-    
+}
+
     try {
         // Disable form
         submitBtn.disabled = true;
@@ -610,7 +663,7 @@ async function handleReplySubmit(e) {
         };
         
         // Send message
-        const result = await db.ticketMessages.create(messageData);
+        const result = await db.messages.create(messageData);
         
         if (result.success) {
             // Clear form
@@ -727,7 +780,7 @@ function escapeHtml(text) {
 function showMessage(message, type = 'info', container = null) {
     if (!container) {
         // Create a temporary notification
-        const notification = document.createElement('div');
+    const notification = document.createElement('div');
         notification.className = type;
         notification.innerHTML = `<i class="ph-light ph-${type === 'error' ? 'warning' : 'check-circle'}"></i> ${message}`;
         notification.style.cssText = `
@@ -739,8 +792,8 @@ function showMessage(message, type = 'info', container = null) {
             animation: slideIn 0.3s ease;
         `;
         
-        document.body.appendChild(notification);
-        
+    document.body.appendChild(notification);
+    
         // Remove after 5 seconds
         setTimeout(() => {
             notification.remove();
@@ -748,7 +801,7 @@ function showMessage(message, type = 'info', container = null) {
     } else {
         container.innerHTML = `<div class="${type}">${message}</div>`;
         // Clear after 10 seconds
-        setTimeout(() => {
+    setTimeout(() => {
             container.innerHTML = '';
         }, 10000);
     }
@@ -758,7 +811,7 @@ function showMessage(message, type = 'info', container = null) {
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('ticket-modal')) {
         closeTicketModal();
-    }
+        }
 });
 
 // Add CSS animation for notifications

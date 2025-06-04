@@ -6,7 +6,7 @@
     <title>Admin Dashboard - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
-    <script src="https://supabase.com/dashboard/api/js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         /* Admin Dashboard Zendesk-Inspired Styles */
         .admin-dashboard {
@@ -72,10 +72,12 @@
         .sidebar-nav {
             flex: 1;
             padding: 1rem 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .nav-section {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .nav-section-title {
@@ -85,14 +87,15 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             padding: 0 1.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 12px;
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 1.5rem;
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             transition: all 0.3s ease;
@@ -102,17 +105,34 @@
             width: 100%;
             text-align: left;
             font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            border-radius: 0;
+            position: relative;
         }
 
         .nav-item:hover, .nav-item.active {
-            background: rgba(120, 119, 198, 0.2);
+            background: rgba(120, 119, 198, 0.15);
             color: #ffffff;
-            border-right: 3px solid #7877c6;
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: #7877c6;
         }
 
         .nav-item i {
             font-size: 1.1rem;
             min-width: 20px;
+            flex-shrink: 0;
+        }
+
+        .nav-item span {
+            flex: 1;
         }
 
         .nav-badge {
@@ -122,6 +142,7 @@
             padding: 0.25rem 0.5rem;
             border-radius: 10px;
             margin-left: auto;
+            flex-shrink: 0;
         }
 
         .sidebar-footer {
@@ -426,10 +447,13 @@
         .table-header {
             background: rgba(255, 255, 255, 0.1);
             padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 3fr 1.2fr 2fr 1.5fr;
+            gap: 1rem;
+            font-weight: 600;
+            color: #ffffff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
         }
 
         .table-controls {
@@ -439,12 +463,27 @@
         }
 
         .filter-dropdown, .sort-dropdown {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            padding: 0.5rem;
-            color: #ffffff;
-            font-size: 0.85rem;
+            background: #232345 !important;
+            color: #fff !important;
+            border: 1px solid #39396a;
+            border-radius: 8px;
+            padding: 0.35rem 1.5rem 0.35rem 0.75rem;
+            font-size: 0.92rem;
+            min-width: 120px;
+            box-shadow: 0 2px 8px rgba(30,30,60,0.08);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .filter-dropdown:focus, .sort-dropdown:focus {
+            border-color: #7877c6;
+            box-shadow: 0 0 0 2px #7877c6;
+        }
+        .filter-dropdown option, .sort-dropdown option {
+            background: #232345 !important;
+            color: #fff !important;
+            font-size: 0.92rem;
         }
 
         .table-content {
@@ -454,9 +493,9 @@
 
         .table-row {
             display: grid;
-            grid-template-columns: auto 1fr auto auto auto auto;
+            grid-template-columns: 1fr 1.5fr 3fr 1.2fr 2fr 1.5fr;
             gap: 1rem;
-            padding: 1rem 1.5rem;
+            padding: 1.1rem 1.5rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             align-items: center;
             cursor: pointer;
@@ -468,36 +507,36 @@
         }
 
         .table-cell {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-        }
-
-        .table-cell.priority {
-            font-weight: 600;
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .table-cell.subject {
             font-weight: 500;
-            color: #ffffff;
+            color: #fff;
         }
 
         .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            padding: 0.35rem 1rem;
+            border-radius: 20px;
+            font-size: 0.95rem;
+            font-weight: 600;
             text-align: center;
+            display: inline-block;
+            min-width: 90px;
         }
 
-        .status-new { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
-        .status-in-progress { background: rgba(0, 123, 255, 0.2); color: #007bff; }
-        .status-completed { background: rgba(40, 167, 69, 0.2); color: #28a745; }
-        .status-cancelled { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
-
-        .priority-urgent { color: #dc3545; }
-        .priority-high { color: #fd7e14; }
-        .priority-normal { color: #ffffff; }
-        .priority-low { color: #6c757d; }
+        .status-new { background: rgba(255, 193, 7, 0.18); color: #ffc107; }
+        .status-in_progress { background: rgba(0, 123, 255, 0.18); color: #007bff; }
+        .status-completed { background: rgba(40, 167, 69, 0.18); color: #28a745; }
+        .status-cancelled { background: rgba(220, 53, 69, 0.18); color: #dc3545; }
+        .priority-urgent { color: #dc3545; font-weight: 700; }
+        .priority-high { color: #fd7e14; font-weight: 700; }
+        .priority-normal { color: #ffffff; font-weight: 700; }
+        .priority-low { color: #6c757d; font-weight: 700; }
 
         /* Ticket Detail Panel */
         .ticket-detail-panel {
@@ -923,6 +962,23 @@
                 opacity: 1;
             }
         }
+
+        .table-header, .table-row, .table-cell {
+            font-size: 0.95rem !important;
+        }
+        .table-header {
+            font-size: 1rem !important;
+        }
+
+        select, select option {
+            background: #232345 !important;
+            color: #fff !important;
+            border: 1px solid #39396a;
+        }
+        select:focus {
+            border-color: #7877c6;
+            box-shadow: 0 0 0 2px #7877c6;
+        }
     </style>
 </head>
 <body class="admin-dashboard">
@@ -932,56 +988,61 @@
             <a href="#" class="sidebar-logo">
                 <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet IT">
                 <span class="logo-text">SpyderNet IT</span>
-            </a>
-        </div>
-        
-        <nav class="sidebar-nav">
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
             <div class="nav-section">
                 <div class="nav-section-title">Overview</div>
                 <button class="nav-item active" data-section="dashboard">
                     <i class="ph-light ph-squares-four"></i>
                     <span>Dashboard</span>
                 </button>
-            </div>
-            
-            <div class="nav-section">
+                </div>
+
+                <div class="nav-section">
                 <div class="nav-section-title">Support</div>
                 <button class="nav-item" data-section="tickets">
-                    <i class="ph-light ph-ticket"></i>
+                                <i class="ph-light ph-ticket"></i>
                     <span>Tickets</span>
                     <span class="nav-badge" id="ticketsBadge">0</span>
-                </button>
+                            </button>
                 <button class="nav-item" data-section="contacts">
                     <i class="ph-light ph-envelope"></i>
-                    <span>Contact Requests</span>
+                    <span>Ticket Requests</span>
                     <span class="nav-badge" id="contactsBadge">0</span>
+                            </button>
+                <button class="nav-item" data-section="webforms">
+                    <i class="ph-light ph-file-text"></i>
+                    <span>Web Forms</span>
+                    <span class="nav-badge" id="webformsBadge">0</span>
                 </button>
-            </div>
-            
-            <div class="nav-section">
+                </div>
+
+                <div class="nav-section">
                 <div class="nav-section-title">Management</div>
                 <button class="nav-item" data-section="customers">
-                    <i class="ph-light ph-users"></i>
+                                <i class="ph-light ph-users"></i>
                     <span>Customers</span>
-                </button>
+                            </button>
                 <button class="nav-item" data-section="appointments">
                     <i class="ph-light ph-calendar"></i>
                     <span>Appointments</span>
                 </button>
-            </div>
-            
-            <div class="nav-section">
+                </div>
+
+                <div class="nav-section">
                 <div class="nav-section-title">Analytics</div>
                 <button class="nav-item" data-section="analytics">
                     <i class="ph-light ph-chart-line"></i>
                     <span>Analytics</span>
-                </button>
+                            </button>
                 <button class="nav-item" data-section="reports">
                     <i class="ph-light ph-file-text"></i>
                     <span>Reports</span>
-                </button>
-            </div>
-        </nav>
+                            </button>
+                </div>
+            </nav>
         
         <div class="sidebar-footer">
             <div class="admin-info">
@@ -994,9 +1055,9 @@
             <button class="logout-btn" onclick="handleLogout()">
                 <i class="ph-light ph-sign-out"></i>
                 Sign Out
-            </button>
-        </div>
-    </div>
+                        </button>
+                </div>
+            </div>
 
     <!-- Main Content -->
     <div class="main-content">
@@ -1007,17 +1068,17 @@
                 <div class="search-container">
                     <i class="ph-light ph-magnifying-glass search-icon"></i>
                     <input type="text" class="global-search" placeholder="Search tickets, customers..." id="globalSearch">
-                </div>
+                            </div>
                 <button class="header-btn" onclick="refreshCurrentView()">
                     <i class="ph-light ph-arrow-clockwise"></i>
                     Refresh
                 </button>
                 <button class="header-btn primary" onclick="showCreateTicketModal()">
-                    <i class="ph-light ph-plus"></i>
+                                    <i class="ph-light ph-plus"></i>
                     New Ticket
-                </button>
-            </div>
-        </div>
+                                </button>
+                            </div>
+                        </div>
 
         <!-- Content Area -->
         <div class="content-area">
@@ -1028,38 +1089,38 @@
                         <div class="stat-header">
                             <span class="stat-title">Total Tickets</span>
                             <i class="ph-light ph-ticket stat-icon"></i>
-                        </div>
+                    </div>
                         <div class="stat-value" id="totalTickets">0</div>
                         <div class="stat-change">+12% from last month</div>
-                    </div>
-                    
+                </div>
+
                     <div class="stat-card">
                         <div class="stat-header">
                             <span class="stat-title">Open Tickets</span>
                             <i class="ph-light ph-clock stat-icon"></i>
-                        </div>
+                </div>
                         <div class="stat-value" id="openTickets">0</div>
                         <div class="stat-change">-5% from last week</div>
-                    </div>
-                    
+                </div>
+                
                     <div class="stat-card">
                         <div class="stat-header">
                             <span class="stat-title">Urgent Tickets</span>
                             <i class="ph-light ph-warning stat-icon"></i>
-                        </div>
+                </div>
                         <div class="stat-value" id="urgentTickets">0</div>
                         <div class="stat-change negative">+3 new today</div>
-                    </div>
+            </div>
                     
                     <div class="stat-card">
                         <div class="stat-header">
                             <span class="stat-title">Avg Response Time</span>
                             <i class="ph-light ph-timer stat-icon"></i>
-                        </div>
+                </div>
                         <div class="stat-value" id="avgResponseTime">2.4h</div>
                         <div class="stat-change">-15min from last week</div>
                     </div>
-                </div>
+            </div>
 
                 <div class="activity-section">
                     <div class="section-header">
@@ -1068,15 +1129,15 @@
                             <i class="ph-light ph-arrow-clockwise"></i>
                             Refresh
                         </button>
-                    </div>
+                        </div>
                     <div id="recentActivity">
                         <div class="loading">
                             <i class="ph-light ph-spinner"></i>
                             Loading recent activity...
                         </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Tickets Section -->
             <div id="tickets-section" class="content-section">
@@ -1106,9 +1167,35 @@
                         </div>
                     </div>
                     <div class="table-content" id="ticketsTable">
-                        <div class="loading">
-                            <i class="ph-light ph-spinner"></i>
-                            Loading tickets...
+                        <!-- Fixed Table Header -->
+                        <div id="ticketsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterTicketsEditMode()" id="ticketsEditBtn">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="ticketsEditControls" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedTickets()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitTicketsEditMode()">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="table-header" id="ticketsTableHeader">
+                            <div id="ticketsCheckboxHeader" style="display:none;">
+                                <input type="checkbox" id="selectAllTickets" onclick="toggleSelectAll('ticket-checkbox', this.checked)">
+                            </div>
+                            <div>Status</div>
+                            <div>Ticket #</div>
+                            <div>Subject</div>
+                            <div>Priority</div>
+                            <div>Name</div>
+                            <div>Date Created</div>
+                        </div>
+                        <!-- Data Content -->
+                        <div id="ticketsTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading tickets...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1118,19 +1205,93 @@
             <div id="contacts-section" class="content-section">
                 <div class="data-table">
                     <div class="table-header">
-                        <h2 class="section-title">Contact Requests</h2>
+                        <h2 class="section-title">Ticket Requests</h2>
                         <div class="table-controls">
                             <select class="filter-dropdown" id="contactStatusFilter">
                                 <option value="">All Requests</option>
                                 <option value="false">Unprocessed</option>
                                 <option value="true">Processed</option>
                             </select>
+                    </div>
+                </div>
+                    <div class="table-content" id="contactsTable">
+                        <!-- Fixed Table Header -->
+                        <div id="contactsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterContactsEditMode()" id="contactsEditBtn">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="contactsEditControls" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedContacts()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitContactsEditMode()">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="table-header" id="contactsTableHeader">
+                            <div id="contactsCheckboxHeader" style="display:none;">
+                                <input type="checkbox" id="selectAllContacts" onclick="toggleSelectAll('contact-checkbox', this.checked)">
+                            </div>
+                            <div>Subject</div>
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Status</div>
+                            <div>Date</div>
+                            <div>Action</div>
+                        </div>
+                        <!-- Data Content -->
+                        <div id="contactsTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading ticket requests...
+                            </div>
                         </div>
                     </div>
-                    <div class="table-content" id="contactsTable">
-                        <div class="loading">
-                            <i class="ph-light ph-spinner"></i>
-                            Loading contact requests...
+                        </div>
+                    </div>
+
+            <!-- Web Forms Section -->
+            <div id="webforms-section" class="content-section">
+                <div class="data-table">
+                    <div class="table-header">
+                        <h2 class="section-title">Web Form Submissions</h2>
+                        <div class="table-controls">
+                            <select class="filter-dropdown" id="webformStatusFilter">
+                                <option value="">All Submissions</option>
+                                <option value="false">Unprocessed</option>
+                                <option value="true">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-content" id="webformsTable">
+                        <!-- Fixed Table Header -->
+                        <div id="webformsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterWebformsEditMode()" id="webformsEditBtn">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="webformsEditControls" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedWebforms()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitWebformsEditMode()">Cancel</button>
+                            </div>
+                        </div>
+                        <div class="table-header" id="webformsTableHeader">
+                            <div id="webformsCheckboxHeader" style="display:none;">
+                                <input type="checkbox" id="selectAllWebforms" onclick="toggleSelectAll('webform-checkbox', this.checked)">
+                            </div>
+                            <div>Form Type</div>
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Status</div>
+                            <div>Date</div>
+                            <div>Action</div>
+                        </div>
+                        <!-- Data Content -->
+                        <div id="webformsTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading web form submissions...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1145,17 +1306,17 @@
                             <button class="header-btn primary" onclick="showAddCustomerModal()">
                                 <i class="ph-light ph-plus"></i>
                                 Add Customer
-                            </button>
+                                </button>
+                            </div>
                         </div>
-                    </div>
                     <div class="table-content" id="customersTable">
                         <div class="loading">
                             <i class="ph-light ph-spinner"></i>
                             Loading customers...
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            </div>
+                                </div>
+                                </div>
+                            </div>
 
             <!-- Appointments Section -->
             <div id="appointments-section" class="content-section">
@@ -1174,16 +1335,16 @@
                                 <i class="ph-light ph-plus"></i>
                                 New Appointment
                             </button>
-                        </div>
                     </div>
+                </div>
                     <div class="table-content" id="appointmentsTable">
                         <div class="loading">
                             <i class="ph-light ph-spinner"></i>
                             Loading appointments...
+                            </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
+                            </div>
 
             <!-- Analytics Section -->
             <div id="analytics-section" class="content-section">
@@ -1191,14 +1352,14 @@
                     <div class="section-header">
                         <h2 class="section-title">Analytics Dashboard</h2>
                         <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Comprehensive insights into your support operations</p>
-                    </div>
+                            </div>
                     <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                         <i class="ph-light ph-chart-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Analytics Coming Soon</h3>
                         <p>Advanced analytics and reporting features will be available in the next update.</p>
+                        </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
             <!-- Reports Section -->
             <div id="reports-section" class="content-section">
@@ -1206,16 +1367,16 @@
                     <div class="section-header">
                         <h2 class="section-title">Reports</h2>
                         <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Generate and export detailed reports</p>
-                    </div>
+                            </div>
                     <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                         <i class="ph-light ph-file-text" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Reports Coming Soon</h3>
                         <p>Custom report generation will be available in the next update.</p>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Ticket Detail Panel -->
     <div id="ticketDetailPanel" class="ticket-detail-panel">
@@ -1241,7 +1402,7 @@
                 <button class="modal-close" onclick="closeModal('createTicketModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="createTicketForm">
+            <form id="createTicketForm">
                     <div class="form-group">
                         <label class="form-label">Customer</label>
                         <select class="form-select" id="ticketCustomer" required>
@@ -1252,7 +1413,7 @@
                         <label class="form-label">Title</label>
                         <input type="text" class="form-input" id="ticketTitle" required>
                     </div>
-                    <div class="form-group">
+                <div class="form-group">
                         <label class="form-label">Priority</label>
                         <select class="form-select" id="ticketPriority" required>
                             <option value="normal">Normal</option>
@@ -1260,11 +1421,11 @@
                             <option value="urgent">Urgent</option>
                             <option value="low">Low</option>
                         </select>
-                    </div>
-                    <div class="form-group">
+                </div>
+                <div class="form-group">
                         <label class="form-label">Description</label>
                         <textarea class="form-textarea" id="ticketDescription" required></textarea>
-                    </div>
+                </div>
                     <div class="form-group">
                         <label class="form-label">Staff Notes (Internal)</label>
                         <textarea class="form-textarea" id="ticketNotes"></textarea>
@@ -1272,6 +1433,92 @@
                     <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
                         <button type="button" class="btn secondary" onclick="closeModal('createTicketModal')">Cancel</button>
                         <button type="submit" class="btn primary">Create Ticket</button>
+                    </div>
+            </form>
+                </div>
+                </div>
+                </div>
+                
+    <!-- Convert Contact to Ticket Modal -->
+    <div id="convertToTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Convert Contact Request to Ticket</h3>
+                <button class="modal-close" onclick="closeModal('convertToTicketModal')">&times;</button>
+                    </div>
+            <div class="modal-body">
+                <form id="convertToTicketForm">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" id="convertName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="convertEmail" required>
+                </div>
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-input" id="convertSubject" required>
+        </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="convertDescription" required></textarea>
+    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" id="convertPriority" required>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="low">Low</option>
+                        </select>
+            </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn secondary" onclick="closeModal('convertToTicketModal')">Cancel</button>
+                        <button type="submit" class="btn primary">Convert & Create Ticket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Convert Web Form to Ticket Modal -->
+    <div id="convertWebformToTicketModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Convert Web Form to Ticket</h3>
+                <button class="modal-close" onclick="closeModal('convertWebformToTicketModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="convertWebformToTicketForm">
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-input" id="convertWebformName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="convertWebformEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-input" id="convertWebformSubject" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="convertWebformDescription" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" id="convertWebformPriority" required>
+                            <option value="normal">Normal</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                        <button type="button" class="btn secondary" onclick="closeModal('convertWebformToTicketModal')">Cancel</button>
+                        <button type="submit" class="btn primary">Convert & Create Ticket</button>
                     </div>
                 </form>
             </div>

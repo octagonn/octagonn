@@ -3,11 +3,21 @@ let currentAdmin = null;
 let currentUser = null;
 let allTickets = [];
 let allContacts = [];
+let allWebforms = [];
 let allCustomers = [];
 let allAppointments = [];
 let currentSection = 'dashboard';
 let currentTicketId = null;
 let replyMode = 'public'; // 'public' or 'internal'
+let currentContactToConvert = null;
+let currentWebformToConvert = null;
+let ticketEditMode = false;
+let ticketEditData = null;
+
+// --- Edit Mode State ---
+let ticketsEditMode = false;
+let contactsEditMode = false;
+let webformsEditMode = false;
 
 // Initialize dashboard when DOM loads
 document.addEventListener('DOMContentLoaded', async function() {
@@ -34,29 +44,20 @@ async function checkAuthentication() {
             return;
         }
 
-        // Get current user
-        currentUser = await auth.getCurrentUser();
-        
-        if (!currentUser) {
-            console.log('No authenticated user found');
+        // Check if user is logged in as admin
+        const isLoggedIn = await AdminAuth.isLoggedIn();
+        if (!isLoggedIn) {
+            console.log('No authenticated admin found');
             redirectToLogin();
             return;
         }
 
-        console.log('Authenticated user:', currentUser.email);
+        // Get current admin and user data
+        currentAdmin = AdminAuth.getCurrentAdmin();
+        const { data: { user } } = await supabase.auth.getUser();
+        currentUser = user;
 
-        // Check if user is admin/staff
-        const staffResult = await db.staff.getByUserId(currentUser.id);
-        if (staffResult.success) {
-            currentAdmin = staffResult.data;
-            console.log('Admin access confirmed:', currentAdmin);
-        } else {
-            console.error('Admin access denied');
-            showNotification('Access denied. Admin privileges required.', 'error');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
-        }
+        console.log('Authenticated admin:', currentAdmin.email);
         
     } catch (error) {
         console.error('Authentication check failed:', error);
@@ -68,7 +69,7 @@ async function checkAuthentication() {
  * Redirect to login page
  */
 function redirectToLogin() {
-    window.location.href = 'admin-login.html';
+    window.location.href = 'staff-portal.html';
 }
 
 /**
@@ -159,12 +160,14 @@ function setupFilterListeners() {
     const sortBy = document.getElementById('sortBy');
     const contactStatusFilter = document.getElementById('contactStatusFilter');
     const appointmentStatusFilter = document.getElementById('appointmentStatusFilter');
+    const webformStatusFilter = document.getElementById('webformStatusFilter');
     
     if (statusFilter) statusFilter.addEventListener('change', () => filterTickets());
     if (priorityFilter) priorityFilter.addEventListener('change', () => filterTickets());
     if (sortBy) sortBy.addEventListener('change', () => filterTickets());
     if (contactStatusFilter) contactStatusFilter.addEventListener('change', () => filterContacts());
     if (appointmentStatusFilter) appointmentStatusFilter.addEventListener('change', () => filterAppointments());
+    if (webformStatusFilter) webformStatusFilter.addEventListener('change', () => filterWebforms());
 }
 
 /**
@@ -240,11 +243,12 @@ function getSectionTitle(sectionName) {
     const titles = {
         'dashboard': 'Dashboard',
         'tickets': 'Support Tickets',
-        'contacts': 'Contact Requests',
+        'contacts': 'Ticket Requests',
         'customers': 'Customer Management',
         'appointments': 'Appointments',
         'analytics': 'Analytics',
-        'reports': 'Reports'
+        'reports': 'Reports',
+        'webforms': 'Web Form Submissions'
     };
     return titles[sectionName] || 'Dashboard';
 }
@@ -263,6 +267,9 @@ async function loadSection(sectionName) {
                 break;
             case 'contacts':
                 await loadContacts();
+                break;
+            case 'webforms':
+                await loadWebforms();
                 break;
             case 'customers':
                 await loadCustomers();
@@ -289,18 +296,25 @@ async function loadDashboard() {
     
     try {
         // Load tickets for stats
-        const ticketsResult = await db.tickets.getAll();
+        const ticketsResult = await AdminDB.tickets.getAll();
         if (ticketsResult.success) {
             allTickets = ticketsResult.data || [];
-            updateDashboardStats();
+        updateDashboardStats();
         }
         
         // Load contacts for badges
-        const contactsResult = await db.contacts.getAll();
+        const contactsResult = await AdminDB.contactSubmissions.getAll();
         if (contactsResult.success) {
             allContacts = contactsResult.data || [];
-            updateNavigationBadges();
         }
+        
+        // Load webforms for badges
+        const webformsResult = await AdminDB.webFormSubmissions.getAll();
+        if (webformsResult.success) {
+            allWebforms = webformsResult.data || [];
+        }
+        
+        updateNavigationBadges();
         
         // Load recent activity
         await loadRecentActivity();
@@ -332,12 +346,15 @@ function updateDashboardStats() {
 function updateNavigationBadges() {
     const openTickets = allTickets.filter(t => t.status === 'new' || t.status === 'in_progress').length;
     const unprocessedContacts = allContacts.filter(c => !c.processed).length;
+    const unprocessedWebforms = allWebforms.filter(w => !w.processed).length;
     
     const ticketsBadge = document.getElementById('ticketsBadge');
     const contactsBadge = document.getElementById('contactsBadge');
+    const webformsBadge = document.getElementById('webformsBadge');
     
     if (ticketsBadge) ticketsBadge.textContent = openTickets;
     if (contactsBadge) contactsBadge.textContent = unprocessedContacts;
+    if (webformsBadge) webformsBadge.textContent = unprocessedWebforms;
 }
 
 /**
@@ -347,19 +364,23 @@ async function loadRecentActivity() {
     const activityContainer = document.getElementById('recentActivity');
     
     try {
-        // Get recent tickets, contacts, and messages
-        const recentTickets = allTickets.slice(-5).reverse();
-        const recentContacts = allContacts.slice(-3).reverse();
+        // Get recent tickets, contacts, and webforms
+        const recentTickets = allTickets.slice(-3).reverse();
+        const recentContacts = allContacts.slice(-2).reverse();
+        const recentWebforms = allWebforms.slice(-3).reverse();
         
         const activities = [];
         
         // Add ticket activities
         recentTickets.forEach(ticket => {
+            const customerName = ticket.anonymous_customer ? 
+                (ticket.anonymous_name || 'Anonymous User') : 
+                (ticket.customer_name || 'Unknown');
             activities.push({
                 type: 'ticket',
                 icon: 'ph-ticket',
                 title: `New ticket: ${ticket.title}`,
-                meta: `Priority: ${ticket.priority} • Customer: ${ticket.customer_name || 'Unknown'}`,
+                meta: `Priority: ${ticket.priority} • Customer: ${customerName}`,
                 time: formatTimeAgo(ticket.created_at)
             });
         });
@@ -372,6 +393,17 @@ async function loadRecentActivity() {
                 title: `New contact: ${contact.subject}`,
                 meta: `From: ${contact.name} • ${contact.email}`,
                 time: formatTimeAgo(contact.created_at)
+            });
+        });
+        
+        // Add webform activities
+        recentWebforms.forEach(webform => {
+            activities.push({
+                type: 'webform',
+                icon: 'ph-file-text',
+                title: `New web form: ${webform.form_type || 'Form Submission'}`,
+                meta: `From: ${webform.name || 'Anonymous'} • ${webform.email || 'No email'}`,
+                time: formatTimeAgo(webform.created_at)
             });
         });
         
@@ -416,12 +448,12 @@ async function loadRecentActivity() {
  * Load and display tickets
  */
 async function loadTickets() {
-    const ticketsTable = document.getElementById('ticketsTable');
+    const ticketsTableData = document.getElementById('ticketsTableData');
     
     try {
-        ticketsTable.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading tickets...</div>';
+        ticketsTableData.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading tickets...</div>';
         
-        const result = await db.tickets.getAll();
+        const result = await AdminDB.tickets.getAll();
         
         if (result.success) {
             allTickets = result.data || [];
@@ -432,7 +464,7 @@ async function loadTickets() {
         
     } catch (error) {
         console.error('Error loading tickets:', error);
-        ticketsTable.innerHTML = `
+        ticketsTableData.innerHTML = `
             <div class="error" style="text-align: center; padding: 2rem;">
                 <i class="ph-light ph-warning"></i>
                 Error loading tickets: ${error.message}
@@ -445,10 +477,10 @@ async function loadTickets() {
  * Display tickets in table
  */
 function displayTickets(tickets) {
-    const ticketsTable = document.getElementById('ticketsTable');
+    const ticketsTableData = document.getElementById('ticketsTableData');
     
     if (tickets.length === 0) {
-        ticketsTable.innerHTML = `
+        ticketsTableData.innerHTML = `
             <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                 <i class="ph-light ph-ticket" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                 <h4>No Tickets Found</h4>
@@ -458,22 +490,29 @@ function displayTickets(tickets) {
         return;
     }
     
-    ticketsTable.innerHTML = tickets.map(ticket => `
-        <div class="table-row" onclick="openTicketDetail('${ticket.id}')">
-            <div class="table-cell">#${ticket.id.substring(0, 8)}</div>
-            <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
-            <div class="table-cell">
-                <span class="status-badge status-${ticket.status}">
-                    ${formatStatus(ticket.status)}
-                </span>
+    ticketsTableData.innerHTML = tickets.map(ticket => {
+        // Determine customer name display
+        let customerName = 'Unknown';
+        if (ticket.anonymous_customer) {
+            customerName = ticket.anonymous_name || 'Anonymous User';
+        } else if (ticket.customers?.full_name) {
+            customerName = ticket.customers.full_name;
+        } else if (ticket.customer_name) {
+            customerName = ticket.customer_name;
+        }
+        
+        return `
+            <div class="table-row" ${!ticketsEditMode ? `onclick=\"openTicketDetail('${ticket.id}')\"` : ''}>
+                ${ticketsEditMode ? `<div class="table-cell"><input type="checkbox" class="ticket-checkbox" value="${ticket.id}" onclick="updateSelectAllState('ticket-checkbox','selectAllTickets')"></div>` : ''}
+                <div class="table-cell"><span class="status-badge status-${ticket.status.replace(/_/g, '_')}">${formatStatus(ticket.status)}</span></div>
+                <div class="table-cell">#${ticket.id.substring(0, 8)}</div>
+                <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
+                <div class="table-cell priority priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
+                <div class="table-cell">${customerName}</div>
+                <div class="table-cell">${formatDate(ticket.created_at)}</div>
             </div>
-            <div class="table-cell priority priority-${ticket.priority}">
-                ${formatPriority(ticket.priority)}
-            </div>
-            <div class="table-cell">${ticket.customer_name || 'Unknown'}</div>
-            <div class="table-cell">${formatDate(ticket.created_at)}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 /**
@@ -517,7 +556,7 @@ function filterTickets() {
  */
 async function openTicketDetail(ticketId) {
     console.log('Opening ticket detail:', ticketId);
-    currentTicketId = ticketId;
+        currentTicketId = ticketId;
     
     const panel = document.getElementById('ticketDetailPanel');
     const content = document.getElementById('ticketDetailContent');
@@ -530,7 +569,7 @@ async function openTicketDetail(ticketId) {
     
     try {
         // Get ticket details
-        const ticketResult = await db.tickets.getById(ticketId);
+        const ticketResult = await AdminDB.tickets.getById(ticketId);
         if (!ticketResult.success) {
             throw new Error(ticketResult.error);
         }
@@ -542,26 +581,35 @@ async function openTicketDetail(ticketId) {
         
         // Get customer info
         let customerInfo = 'Unknown Customer';
-        if (ticket.customer_id) {
-            const customerResult = await db.customers.getById(ticket.customer_id);
+        if (ticket.anonymous_customer) {
+            customerInfo = `${ticket.anonymous_name || 'Anonymous User'}`;
+            if (ticket.anonymous_email) {
+                customerInfo += ` (${ticket.anonymous_email})`;
+            }
+        } else if (ticket.customer_id) {
+            const customerResult = await AdminDB.customers.getById(ticket.customer_id);
             if (customerResult.success) {
                 customerInfo = customerResult.data.full_name;
             }
         }
         
         // Get messages
-        const messagesResult = await db.ticketMessages.getByTicketId(ticketId);
+        const messagesResult = await AdminDB.ticketMessages.getByTicketId(ticketId);
         const messages = messagesResult.success ? messagesResult.data : [];
+        
+        // Add Edit button
+        let editBtnHtml = `<button class="btn secondary" id="editTicketBtn" style="float:right; margin-bottom:1rem;">Edit</button>`;
         
         // Display ticket details
         content.innerHTML = `
+            ${editBtnHtml}
             <div class="ticket-properties">
                 <div class="property-item">
                     <div class="property-label">Status</div>
                     <div class="property-value">
                         <span class="status-badge status-${ticket.status}">${formatStatus(ticket.status)}</span>
                     </div>
-                </div>
+                    </div>
                 <div class="property-item">
                     <div class="property-label">Priority</div>
                     <div class="property-value priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
@@ -588,17 +636,17 @@ async function openTicketDetail(ticketId) {
                         '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">No messages yet</p>' :
                         messages.map(message => `
                             <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
-                                <div class="message-header">
-                                    <span class="message-author">
+                    <div class="message-header">
+                        <span class="message-author">
                                         ${message.is_from_staff ? 
                                             (message.staff_name || 'Support Team') : 
                                             (customerInfo || 'Customer')
                                         }
-                                    </span>
+                        </span>
                                     <span class="message-time">${formatDateTime(message.created_at)}</span>
-                                </div>
+                    </div>
                                 <div class="message-content">${escapeHtml(message.message)}</div>
-                            </div>
+                    </div>
                         `).join('')
                     }
                 </div>
@@ -619,8 +667,14 @@ async function openTicketDetail(ticketId) {
                         <button type="button" class="btn secondary" onclick="closeTicketDetail()">Close</button>
                     </div>
                 </form>
-            </div>
-        `;
+                </div>
+            `;
+        
+        // After rendering, add event listener:
+        setTimeout(() => {
+            const editBtn = document.getElementById('editTicketBtn');
+            if (editBtn) editBtn.onclick = () => enableTicketEdit(ticketId);
+        }, 0);
         
     } catch (error) {
         console.error('Error loading ticket details:', error);
@@ -698,17 +752,17 @@ async function handleReplySubmit(e) {
         // Create message data
         const messageData = {
             ticket_id: currentTicketId,
-            staff_id: currentAdmin.id,
+            staff_id: currentAdmin.admin_id,
             message: message,
             is_from_staff: true,
             is_internal: replyMode === 'internal'
         };
         
         // Send message
-        const result = await db.ticketMessages.create(messageData);
+        const result = await AdminDB.ticketMessages.create(messageData);
         
         if (result.success) {
-            // Clear form
+        // Clear form
             messageInput.value = '';
             
             // Reload ticket details to show new message
@@ -734,12 +788,12 @@ async function handleReplySubmit(e) {
  * Load contacts
  */
 async function loadContacts() {
-    const contactsTable = document.getElementById('contactsTable');
+    const contactsTableData = document.getElementById('contactsTableData');
     
     try {
-        contactsTable.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading contacts...</div>';
+        contactsTableData.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading contacts...</div>';
         
-        const result = await db.contacts.getAll();
+        const result = await AdminDB.contactSubmissions.getAll();
         
         if (result.success) {
             allContacts = result.data || [];
@@ -750,7 +804,7 @@ async function loadContacts() {
         
     } catch (error) {
         console.error('Error loading contacts:', error);
-        contactsTable.innerHTML = `
+        contactsTableData.innerHTML = `
             <div class="error" style="text-align: center; padding: 2rem;">
                 <i class="ph-light ph-warning"></i>
                 Error loading contacts: ${error.message}
@@ -763,38 +817,28 @@ async function loadContacts() {
  * Display contacts in table
  */
 function displayContacts(contacts) {
-    const contactsTable = document.getElementById('contactsTable');
+    const contactsTableData = document.getElementById('contactsTableData');
     
     if (contacts.length === 0) {
-        contactsTable.innerHTML = `
+        contactsTableData.innerHTML = `
             <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                 <i class="ph-light ph-envelope" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                <h4>No Contact Requests</h4>
-                <p>Contact requests will appear here.</p>
+                <h4>No Ticket Requests</h4>
+                <p>Ticket requests will appear here.</p>
             </div>
         `;
         return;
     }
     
-    contactsTable.innerHTML = contacts.map(contact => `
+    contactsTableData.innerHTML = contacts.map(contact => `
         <div class="table-row">
+            ${contactsEditMode ? `<div class="table-cell"><input type="checkbox" class="contact-checkbox" value="${contact.id}" onclick="updateSelectAllState('contact-checkbox','selectAllContacts')"></div>` : ''}
             <div class="table-cell subject">${escapeHtml(contact.subject)}</div>
             <div class="table-cell">${escapeHtml(contact.name)}</div>
             <div class="table-cell">${escapeHtml(contact.email)}</div>
-            <div class="table-cell">
-                <span class="status-badge ${contact.processed ? 'status-completed' : 'status-new'}">
-                    ${contact.processed ? 'Processed' : 'New'}
-                </span>
-            </div>
+            <div class="table-cell"><span class="status-badge ${contact.processed ? 'status-completed' : 'status-new'}">${contact.processed ? 'Processed' : 'New'}</span></div>
             <div class="table-cell">${formatDate(contact.created_at)}</div>
-            <div class="table-cell">
-                ${!contact.processed ? 
-                    `<button class="btn secondary" onclick="convertToTicket('${contact.id}')">
-                        <i class="ph-light ph-ticket"></i> Convert to Ticket
-                    </button>` : 
-                    '<span style="color: rgba(255, 255, 255, 0.5);">Processed</span>'
-                }
-            </div>
+            <div class="table-cell">${!contact.processed ? `<button class="btn secondary" onclick="convertToTicket('${contact.id}')"><i class="ph-light ph-ticket"></i> Convert to Ticket</button>` : '<span style="color: rgba(255, 255, 255, 0.5);">Processed</span>'}</div>
         </div>
     `).join('');
 }
@@ -813,6 +857,81 @@ function filterContacts() {
     }
     
     displayContacts(filtered);
+}
+
+/**
+ * Load webforms
+ */
+async function loadWebforms() {
+    const webformsTableData = document.getElementById('webformsTableData');
+    
+    try {
+        webformsTableData.innerHTML = '<div class="loading"><i class="ph-light ph-spinner"></i>Loading webforms...</div>';
+        
+        const result = await AdminDB.webFormSubmissions.getAll();
+        
+        if (result.success) {
+            allWebforms = result.data || [];
+            displayWebforms(allWebforms);
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error loading webforms:', error);
+        webformsTableData.innerHTML = `
+            <div class="error" style="text-align: center; padding: 2rem;">
+                <i class="ph-light ph-warning"></i>
+                Error loading webforms: ${error.message}
+            </div>
+        `;
+    }
+}
+
+/**
+ * Display webforms in table
+ */
+function displayWebforms(webforms) {
+    const webformsTableData = document.getElementById('webformsTableData');
+    
+    if (webforms.length === 0) {
+        webformsTableData.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                <i class="ph-light ph-file-text" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <h4>No Web Form Submissions</h4>
+                <p>Web form submissions will appear here.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    webformsTableData.innerHTML = webforms.map(webform => `
+        <div class="table-row">
+            ${webformsEditMode ? `<div class="table-cell"><input type="checkbox" class="webform-checkbox" value="${webform.id}" onclick="updateSelectAllState('webform-checkbox','selectAllWebforms')"></div>` : ''}
+            <div class="table-cell">${escapeHtml(webform.form_type || 'Contact Form')}</div>
+            <div class="table-cell">${escapeHtml(webform.name || 'Anonymous')}</div>
+            <div class="table-cell">${escapeHtml(webform.email || 'No email')}</div>
+            <div class="table-cell"><span class="status-badge ${webform.processed ? 'status-completed' : 'status-new'}">${webform.processed ? 'Processed' : 'New'}</span></div>
+            <div class="table-cell">${formatDate(webform.created_at)}</div>
+            <div class="table-cell">${!webform.processed ? `<button class="btn secondary" onclick="convertWebformToTicket('${webform.id}')"><i class="ph-light ph-ticket"></i> Convert to Ticket</button>` : '<span style="color: rgba(255, 255, 255, 0.5);">Processed</span>'}</div>
+        </div>
+    `).join('');
+}
+
+/**
+ * Filter webforms
+ */
+function filterWebforms() {
+    const statusFilter = document.getElementById('webformStatusFilter').value;
+    
+    let filtered = [...allWebforms];
+    
+    if (statusFilter !== '') {
+        const isProcessed = statusFilter === 'true';
+        filtered = filtered.filter(webform => webform.processed === isProcessed);
+    }
+    
+    displayWebforms(filtered);
 }
 
 /**
@@ -888,7 +1007,7 @@ function showNotification(message, type = 'info') {
     document.body.appendChild(notification);
     
     // Remove after 5 seconds
-    setTimeout(() => {
+        setTimeout(() => {
         notification.remove();
     }, 5000);
 }
@@ -917,11 +1036,29 @@ function handleGlobalSearch(e) {
         const filtered = allTickets.filter(ticket => 
             ticket.title.toLowerCase().includes(query) ||
             ticket.description.toLowerCase().includes(query) ||
-            (ticket.customer_name && ticket.customer_name.toLowerCase().includes(query))
+            (ticket.customers?.full_name && ticket.customers.full_name.toLowerCase().includes(query)) ||
+            (ticket.customer_name && ticket.customer_name.toLowerCase().includes(query)) ||
+            (ticket.anonymous_name && ticket.anonymous_name.toLowerCase().includes(query))
         );
         displayTickets(filtered);
+    } else if (currentSection === 'contacts') {
+        const filtered = allContacts.filter(contact => 
+            contact.subject.toLowerCase().includes(query) ||
+            contact.name.toLowerCase().includes(query) ||
+            contact.email.toLowerCase().includes(query) ||
+            (contact.message && contact.message.toLowerCase().includes(query))
+        );
+        displayContacts(filtered);
+    } else if (currentSection === 'webforms') {
+        const filtered = allWebforms.filter(webform => 
+            (webform.form_type && webform.form_type.toLowerCase().includes(query)) ||
+            (webform.name && webform.name.toLowerCase().includes(query)) ||
+            (webform.email && webform.email.toLowerCase().includes(query)) ||
+            (webform.subject && webform.subject.toLowerCase().includes(query)) ||
+            (webform.message && webform.message.toLowerCase().includes(query))
+        );
+        displayWebforms(filtered);
     }
-    // Add other section search logic as needed
 }
 
 // Show create ticket modal
@@ -951,17 +1088,19 @@ async function handleCreateTicket(e) {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Creating...';
         
+        const customerValue = document.getElementById('ticketCustomer').value;
+        
         const formData = {
-            customer_id: document.getElementById('ticketCustomer').value,
+            customer_id: customerValue === 'anonymous' ? null : customerValue,
             title: document.getElementById('ticketTitle').value,
             description: document.getElementById('ticketDescription').value,
             priority: document.getElementById('ticketPriority').value,
             staff_notes: document.getElementById('ticketNotes').value,
             created_by_staff: true,
-            assigned_to: currentAdmin.id
+            anonymous_customer: customerValue === 'anonymous'
         };
         
-        const result = await db.tickets.create(formData);
+        const result = await AdminDB.tickets.create(formData);
         
         if (result.success) {
             showNotification('Ticket created successfully', 'success');
@@ -990,11 +1129,12 @@ async function handleCreateTicket(e) {
 // Load customers for dropdown
 async function loadCustomersDropdown() {
     try {
-        const result = await db.customers.getAll();
+        const result = await AdminDB.customers.getAll();
         if (result.success) {
             const select = document.getElementById('ticketCustomer');
             if (select) {
                 select.innerHTML = '<option value="">Select Customer</option>' +
+                    '<option value="anonymous">No Customer (Anonymous)</option>' +
                     result.data.map(customer => 
                         `<option value="${customer.id}">${customer.full_name} (${customer.email})</option>`
                     ).join('');
@@ -1008,7 +1148,7 @@ async function loadCustomersDropdown() {
 // Handle logout
 async function handleLogout() {
     try {
-        const result = await auth.signOut();
+        const result = await AdminAuth.signOut();
         if (result.success) {
             window.location.href = 'index.html';
         } else {
@@ -1059,5 +1199,292 @@ function showCreateAppointmentModal() {
 }
 
 function convertToTicket(contactId) {
-    showNotification('Contact conversion features coming soon', 'info');
-} 
+    // Find the contact
+    const contact = allContacts.find(c => c.id === contactId);
+    if (!contact) return;
+    currentContactToConvert = contact;
+    // Pre-fill modal fields
+    document.getElementById('convertName').value = contact.name || '';
+    document.getElementById('convertEmail').value = contact.email || '';
+    document.getElementById('convertSubject').value = contact.subject || '';
+    document.getElementById('convertDescription').value = contact.message || contact.description || '';
+    document.getElementById('convertPriority').value = 'normal';
+    // Show modal
+    document.getElementById('convertToTicketModal').style.display = 'block';
+    // Always attach the handler (remove previous to avoid duplicates)
+    const convertForm = document.getElementById('convertToTicketForm');
+    convertForm.removeEventListener('submit', handleConvertToTicket);
+    convertForm.addEventListener('submit', handleConvertToTicket);
+}
+
+async function handleConvertToTicket(e) {
+    e.preventDefault();
+    if (!currentContactToConvert) return;
+    const submitBtn = e.target.querySelector('.btn.primary');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Converting...';
+    try {
+        // Use customer_id from the contact request
+        const customerId = currentContactToConvert.customer_id;
+        if (!customerId) throw new Error('No customer_id found on contact request.');
+        // Create ticket linked to customer_id
+        const ticketData = {
+            customer_id: customerId,
+            title: document.getElementById('convertSubject').value,
+            description: document.getElementById('convertDescription').value,
+            priority: document.getElementById('convertPriority').value,
+            created_by_staff: true
+        };
+        const result = await AdminDB.tickets.create(ticketData);
+        if (!result.success) throw new Error(result.error);
+        // Delete the contact request after conversion
+        const deleteResult = await AdminDB.contactSubmissions.delete(currentContactToConvert.id);
+        if (!deleteResult.success) throw new Error(deleteResult.error);
+        showNotification('Contact converted to ticket and deleted!', 'success');
+        closeModal('convertToTicketModal');
+        // Refresh contacts and tickets
+        await loadContacts();
+        await loadTickets();
+        } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Convert & Create Ticket';
+        currentContactToConvert = null;
+    }
+}
+
+function enableTicketEdit(ticketId) {
+    ticketEditMode = true;
+    // Re-render ticket detail in edit mode
+    renderTicketEditForm(ticketId);
+}
+
+async function renderTicketEditForm(ticketId) {
+    // Load ticket data again for safety
+    const ticketResult = await AdminDB.tickets.getById(ticketId);
+    if (!ticketResult.success) return;
+    const ticket = ticketResult.data;
+    ticketEditData = {...ticket};
+    const content = document.getElementById('ticketDetailContent');
+    content.innerHTML = `
+        <form id="editTicketForm">
+            <div class="ticket-properties">
+                <div class="property-item">
+                    <div class="property-label">Status</div>
+                    <select class="form-select" name="status" id="editStatus">
+                        <option value="new" ${ticket.status==='new'?'selected':''}>New</option>
+                        <option value="in_progress" ${ticket.status==='in_progress'?'selected':''}>In Progress</option>
+                        <option value="completed" ${ticket.status==='completed'?'selected':''}>Completed</option>
+                        <option value="cancelled" ${ticket.status==='cancelled'?'selected':''}>Cancelled</option>
+                    </select>
+        </div>
+                <div class="property-item">
+                    <div class="property-label">Priority</div>
+                    <select class="form-select" name="priority" id="editPriority">
+                        <option value="urgent" ${ticket.priority==='urgent'?'selected':''}>Urgent</option>
+                        <option value="high" ${ticket.priority==='high'?'selected':''}>High</option>
+                        <option value="normal" ${ticket.priority==='normal'?'selected':''}>Normal</option>
+                        <option value="low" ${ticket.priority==='low'?'selected':''}>Low</option>
+                    </select>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Subject</div>
+                    <input class="form-input" type="text" id="editTitle" value="${escapeHtml(ticket.title)}" required />
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Description</div>
+                    <textarea class="form-textarea" id="editDescription" required>${escapeHtml(ticket.description)}</textarea>
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem; justify-content:flex-end;">
+                <button type="button" class="btn secondary" id="cancelEditTicketBtn">Cancel</button>
+                <button type="submit" class="btn primary">Save Changes</button>
+            </div>
+        </form>
+    `;
+    document.getElementById('cancelEditTicketBtn').onclick = () => {
+        ticketEditMode = false;
+        openTicketDetail(ticketId);
+    };
+    document.getElementById('editTicketForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const updates = {
+            status: document.getElementById('editStatus').value,
+            priority: document.getElementById('editPriority').value,
+            title: document.getElementById('editTitle').value,
+            description: document.getElementById('editDescription').value
+        };
+        const result = await AdminDB.tickets.update(ticketId, updates);
+        if (result.success) {
+            showNotification('Ticket updated!', 'success');
+            ticketEditMode = false;
+            openTicketDetail(ticketId);
+            await loadTickets();
+        } else {
+            showNotification('Error updating ticket: ' + result.error, 'error');
+        }
+    };
+}
+
+// --- Bulk Delete Utilities ---
+async function deleteSelectedTickets() {
+    const checkboxes = document.querySelectorAll('.ticket-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    if (!confirm('Are you sure you want to delete the selected tickets?')) return;
+    for (const cb of checkboxes) {
+        await AdminDB.tickets.delete(cb.value);
+    }
+    await loadTickets();
+    exitTicketsEditMode();
+}
+
+async function deleteSelectedContacts() {
+    const checkboxes = document.querySelectorAll('.contact-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    if (!confirm('Are you sure you want to delete the selected ticket requests?')) return;
+    for (const cb of checkboxes) {
+        await AdminDB.contactSubmissions.delete(cb.value);
+    }
+    await loadContacts();
+    exitContactsEditMode();
+}
+
+// Utility to toggle all checkboxes
+function toggleSelectAll(className, checked) {
+    document.querySelectorAll('.' + className).forEach(cb => { cb.checked = checked; });
+}
+
+// Utility to update select-all checkbox state
+function updateSelectAllState(className, selectAllId) {
+    const all = document.querySelectorAll('.' + className);
+    const checked = document.querySelectorAll('.' + className + ':checked');
+    const selectAll = document.getElementById(selectAllId);
+    if (selectAll) selectAll.checked = all.length === checked.length;
+}
+
+// --- Edit Mode Functions ---
+function enterTicketsEditMode() {
+    ticketsEditMode = true;
+    document.getElementById('ticketsEditBtn').style.display = 'none';
+    document.getElementById('ticketsEditControls').style.display = 'flex';
+    document.getElementById('ticketsCheckboxHeader').style.display = 'block';
+    displayTickets(allTickets);
+}
+
+function exitTicketsEditMode() {
+    ticketsEditMode = false;
+    document.getElementById('ticketsEditBtn').style.display = 'block';
+    document.getElementById('ticketsEditControls').style.display = 'none';
+    document.getElementById('ticketsCheckboxHeader').style.display = 'none';
+    displayTickets(allTickets);
+}
+
+function enterContactsEditMode() {
+    contactsEditMode = true;
+    document.getElementById('contactsEditBtn').style.display = 'none';
+    document.getElementById('contactsEditControls').style.display = 'flex';
+    document.getElementById('contactsCheckboxHeader').style.display = 'block';
+    displayContacts(allContacts);
+}
+
+function exitContactsEditMode() {
+    contactsEditMode = false;
+    document.getElementById('contactsEditBtn').style.display = 'block';
+    document.getElementById('contactsEditControls').style.display = 'none';
+    document.getElementById('contactsCheckboxHeader').style.display = 'none';
+    displayContacts(allContacts);
+}
+
+function convertWebformToTicket(webformId) {
+    // Find the webform
+    const webform = allWebforms.find(w => w.id === webformId);
+    if (!webform) return;
+    currentWebformToConvert = webform;
+    
+    // Pre-fill modal fields
+    document.getElementById('convertWebformName').value = webform.name || '';
+    document.getElementById('convertWebformEmail').value = webform.email || '';
+    document.getElementById('convertWebformSubject').value = webform.subject || webform.form_type || 'Web Form Submission';
+    document.getElementById('convertWebformDescription').value = webform.message || webform.description || '';
+    document.getElementById('convertWebformPriority').value = 'normal';
+    
+    // Show modal
+    document.getElementById('convertWebformToTicketModal').style.display = 'block';
+    
+    // Always attach the handler (remove previous to avoid duplicates)
+    const convertForm = document.getElementById('convertWebformToTicketForm');
+    convertForm.removeEventListener('submit', handleConvertWebformToTicket);
+    convertForm.addEventListener('submit', handleConvertWebformToTicket);
+}
+
+async function handleConvertWebformToTicket(e) {
+    e.preventDefault();
+    if (!currentWebformToConvert) return;
+    
+    const submitBtn = e.target.querySelector('.btn.primary');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Converting...';
+    
+    try {
+        // Create ticket without customer_id (anonymous)
+        const ticketData = {
+            customer_id: null,
+            title: document.getElementById('convertWebformSubject').value,
+            description: document.getElementById('convertWebformDescription').value,
+            priority: document.getElementById('convertWebformPriority').value,
+            created_by_staff: true,
+            anonymous_customer: true,
+            anonymous_name: document.getElementById('convertWebformName').value,
+            anonymous_email: document.getElementById('convertWebformEmail').value
+        };
+        
+        const result = await AdminDB.tickets.create(ticketData);
+        if (!result.success) throw new Error(result.error);
+        
+        // Delete the webform after conversion
+        const deleteResult = await AdminDB.webFormSubmissions.delete(currentWebformToConvert.id);
+        if (!deleteResult.success) throw new Error(deleteResult.error);
+        
+        showNotification('Web form converted to ticket and deleted!', 'success');
+        closeModal('convertWebformToTicketModal');
+        
+        // Refresh webforms and tickets
+        await loadWebforms();
+        await loadTickets();
+        
+    } catch (error) {
+        showNotification('Error: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Convert & Create Ticket';
+        currentWebformToConvert = null;
+    }
+}
+
+async function deleteSelectedWebforms() {
+    const checkboxes = document.querySelectorAll('.webform-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    if (!confirm('Are you sure you want to delete the selected web form submissions?')) return;
+    for (const cb of checkboxes) {
+        await AdminDB.webFormSubmissions.delete(cb.value);
+    }
+    await loadWebforms();
+    exitWebformsEditMode();
+}
+
+function enterWebformsEditMode() {
+    webformsEditMode = true;
+    document.getElementById('webformsEditBtn').style.display = 'none';
+    document.getElementById('webformsEditControls').style.display = 'flex';
+    document.getElementById('webformsCheckboxHeader').style.display = 'block';
+    displayWebforms(allWebforms);
+}
+
+function exitWebformsEditMode() {
+    webformsEditMode = false;
+    document.getElementById('webformsEditBtn').style.display = 'block';
+    document.getElementById('webformsEditControls').style.display = 'none';
+    document.getElementById('webformsCheckboxHeader').style.display = 'none';
+    displayWebforms(allWebforms);
+}

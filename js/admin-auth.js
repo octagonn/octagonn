@@ -190,6 +190,74 @@ const AdminDB = {
                 console.error('Error marking submission as processed:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async delete(submissionId) {
+            try {
+                const { error } = await supabase
+                    .from('contact_submissions')
+                    .delete()
+                    .eq('id', submissionId);
+                
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting contact submission:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    },
+
+    // Web Form Submissions
+    webFormSubmissions: {
+        async getAll() {
+            try {
+                const { data, error } = await supabase
+                    .from('web_form_submissions')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error getting web form submissions:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async markAsProcessed(submissionId, ticketId = null) {
+            try {
+                const { data, error } = await supabase
+                    .from('web_form_submissions')
+                    .update({ 
+                        processed: true,
+                        ticket_id: ticketId,
+                        processed_at: new Date().toISOString()
+                    })
+                    .eq('id', submissionId)
+                    .select();
+                
+                if (error) throw error;
+                return { success: true, data: data[0] };
+            } catch (error) {
+                console.error('Error marking web form submission as processed:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async delete(submissionId) {
+            try {
+                const { error } = await supabase
+                    .from('web_form_submissions')
+                    .delete()
+                    .eq('id', submissionId);
+                
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting web form submission:', error);
+                return { success: false, error: error.message };
+            }
         }
     },
 
@@ -214,6 +282,30 @@ const AdminDB = {
                 return { success: true, data };
             } catch (error) {
                 console.error('Error getting all tickets:', error);
+                return { success: false, error: error.message };
+            }
+        },
+
+        async getById(ticketId) {
+            try {
+                const { data, error } = await supabase
+                    .from('service_tickets')
+                    .select(`
+                        *,
+                        customers (
+                            id,
+                            full_name,
+                            email,
+                            phone
+                        )
+                    `)
+                    .eq('id', ticketId)
+                    .single();
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error getting ticket by ID:', error);
                 return { success: false, error: error.message };
             }
         },
@@ -247,6 +339,31 @@ const AdminDB = {
                 console.error('Error updating ticket:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async delete(ticketId) {
+            try {
+                const { error } = await supabase
+                    .from('service_tickets')
+                    .delete()
+                    .eq('id', ticketId);
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting ticket:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    },
+
+    // Ticket Messages (alias for messages for compatibility)
+    ticketMessages: {
+        async getByTicketId(ticketId) {
+            return AdminDB.messages.getByTicketId(ticketId);
+        },
+
+        async create(messageData) {
+            return AdminDB.messages.create(messageData, messageData.is_internal || false);
         }
     },
 

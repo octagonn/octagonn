@@ -6,7 +6,7 @@
     <title>Customer Portal - SpyderNet IT</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
-    <script src="https://supabase.com/dashboard/api/js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         /* Customer Portal Specific Styles */
         .customer-portal {
@@ -88,6 +88,9 @@
             transition: all 0.3s ease;
             padding: 0.5rem 1rem;
             border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .nav-link:hover, .nav-link.active {
@@ -109,254 +112,650 @@
         .logout-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.8);
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        /* Main Content Area */
+        .portal-main {
+            padding: 2rem 0;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* Home Section */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #7877c6, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .create-ticket-cta {
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            color: #ffffff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .create-ticket-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(120, 119, 198, 0.3);
+        }
+
+        /* Quick Stats */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #7877c6;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Create Ticket Form */
+        .create-ticket-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #7877c6, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .ticket-form {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #ffffff;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #7877c6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-upload-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .file-upload-btn:hover {
+            border-color: #7877c6;
+            background: rgba(120, 119, 198, 0.1);
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            color: #ffffff;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(120, 119, 198, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Tickets List */
+        .tickets-section {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .tickets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .tickets-search {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.75rem;
+            color: #ffffff;
+            width: 300px;
+        }
+
+        .tickets-search:focus {
+            outline: none;
+            border-color: #7877c6;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tickets-table {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr;
+            gap: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ticket-row {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ticket-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .ticket-number {
+            color: #7877c6;
+            font-weight: 600;
+        }
+
+        .ticket-subject {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-open { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status-in-progress { background: rgba(0, 123, 255, 0.2); color: #007bff; }
+        .status-awaiting { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .status-resolved { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+
+        .ticket-date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Ticket Detail Modal */
+        .ticket-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            color: #ffffff;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .conversation {
+            margin-bottom: 2rem;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            border-left: 4px solid #7877c6;
+        }
+
+        .message.staff {
+            background: rgba(120, 119, 198, 0.1);
+            border-left-color: #7877c6;
+        }
+
+        .message.customer {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-author {
+            color: #7877c6;
+            font-weight: 600;
+        }
+
+        .message-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+        }
+
+        .message-content {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.5;
+        }
+
+        .reply-form {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .portal-nav {
+                gap: 1rem;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+            }
+
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tickets-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .tickets-search {
+                width: 100%;
+            }
+
+            .table-header, .ticket-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+            }
+        }
+
+        /* Loading and Error States */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            color: #28a745;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
 </head>
-<body>
-    <div class="top-bar">
-        <div class="container">
-            <div class="top-bar-left">
-                <div class="contact-item">
-                    <i class="ph-light ph-phone"></i>
-                    <span>(949) 237-2612</span>
-                </div>
-                <div class="contact-item">
-                    <i class="ph-light ph-envelope"></i>
-                    <span>spydernetit@gmail.com</span>
-                </div>
-            </div>
-            <div class="top-bar-right">
-                <span>Serving Orange County & Surrounding Areas</span>
-            </div>
-        </div>
-    </div>
-    
-    <header>
-        <div class="container">
-            <div class="logo">
-                <a href="index.html" class="logo-container">
-                    <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet Spider Logo" class="logo-spider">
-                    <div class="logo-text-container">
-                        <span class="logo-main-text">SpyderNet</span>
-                        <span class="logo-sub-text">IT</span>
-                        <span class="logo-tagline">Your IT Solutions Provider</span>
-                    </div>
+<body class="customer-portal">
+    <!-- Header -->
+    <header class="portal-header">
+        <div class="header-content">
+            <a href="#" class="portal-logo" onclick="showSection('home')">
+                <img src="img/spydernet-spider-logo-gradient.png" alt="SpyderNet IT">
+                <span class="logo-text">SpyderNet IT</span>
+            </a>
+            
+            <nav class="portal-nav">
+                <a href="#" class="nav-link active" onclick="showSection('home')" data-section="home">
+                    <i class="ph-light ph-house"></i>
+                    Home
                 </a>
-            </div>
-            <div class="mobile-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="services.html">Services</a></li>
-                    <li><a href="about.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li><a href="customer-portal.html" class="active">Portal</a></li>
-                </ul>
+                <a href="#" class="nav-link" onclick="showSection('create-ticket')" data-section="create-ticket">
+                    <i class="ph-light ph-plus-circle"></i>
+                    Create Ticket
+                </a>
+                <a href="#" class="nav-link" onclick="showSection('my-tickets')" data-section="my-tickets">
+                    <i class="ph-light ph-ticket"></i>
+                    My Tickets
+                </a>
             </nav>
-            <div class="header-cta">
-                <button id="logoutBtn" class="btn btn-header-cta">Sign Out</button>
+            
+            <div class="user-menu">
+                <span class="welcome-text">Welcome, <span id="customerName">Customer</span></span>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <i class="ph-light ph-sign-out"></i>
+                    Logout
+                </button>
             </div>
         </div>
     </header>
 
-    <section class="portal-section">
-        <div class="container">
-            <!-- Welcome Header -->
-            <div class="portal-welcome glass-card">
-                <div class="welcome-content">
-                    <h2>Welcome back, <span id="customerName">Customer</span>!</h2>
-                    <p>View your service tickets, communicate with our team, and manage appointments.</p>
-                </div>
-                <div class="welcome-actions">
-                    <a href="contact.html" class="btn btn-primary">
-                        <i class="ph-light ph-envelope"></i>
-                        Contact Support
-                    </a>
-                </div>
-            </div>
-
-            <!-- Dashboard Stats -->
-            <div class="portal-stats">
-                <div class="stat-card glass-card">
-                    <div class="stat-icon">
-                        <i class="ph-light ph-ticket"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="activeTickets">0</h3>
-                        <p>Active Tickets</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-icon">
-                        <i class="ph-light ph-calendar"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="upcomingAppointments">0</h3>
-                        <p>Upcoming Appointments</p>
-                    </div>
-                </div>
-                <div class="stat-card glass-card">
-                    <div class="stat-icon">
-                        <i class="ph-light ph-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <h3 id="completedServices">0</h3>
-                        <p>Completed Services</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Portal Tabs -->
-            <div class="portal-tabs">
-                <button class="tab-btn active" data-tab="tickets">
-                    <i class="ph-light ph-ticket"></i>
-                    Service Tickets
-                </button>
-                <button class="tab-btn" data-tab="appointments">
-                    <i class="ph-light ph-calendar"></i>
-                    Appointments
-                </button>
-                <button class="tab-btn" data-tab="profile">
-                    <i class="ph-light ph-user"></i>
-                    Profile
-                </button>
-            </div>
-
-            <!-- Tickets Tab -->
-            <div id="ticketsTab" class="tab-content active">
-                <div class="tab-header">
-                    <h3>Your Service Tickets</h3>
-                    <a href="contact.html" class="btn btn-secondary">
-                        <i class="ph-light ph-envelope"></i>
-                        Contact Support
-                    </a>
-                </div>
-                <div id="ticketsList" class="tickets-list">
-                    <!-- Tickets will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Appointments Tab -->
-            <div id="appointmentsTab" class="tab-content">
-                <div class="tab-header">
-                    <h3>Your Appointments</h3>
-                    <p class="tab-description">View your scheduled appointments. Contact staff to schedule new appointments or request changes.</p>
-                </div>
-                <div id="appointmentsList" class="appointments-list">
-                    <!-- Appointments will be loaded here -->
-                </div>
-            </div>
-
-            <!-- Profile Tab -->
-            <div id="profileTab" class="tab-content">
-                <div class="tab-header">
-                    <h3>Your Profile</h3>
-                    <button id="editProfileBtn" class="btn btn-secondary">
-                        <i class="ph-light ph-pencil"></i>
-                        Edit Profile
+    <!-- Main Content -->
+    <main class="portal-main">
+        <div class="portal-container">
+            <!-- Home Section -->
+            <section id="home-section" class="content-section active">
+                <div class="welcome-section">
+                    <h1 class="welcome-title">Welcome to Your Support Portal</h1>
+                    <p class="welcome-subtitle">Get help when you need it, track your requests, and stay connected with our support team.</p>
+                    <button class="create-ticket-cta" onclick="showSection('create-ticket')">
+                        <i class="ph-light ph-plus-circle"></i>
+                        Create New Ticket
                     </button>
                 </div>
-                <div class="profile-info glass-card">
-                    <div id="profileDisplay">
-                        <div class="profile-field">
-                            <label>Full Name:</label>
-                            <span id="profileName">-</span>
-                        </div>
-                        <div class="profile-field">
-                            <label>Email:</label>
-                            <span id="profileEmail">-</span>
-                        </div>
-                        <div class="profile-field">
-                            <label>Phone:</label>
-                            <span id="profilePhone">-</span>
-                        </div>
-                        <div class="profile-field">
-                            <label>Address:</label>
-                            <span id="profileAddress">-</span>
-                        </div>
+
+                <div class="quick-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeTickets">-</div>
+                        <div class="stat-label">Active Tickets</div>
                     </div>
-                    <form id="profileEditForm" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedTickets">-</div>
+                        <div class="stat-label">Completed Tickets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="upcomingAppointments">-</div>
+                        <div class="stat-label">Upcoming Appointments</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Create Ticket Section -->
+            <section id="create-ticket-section" class="content-section create-ticket-section">
+                <h2 class="section-title">Create Support Ticket</h2>
+                <div class="ticket-form">
+                    <div id="create-ticket-message"></div>
+                    <form id="createTicketForm">
                         <div class="form-group">
-                            <label>Full Name:</label>
-                            <input type="text" id="editName" required>
+                            <label class="form-label" for="ticketName">Your Name *</label>
+                            <input type="text" id="ticketName" class="form-input" required>
                         </div>
+                        
                         <div class="form-group">
-                            <label>Phone:</label>
-                            <input type="tel" id="editPhone">
+                            <label class="form-label" for="ticketEmail">Email Address *</label>
+                            <input type="email" id="ticketEmail" class="form-input" required>
                         </div>
+                        
                         <div class="form-group">
-                            <label>Address:</label>
-                            <textarea id="editAddress" rows="3"></textarea>
+                            <label class="form-label" for="ticketSubject">Issue Subject *</label>
+                            <input type="text" id="ticketSubject" class="form-input" placeholder="Brief description of your issue" required>
                         </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Save Changes</button>
-                            <button type="button" id="cancelEditBtn" class="btn btn-secondary">Cancel</button>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="ticketDescription">Description *</label>
+                            <textarea id="ticketDescription" class="form-textarea" placeholder="Please provide detailed information about your issue..." required></textarea>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Attachments (Optional)</label>
+                            <div class="file-upload">
+                                <div class="file-upload-btn">
+                                    <i class="ph-light ph-cloud-arrow-up" style="font-size: 2rem; color: #7877c6; margin-bottom: 0.5rem; display: block;"></i>
+                                    <p>Click to upload files or drag and drop</p>
+                                    <small style="color: rgba(255, 255, 255, 0.5);">Supported: JPG, PNG, PDF, DOC (Max 10MB)</small>
+                                    <input type="file" id="ticketAttachments" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx">
+                                </div>
+                            </div>
+                            <div id="file-list"></div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">
+                            <i class="ph-light ph-paper-plane-right"></i>
+                            Submit Request
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- My Tickets Section -->
+            <section id="my-tickets-section" class="content-section tickets-section">
+                <div class="tickets-header">
+                    <h2 class="section-title">My Support Tickets</h2>
+                    <input type="text" class="tickets-search" placeholder="Search tickets..." id="ticketsSearch">
+                </div>
+
+                <div class="tickets-table">
+                    <div class="table-header">
+                        <div>Ticket #</div>
+                        <div>Subject</div>
+                        <div>Status</div>
+                        <div>Date</div>
+                    </div>
+                    <div id="ticketsList">
+                        <div class="loading">Loading your tickets...</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Ticket Detail Modal -->
+    <div id="ticketModal" class="ticket-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTicketTitle">Ticket Details</h3>
+                <button class="close-btn" onclick="closeTicketModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="ticketDetails">
+                    <div class="loading">Loading ticket details...</div>
+                </div>
+                <div class="conversation" id="ticketConversation">
+                    <!-- Messages will be loaded here -->
+                </div>
+                <div class="reply-form">
+                    <form id="replyForm">
+                        <div class="form-group">
+                            <label class="form-label">Your Reply</label>
+                            <textarea id="replyMessage" class="form-textarea" placeholder="Type your message here..." required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">
+                            <i class="ph-light ph-paper-plane-right"></i>
+                            Send Reply
+                        </button>
                     </form>
                 </div>
             </div>
-
-            <!-- Loading State -->
-            <div id="loadingState" class="loading-state" style="display: none;">
-                <div class="loading-spinner"></div>
-                <p>Loading your data...</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Cancellation Request Modal -->
-    <div id="cancellationModal" class="modal" style="display: none;">
-        <div class="modal-content glass-card">
-            <div class="modal-header">
-                <h3>Request Appointment Cancellation</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <form id="cancellationForm">
-                <div class="appointment-info">
-                    <p><strong>Appointment:</strong> <span id="cancelAppointmentInfo"></span></p>
-                </div>
-                <div class="form-group">
-                    <label>Reason for Cancellation:</label>
-                    <textarea id="cancellationReason" rows="3" placeholder="Please provide a reason for the cancellation..." required></textarea>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Request Cancellation</button>
-                    <button type="button" class="modal-close btn btn-secondary">Cancel</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <!-- Ticket Detail Modal -->
-    <div id="ticketModal" class="modal" style="display: none;">
-        <div class="modal-content glass-card">
-            <div class="modal-header">
-                <h3 id="ticketModalTitle">Ticket Details</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div id="ticketModalContent">
-                <!-- Ticket details and messages will be loaded here -->
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <div class="container">
-            <div class="footer-bottom">
-                <p>Copyright © 2025 SpyderNet IT - All Rights Reserved.</p>
-                <div class="footer-links" style="margin-top: 20px;">
-                    <a href="privacy-policy.html">Privacy Policy</a>
-                    <a href="terms-conditions.html">Terms and Conditions</a>
-                </div>
-            </div>
-        </div>
-    </footer>
-
+    <!-- Scripts -->
     <script src="js/supabase-client.js"></script>
-    <script src="js/script.js"></script>
     <script src="js/customer-portal.js"></script>
 </body>
 </html> 
