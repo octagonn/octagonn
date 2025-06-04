@@ -14,7 +14,7 @@ let currentData = {
     tickets: [],
     customers: [],
     appointments: [],
-    appointmentRequests: []
+    appointmentCancellationRequests: []
 };
 
 // Initialize dashboard
@@ -77,7 +77,7 @@ function setupEventListeners() {
     document.getElementById('refreshTickets').addEventListener('click', () => loadTickets());
     document.getElementById('refreshCustomers').addEventListener('click', () => loadCustomers());
     document.getElementById('refreshAppointments').addEventListener('click', () => loadAppointments());
-    document.getElementById('refreshAppointmentRequests').addEventListener('click', () => loadAppointmentRequests());
+    document.getElementById('refreshAppointmentRequests').addEventListener('click', () => loadAppointmentCancellationRequests());
 
     // Create ticket button
     document.getElementById('createTicketBtn').addEventListener('click', showCreateTicketModal);
@@ -115,7 +115,7 @@ async function loadAllData() {
         loadTickets(),
         loadCustomers(),
         loadAppointments(),
-        loadAppointmentRequests()
+        loadAppointmentCancellationRequests()
     ]);
 }
 
@@ -171,16 +171,16 @@ async function loadAppointments() {
     }
 }
 
-// Load appointment requests
-async function loadAppointmentRequests() {
+// Load appointment cancellation requests
+async function loadAppointmentCancellationRequests() {
     showLoading('appointmentRequestsTableBody');
     
-    const result = await AdminDB.appointmentRequests.getAll();
+    const result = await AdminDB.appointmentCancellationRequests.getAll();
     if (result.success) {
-        currentData.appointmentRequests = result.data;
+        currentData.appointmentCancellationRequests = result.data;
         renderAppointmentRequestsTable();
     } else {
-        showError('appointmentRequestsTableBody', 'Failed to load appointment requests');
+        showError('appointmentRequestsTableBody', 'Failed to load appointment cancellation requests');
     }
 }
 
@@ -205,7 +205,7 @@ function updateStats() {
     document.getElementById('totalCustomersCount').textContent = currentData.customers.length;
 
     // Pending requests
-    const pendingRequests = currentData.appointmentRequests.filter(r => r.status === 'requested').length;
+    const pendingRequests = currentData.appointmentCancellationRequests.filter(r => r.status === 'requested').length;
     document.getElementById('pendingRequestsCount').textContent = pendingRequests;
 }
 
@@ -238,7 +238,7 @@ function switchTab(tabName) {
             if (currentData.appointments.length === 0) loadAppointments();
             break;
         case 'appointment-requests':
-            if (currentData.appointmentRequests.length === 0) loadAppointmentRequests();
+            if (currentData.appointmentCancellationRequests.length === 0) loadAppointmentCancellationRequests();
             break;
     }
 }
@@ -400,25 +400,19 @@ function renderAppointmentsTable() {
 function renderAppointmentRequestsTable() {
     const tbody = document.getElementById('appointmentRequestsTableBody');
     
-    if (currentData.appointmentRequests.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="no-data">No appointment requests found</td></tr>';
+    if (currentData.appointmentCancellationRequests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-data">No appointment cancellation requests found</td></tr>';
         return;
     }
 
-    tbody.innerHTML = currentData.appointmentRequests.map(request => `
+    tbody.innerHTML = currentData.appointmentCancellationRequests.map(request => `
         <tr>
             <td>
-                <div>${formatDateTime(request.requested_date)} at ${formatTime(request.requested_time)}</div>
-                <div class="text-secondary">Requested: ${formatDate(request.created_at)}</div>
+                <div>${formatDateTime(request.appointments?.appointment_date)} at ${formatTime(request.appointments?.appointment_time)}</div>
+                <div class="text-secondary">Duration: ${request.appointments?.duration_minutes || 60} minutes</div>
             </td>
             <td>${escapeHtml(request.customers?.full_name || 'Unknown')}</td>
-            <td>
-                ${request.service_tickets ? 
-                    `<a href="#" onclick="viewTicketDetails('${request.ticket_id}')">#${request.service_tickets.id.slice(-8)}</a>` : 
-                    'General'
-                }
-            </td>
-            <td>${escapeHtml(request.notes || 'No notes')}</td>
+            <td>${escapeHtml(request.reason || 'No reason provided')}</td>
             <td>
                 <span class="status-badge status-${request.status}">
                     ${capitalizeFirst(request.status)}
@@ -427,14 +421,14 @@ function renderAppointmentRequestsTable() {
             <td>
                 <div class="action-buttons">
                     ${request.status === 'requested' ? `
-                        <button class="btn-icon btn-success" onclick="approveAppointmentRequest('${request.id}')" title="Approve Request">
+                        <button class="btn-icon btn-success" onclick="approveCancellationRequest('${request.id}')" title="Approve Cancellation">
                             <i class="ph-light ph-check"></i>
                         </button>
-                        <button class="btn-icon btn-danger" onclick="rejectAppointmentRequest('${request.id}')" title="Reject Request">
+                        <button class="btn-icon btn-danger" onclick="rejectCancellationRequest('${request.id}')" title="Reject Cancellation">
                             <i class="ph-light ph-x"></i>
                         </button>
                     ` : `
-                        <button class="btn-icon" onclick="viewAppointmentRequestDetails('${request.id}')" title="View Details">
+                        <button class="btn-icon" onclick="viewCancellationRequestDetails('${request.id}')" title="View Details">
                             <i class="ph-light ph-eye"></i>
                         </button>
                     `}
@@ -958,70 +952,58 @@ async function cancelAppointment(appointmentId) {
     }
 }
 
-// Approve appointment request
-async function approveAppointmentRequest(requestId) {
-    const request = currentData.appointmentRequests.find(r => r.id === requestId);
+// Approve cancellation request
+async function approveCancellationRequest(requestId) {
+    const request = currentData.appointmentCancellationRequests.find(r => r.id === requestId);
     if (!request) return;
 
-    // Create appointment data from the request
-    const appointmentData = {
-        customer_id: request.customer_id,
-        ticket_id: request.ticket_id,
-        appointment_date: request.requested_date,
-        appointment_time: request.requested_time,
-        notes: request.notes,
-        status: 'scheduled',
-        created_by_staff: true
-    };
+    if (!confirm('Approve this cancellation request? This will cancel the appointment.')) return;
 
-    const result = await AdminDB.appointmentRequests.approve(requestId, appointmentData);
+    const result = await AdminDB.appointmentCancellationRequests.approve(requestId);
     
     if (result.success) {
-        showNotification('Appointment request approved and appointment created!', 'success');
-        await loadAppointmentRequests();
+        showNotification('Cancellation request approved and appointment cancelled!', 'success');
+        await loadAppointmentCancellationRequests();
         await loadAppointments();
         updateStats();
     } else {
-        showNotification('Failed to approve appointment request: ' + result.error, 'error');
+        showNotification('Failed to approve cancellation request: ' + result.error, 'error');
     }
 }
 
-// Reject appointment request
-async function rejectAppointmentRequest(requestId) {
+// Reject cancellation request
+async function rejectCancellationRequest(requestId) {
     const staffResponse = prompt('Please provide a reason for rejection (optional):');
     if (staffResponse === null) return; // User cancelled
 
-    const result = await AdminDB.appointmentRequests.reject(requestId, staffResponse || 'Request rejected by staff');
+    const result = await AdminDB.appointmentCancellationRequests.reject(requestId, staffResponse || 'Cancellation request rejected by staff');
     
     if (result.success) {
-        showNotification('Appointment request rejected', 'success');
-        await loadAppointmentRequests();
+        showNotification('Cancellation request rejected', 'success');
+        await loadAppointmentCancellationRequests();
         updateStats();
     } else {
-        showNotification('Failed to reject appointment request: ' + result.error, 'error');
+        showNotification('Failed to reject cancellation request: ' + result.error, 'error');
     }
 }
 
-// View appointment request details
-async function viewAppointmentRequestDetails(requestId) {
-    const request = currentData.appointmentRequests.find(r => r.id === requestId);
+// View cancellation request details
+async function viewCancellationRequestDetails(requestId) {
+    const request = currentData.appointmentCancellationRequests.find(r => r.id === requestId);
     if (!request) return;
 
     const customer = request.customers;
-    const ticket = request.service_tickets;
+    const appointment = request.appointments;
 
-    let details = `Appointment Request Details:\n\n`;
+    let details = `Cancellation Request Details:\n\n`;
     details += `Customer: ${customer?.full_name || 'Unknown'}\n`;
     details += `Email: ${customer?.email || 'N/A'}\n`;
     details += `Phone: ${customer?.phone || 'N/A'}\n\n`;
-    details += `Requested Date: ${formatDate(request.requested_date)}\n`;
-    details += `Requested Time: ${formatTime(request.requested_time)}\n`;
+    details += `Appointment Date: ${formatDate(appointment?.appointment_date)}\n`;
+    details += `Appointment Time: ${formatTime(appointment?.appointment_time)}\n`;
+    details += `Duration: ${appointment?.duration_minutes || 60} minutes\n`;
     details += `Status: ${capitalizeFirst(request.status)}\n`;
-    details += `Notes: ${request.notes || 'No notes'}\n\n`;
-    
-    if (ticket) {
-        details += `Related Ticket: #${ticket.id.slice(-8)} - ${ticket.title}\n`;
-    }
+    details += `Reason: ${request.reason || 'No reason provided'}\n\n`;
     
     if (request.staff_response) {
         details += `Staff Response: ${request.staff_response}\n`;

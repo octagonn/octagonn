@@ -378,18 +378,16 @@ const db = {
         }
     },
 
-    // Appointment request operations (customer-facing)
-    appointmentRequests: {
+    // Appointment cancellation request operations (customer-facing)
+    appointmentCancellationRequests: {
         async create(requestData) {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
+                    .from('appointment_cancellation_requests')
                     .insert([{
+                        appointment_id: requestData.appointment_id,
                         customer_id: requestData.customer_id,
-                        ticket_id: requestData.ticket_id,
-                        requested_date: requestData.requested_date,
-                        requested_time: requestData.requested_time,
-                        notes: requestData.notes,
+                        reason: requestData.reason,
                         status: 'requested'
                     }])
                     .select()
@@ -397,7 +395,7 @@ const db = {
                 if (error) throw error
                 return { success: true, data: data[0] }
             } catch (error) {
-                console.error('Create appointment request error:', error)
+                console.error('Create appointment cancellation request error:', error)
                 return { success: false, error: error.message }
             }
         },
@@ -405,7 +403,7 @@ const db = {
         async getByCustomerId(customerId) {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
+                    .from('appointment_cancellation_requests')
                     .select('*')
                     .eq('customer_id', customerId)
                     .order('created_at', { ascending: false })
@@ -413,7 +411,7 @@ const db = {
                 if (error) throw error
                 return { success: true, data }
             } catch (error) {
-                console.error('Get appointment requests error:', error)
+                console.error('Get appointment cancellation requests error:', error)
                 return { success: false, error: error.message }
             }
         },
@@ -421,7 +419,7 @@ const db = {
         async update(requestId, updates) {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
+                    .from('appointment_cancellation_requests')
                     .update(updates)
                     .eq('id', requestId)
                     .select()
@@ -429,7 +427,7 @@ const db = {
                 if (error) throw error
                 return { success: true, data: data[0] }
             } catch (error) {
-                console.error('Update appointment request error:', error)
+                console.error('Update appointment cancellation request error:', error)
                 return { success: false, error: error.message }
             }
         }

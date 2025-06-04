@@ -140,10 +140,7 @@
             <div id="appointmentsTab" class="tab-content">
                 <div class="tab-header">
                     <h3>Your Appointments</h3>
-                    <button id="scheduleBtn" class="btn btn-secondary">
-                        <i class="ph-light ph-calendar-plus"></i>
-                        Request Appointment
-                    </button>
+                    <p class="tab-description">View your scheduled appointments. Contact staff to schedule new appointments or request changes.</p>
                 </div>
                 <div id="appointmentsList" class="appointments-list">
                     <!-- Appointments will be loaded here -->
@@ -207,43 +204,23 @@
         </div>
     </section>
 
-    <!-- Schedule Appointment Modal -->
-    <div id="appointmentModal" class="modal" style="display: none;">
+    <!-- Cancellation Request Modal -->
+    <div id="cancellationModal" class="modal" style="display: none;">
         <div class="modal-content glass-card">
             <div class="modal-header">
-                <h3>Request Appointment</h3>
+                <h3>Request Appointment Cancellation</h3>
                 <button class="modal-close">&times;</button>
             </div>
-            <form id="appointmentForm">
-                <div class="form-group">
-                    <label>Select Ticket (Optional):</label>
-                    <select id="appointmentTicket">
-                        <option value="">General Appointment</option>
-                    </select>
+            <form id="cancellationForm">
+                <div class="appointment-info">
+                    <p><strong>Appointment:</strong> <span id="cancelAppointmentInfo"></span></p>
                 </div>
                 <div class="form-group">
-                    <label>Preferred Date:</label>
-                    <input type="date" id="appointmentDate" required>
-                </div>
-                <div class="form-group">
-                    <label>Preferred Time:</label>
-                    <select id="appointmentTime" required>
-                        <option value="">Select Time</option>
-                        <option value="09:00">9:00 AM</option>
-                        <option value="10:00">10:00 AM</option>
-                        <option value="11:00">11:00 AM</option>
-                        <option value="13:00">1:00 PM</option>
-                        <option value="14:00">2:00 PM</option>
-                        <option value="15:00">3:00 PM</option>
-                        <option value="16:00">4:00 PM</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Notes:</label>
-                    <textarea id="appointmentNotes" rows="3" placeholder="Any specific requirements or notes..."></textarea>
+                    <label>Reason for Cancellation:</label>
+                    <textarea id="cancellationReason" rows="3" placeholder="Please provide a reason for the cancellation..." required></textarea>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Request Appointment</button>
+                    <button type="submit" class="btn btn-primary">Request Cancellation</button>
                     <button type="button" class="modal-close btn btn-secondary">Cancel</button>
                 </div>
             </form>

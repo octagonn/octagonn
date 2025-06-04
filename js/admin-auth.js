@@ -401,12 +401,12 @@ const AdminDB = {
         }
     },
 
-    // Appointment Requests
-    appointmentRequests: {
+    // Appointment Cancellation Requests
+    appointmentCancellationRequests: {
         async getAll() {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
+                    .from('appointment_cancellation_requests')
                     .select(`
                         *,
                         customers (
@@ -415,9 +415,12 @@ const AdminDB = {
                             email,
                             phone
                         ),
-                        service_tickets (
+                        appointments (
                             id,
-                            title
+                            appointment_date,
+                            appointment_time,
+                            duration_minutes,
+                            notes
                         )
                     `)
                     .order('created_at', { ascending: false });
@@ -425,7 +428,7 @@ const AdminDB = {
                 if (error) throw error;
                 return { success: true, data };
             } catch (error) {
-                console.error('Error getting appointment requests:', error);
+                console.error('Error getting appointment cancellation requests:', error);
                 return { success: false, error: error.message };
             }
         },
@@ -433,7 +436,7 @@ const AdminDB = {
         async update(requestId, updates) {
             try {
                 const { data, error } = await supabase
-                    .from('appointment_requests')
+                    .from('appointment_cancellation_requests')
                     .update(updates)
                     .eq('id', requestId)
                     .select();
@@ -441,23 +444,34 @@ const AdminDB = {
                 if (error) throw error;
                 return { success: true, data: data[0] };
             } catch (error) {
-                console.error('Error updating appointment request:', error);
+                console.error('Error updating appointment cancellation request:', error);
                 return { success: false, error: error.message };
             }
         },
 
-        async approve(requestId, appointmentData) {
+        async approve(requestId) {
             try {
-                // Create the appointment
-                const appointmentResult = await AdminDB.appointments.create(appointmentData);
+                // Get the cancellation request to find the appointment
+                const { data: request, error: requestError } = await supabase
+                    .from('appointment_cancellation_requests')
+                    .select('appointment_id')
+                    .eq('id', requestId)
+                    .single();
+
+                if (requestError) throw requestError;
+
+                // Cancel the appointment
+                const appointmentResult = await AdminDB.appointments.update(request.appointment_id, {
+                    status: 'cancelled'
+                });
+
                 if (!appointmentResult.success) {
                     throw new Error(appointmentResult.error);
                 }
 
-                // Update the request status and link to appointment
+                // Update the cancellation request status
                 const updateResult = await this.update(requestId, {
-                    status: 'scheduled',
-                    appointment_id: appointmentResult.data.id,
+                    status: 'approved',
                     processed_at: new Date().toISOString()
                 });
 
@@ -467,7 +481,7 @@ const AdminDB = {
 
                 return { success: true, data: { request: updateResult.data, appointment: appointmentResult.data } };
             } catch (error) {
-                console.error('Error approving appointment request:', error);
+                console.error('Error approving cancellation request:', error);
                 return { success: false, error: error.message };
             }
         },
@@ -482,7 +496,7 @@ const AdminDB = {
 
                 return result;
             } catch (error) {
-                console.error('Error rejecting appointment request:', error);
+                console.error('Error rejecting cancellation request:', error);
                 return { success: false, error: error.message };
             }
         }

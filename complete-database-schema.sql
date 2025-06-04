@@ -63,17 +63,14 @@ CREATE TABLE IF NOT EXISTS appointments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
--- Create appointment_requests table for customer requests
-CREATE TABLE IF NOT EXISTS appointment_requests (
+-- Create appointment_cancellation_requests table for customer cancellation requests
+CREATE TABLE IF NOT EXISTS appointment_cancellation_requests (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    appointment_id UUID REFERENCES appointments(id) ON DELETE CASCADE,
     customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
-    ticket_id UUID REFERENCES service_tickets(id) ON DELETE SET NULL,
-    requested_date DATE NOT NULL,
-    requested_time TIME NOT NULL,
-    notes TEXT,
-    status TEXT DEFAULT 'requested' CHECK (status IN ('requested', 'approved', 'rejected', 'scheduled')),
+    reason TEXT, -- Customer's reason for cancellation
+    status TEXT DEFAULT 'requested' CHECK (status IN ('requested', 'approved', 'rejected')),
     staff_response TEXT, -- Staff response/notes when processing the request
-    appointment_id UUID REFERENCES appointments(id) ON DELETE SET NULL, -- Link to created appointment if approved
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
     processed_at TIMESTAMP WITH TIME ZONE
@@ -123,9 +120,8 @@ CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(tick
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_customer_id ON ticket_messages(customer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_customer_id ON appointments(customer_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
-CREATE INDEX IF NOT EXISTS idx_appointment_requests_customer_id ON appointment_requests(customer_id);
-CREATE INDEX IF NOT EXISTS idx_appointment_requests_status ON appointment_requests(status);
-CREATE INDEX IF NOT EXISTS idx_appointment_requests_date ON appointment_requests(requested_date);
+CREATE INDEX IF NOT EXISTS idx_appointment_cancellation_requests_customer_id ON appointment_cancellation_requests(customer_id);
+CREATE INDEX IF NOT EXISTS idx_appointment_cancellation_requests_status ON appointment_cancellation_requests(status);
 CREATE INDEX IF NOT EXISTS idx_contact_submissions_email ON contact_submissions(email);
 CREATE INDEX IF NOT EXISTS idx_admin_users_user_id ON admin_users(user_id);
 CREATE INDEX IF NOT EXISTS idx_admin_users_email ON admin_users(email);
@@ -140,7 +136,7 @@ ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE appointments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE appointment_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE appointment_cancellation_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
@@ -160,9 +156,9 @@ DROP POLICY IF EXISTS "Admins can manage all messages" ON ticket_messages;
 DROP POLICY IF EXISTS "Users can view own appointments" ON appointments;
 DROP POLICY IF EXISTS "Admins can manage all appointments" ON appointments;
 
-DROP POLICY IF EXISTS "Users can view own appointment requests" ON appointment_requests;
-DROP POLICY IF EXISTS "Users can create appointment requests" ON appointment_requests;
-DROP POLICY IF EXISTS "Users can update own appointment requests" ON appointment_requests;
+DROP POLICY IF EXISTS "Users can view own appointment cancellation requests" ON appointment_cancellation_requests;
+DROP POLICY IF EXISTS "Users can create appointment cancellation requests" ON appointment_cancellation_requests;
+DROP POLICY IF EXISTS "Users can update own appointment cancellation requests" ON appointment_cancellation_requests;
 
 DROP POLICY IF EXISTS "Users can create contact submissions" ON contact_submissions;
 DROP POLICY IF EXISTS "Users can view own contact submissions" ON contact_submissions;
@@ -216,22 +212,22 @@ CREATE POLICY "Users can view own appointments" ON appointments
         )
     );
 
--- Appointment requests policies
-CREATE POLICY "Users can view own appointment requests" ON appointment_requests
+-- Appointment cancellation requests policies
+CREATE POLICY "Users can view own appointment cancellation requests" ON appointment_cancellation_requests
     FOR SELECT USING (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
         )
     );
 
-CREATE POLICY "Users can create appointment requests" ON appointment_requests
+CREATE POLICY "Users can create appointment cancellation requests" ON appointment_cancellation_requests
     FOR INSERT WITH CHECK (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
         )
     );
 
-CREATE POLICY "Users can update own appointment requests" ON appointment_requests
+CREATE POLICY "Users can update own appointment cancellation requests" ON appointment_cancellation_requests
     FOR UPDATE USING (
         customer_id IN (
             SELECT id FROM customers WHERE user_id = auth.uid()
@@ -296,8 +292,8 @@ CREATE POLICY "Admins can manage all appointments" ON appointments
         )
     );
 
--- Admin access to all appointment requests
-CREATE POLICY "Admins can manage all appointment requests" ON appointment_requests
+-- Admin access to all appointment cancellation requests
+CREATE POLICY "Admins can manage all appointment cancellation requests" ON appointment_cancellation_requests
     FOR ALL USING (
         EXISTS (
             SELECT 1 FROM admin_users 
@@ -409,8 +405,8 @@ DROP TRIGGER IF EXISTS update_appointments_updated_at ON appointments;
 CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON appointments
     FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
 
-DROP TRIGGER IF EXISTS update_appointment_requests_updated_at ON appointment_requests;
-CREATE TRIGGER update_appointment_requests_updated_at BEFORE UPDATE ON appointment_requests
+DROP TRIGGER IF EXISTS update_appointment_cancellation_requests_updated_at ON appointment_cancellation_requests;
+CREATE TRIGGER update_appointment_cancellation_requests_updated_at BEFORE UPDATE ON appointment_cancellation_requests
     FOR EACH ROW EXECUTE PROCEDURE public.update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_admin_users_updated_at ON admin_users;
