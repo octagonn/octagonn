@@ -508,7 +508,7 @@ function displayTickets(tickets) {
                 <div class="table-cell priority priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
                 <div class="table-cell">${customerName}</div>
                 <div class="table-cell">${formatDate(ticket.created_at)}</div>
-            </div>
+                    </div>
         `;
     }).join('');
 }
@@ -902,7 +902,7 @@ function displayWebforms(webforms) {
         `;
         return;
     }
-    
+
     webformsTableData.innerHTML = webforms.map(webform => `
         <div class="table-row">
             ${webformsEditMode ? `<div class="table-cell"><input type="checkbox" class="webform-checkbox" value="${webform.id}" onclick="updateSelectAllState('webform-checkbox','selectAllWebforms')"></div>` : ''}
