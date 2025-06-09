@@ -93,21 +93,14 @@ function initIntersectionObserver() {
 
 // Enhanced Mobile Navigation
 function initMobileNavigation() {
-        const header = document.querySelector('header');
-        
-    // Create mobile toggle if it doesn't exist
-        if (!document.querySelector('.mobile-toggle')) {
-            const mobileToggle = document.createElement('div');
-            mobileToggle.className = 'mobile-toggle';
-            mobileToggle.innerHTML = '<span></span><span></span><span></span>';
-            
-            header.querySelector('.container').appendChild(mobileToggle);
-            
-        // Add event listener
-            mobileToggle.addEventListener('click', function() {
-                const nav = document.querySelector('nav');
-                nav.classList.toggle('active');
-                this.classList.toggle('active');
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    
+    if (mobileToggle) {
+        // Add event listener to existing mobile toggle
+        mobileToggle.addEventListener('click', function() {
+            const nav = document.querySelector('nav');
+            nav.classList.toggle('active');
+            this.classList.toggle('active');
             
             // Prevent body scroll when menu is open
             if (nav.classList.contains('active')) {
