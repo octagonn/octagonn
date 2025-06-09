@@ -18,17 +18,33 @@ let ticketEditData = null;
 let ticketsEditMode = false;
 let contactsEditMode = false;
 let webformsEditMode = false;
+let appointmentsEditMode = false;
 
 // Initialize dashboard when DOM loads
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('Admin Dashboard initializing...');
+    console.log('DOM Content Loaded - Admin Dashboard initializing...');
+    console.log('Current URL:', window.location.href);
+    console.log('Document ready state:', document.readyState);
+    
+    // Test if basic DOM elements exist
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    console.log('Sidebar found:', !!sidebar);
+    console.log('Main content found:', !!mainContent);
+    console.log('Nav items found:', navItems.length);
     
     // Check authentication
+    console.log('Checking authentication...');
     await checkAuthentication();
     
     // Initialize dashboard if authenticated
     if (currentUser && currentAdmin) {
+        console.log('User authenticated, initializing dashboard...');
         await initializeDashboard();
+    } else {
+        console.log('User not authenticated, redirecting...');
     }
 });
 
@@ -76,27 +92,28 @@ function redirectToLogin() {
  * Initialize dashboard functionality
  */
 async function initializeDashboard() {
-    try {
-        console.log('Initializing dashboard for admin:', currentAdmin.full_name);
-        
-        // Set admin info in UI
-        updateAdminInfo();
-        
-        // Setup navigation
-        setupNavigation();
-        
-        // Setup event listeners
-        setupEventListeners();
-        
-        // Load initial dashboard data
-        await loadSection('dashboard');
-        
-        console.log('Dashboard initialized successfully');
-        
-    } catch (error) {
-        console.error('Error initializing dashboard:', error);
-        showNotification('Error initializing dashboard', 'error');
-    }
+    console.log('Initializing admin dashboard...');
+    
+    // Update admin info
+    updateAdminInfo();
+    
+    // Setup navigation
+    setupNavigation();
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Check for saved section in localStorage
+    const savedSection = localStorage.getItem('adminDashboardActiveSection');
+    const initialSection = savedSection || 'dashboard'; // Default to dashboard if no saved section
+    
+    console.log('Restored section from localStorage:', savedSection);
+    console.log('Starting with section:', initialSection);
+    
+    // Switch to the initial section (either saved or dashboard)
+    switchSection(initialSection);
+    
+    console.log('Admin dashboard initialized successfully');
 }
 
 /**
@@ -119,16 +136,31 @@ function updateAdminInfo() {
  * Setup navigation functionality
  */
 function setupNavigation() {
+    console.log('Setting up navigation...');
     const navItems = document.querySelectorAll('.nav-item');
+    console.log('Found nav items:', navItems.length);
     
-    navItems.forEach(item => {
-        item.addEventListener('click', function() {
-            const section = this.getAttribute('data-section');
-            if (section) {
+    if (navItems.length === 0) {
+        console.error('No navigation items found! DOM might not be ready.');
+        return;
+    }
+    
+    navItems.forEach((item, index) => {
+        const section = item.getAttribute('data-section');
+        console.log(`Nav item ${index}: section="${section}"`);
+        
+        if (section) {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Navigation clicked:', section);
                 switchSection(section);
-            }
-        });
+            });
+        } else {
+            console.warn(`Nav item ${index} has no data-section attribute`);
+        }
     });
+    
+    console.log('Navigation setup complete');
 }
 
 /**
@@ -160,6 +192,8 @@ function setupFilterListeners() {
     const sortBy = document.getElementById('sortBy');
     const contactStatusFilter = document.getElementById('contactStatusFilter');
     const appointmentStatusFilter = document.getElementById('appointmentStatusFilter');
+    const appointmentSortBy = document.getElementById('appointmentSortBy');
+    const appointmentSearch = document.getElementById('appointmentSearch');
     const webformStatusFilter = document.getElementById('webformStatusFilter');
     
     if (statusFilter) statusFilter.addEventListener('change', () => filterTickets());
@@ -167,6 +201,8 @@ function setupFilterListeners() {
     if (sortBy) sortBy.addEventListener('change', () => filterTickets());
     if (contactStatusFilter) contactStatusFilter.addEventListener('change', () => filterContacts());
     if (appointmentStatusFilter) appointmentStatusFilter.addEventListener('change', () => filterAppointments());
+    if (appointmentSortBy) appointmentSortBy.addEventListener('change', () => filterAppointments());
+    if (appointmentSearch) appointmentSearch.addEventListener('input', () => filterAppointments());
     if (webformStatusFilter) webformStatusFilter.addEventListener('change', () => filterWebforms());
 }
 
@@ -205,14 +241,28 @@ function setupReplyTabs() {
 function switchSection(sectionName) {
     console.log('Switching to section:', sectionName);
     
+    // Save current section to localStorage
+    localStorage.setItem('adminDashboardActiveSection', sectionName);
+    
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Show target section
+    const targetSection = document.getElementById(`${sectionName}-section`);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+    
     // Update navigation
     document.querySelectorAll('.nav-item').forEach(item => {
         item.classList.remove('active');
     });
     
-    const activeNavItem = document.querySelector(`[data-section="${sectionName}"]`);
-    if (activeNavItem) {
-        activeNavItem.classList.add('active');
+    const targetNavItem = document.querySelector(`[data-section="${sectionName}"]`);
+    if (targetNavItem) {
+        targetNavItem.classList.add('active');
     }
     
     // Update page title
@@ -221,18 +271,30 @@ function switchSection(sectionName) {
         pageTitle.textContent = getSectionTitle(sectionName);
     }
     
-    // Show/hide sections
-    document.querySelectorAll('.content-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    const targetSection = document.getElementById(sectionName + '-section');
-    if (targetSection) {
-        targetSection.classList.add('active');
+    // Update header button based on section
+    const headerBtn = document.querySelector('.header-btn.primary');
+    if (headerBtn) {
+        switch (sectionName) {
+            case 'tickets':
+                headerBtn.innerHTML = '<i class="ph-light ph-plus"></i> New Ticket';
+                headerBtn.onclick = () => showCreateTicketModal();
+                break;
+            case 'customers':
+                headerBtn.innerHTML = '<i class="ph-light ph-plus"></i> Add Customer';
+                headerBtn.onclick = () => showAddCustomerModal();
+                break;
+            case 'appointments':
+                headerBtn.innerHTML = '<i class="ph-light ph-plus"></i> New Appointment';
+                headerBtn.onclick = () => showCreateAppointmentModal();
+                break;
+            default:
+                headerBtn.innerHTML = '<i class="ph-light ph-plus"></i> New Ticket';
+                headerBtn.onclick = () => showCreateTicketModal();
+                break;
+        }
     }
     
     // Load section data
-    currentSection = sectionName;
     loadSection(sectionName);
 }
 
@@ -503,7 +565,7 @@ function displayTickets(tickets) {
             <div class="table-row" ${!ticketsEditMode ? `onclick=\"openTicketDetail('${ticket.id}')\"` : ''}>
                 ${ticketsEditMode ? `<div class="table-cell"><input type="checkbox" class="ticket-checkbox" value="${ticket.id}" onclick="updateSelectAllState('ticket-checkbox','selectAllTickets')"></div>` : ''}
                 <div class="table-cell"><span class="status-badge status-${ticket.status.replace(/_/g, '_')}">${formatStatus(ticket.status)}</span></div>
-                <div class="table-cell">#${ticket.id.substring(0, 8)}</div>
+                <div class="table-cell">#${ticket.ticket_number || ticket.id.substring(0, 8)}</div>
                 <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
                 <div class="table-cell priority priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
                 <div class="table-cell">${customerName}</div>
@@ -535,6 +597,8 @@ function filterTickets() {
     // Apply sorting
     filtered.sort((a, b) => {
         switch (sortBy) {
+            case 'ticket_number':
+                return (a.ticket_number || 999999) - (b.ticket_number || 999999);
             case 'priority':
                 const priorityOrder = { 'urgent': 4, 'high': 3, 'normal': 2, 'low': 1 };
                 return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -575,7 +639,7 @@ async function openTicketDetail(ticketId) {
         const ticket = ticketResult.data;
         
         // Update panel title
-        document.getElementById('detailTitle').textContent = `#${ticket.id.substring(0, 8)} - ${ticket.title}`;
+        document.getElementById('detailTitle').textContent = `#${ticket.ticket_number || ticket.id.substring(0, 8)} - ${ticket.title}`;
         
         // Get customer info
         let customerInfo = 'Unknown Customer';
@@ -1146,54 +1210,719 @@ async function loadCustomersDropdown() {
 // Handle logout
 async function handleLogout() {
     try {
-        const result = await AdminAuth.signOut();
-        if (result.success) {
-            window.location.href = 'index.html';
-        } else {
-            console.error('Logout error:', result.error);
-            // Force redirect anyway
-            window.location.href = 'index.html';
-        }
+        console.log('Logging out admin user...');
+        
+        // Clear saved section from localStorage
+        localStorage.removeItem('adminDashboardActiveSection');
+        
+        // Sign out from Supabase
+        await supabase.auth.signOut();
+        
+        // Clear any stored auth data
+        sessionStorage.clear();
+        
+        // Redirect to staff portal login
+        window.location.href = 'staff-portal.html';
+        
     } catch (error) {
-        console.error('Logout error:', error);
-        // Force redirect anyway
-        window.location.href = 'index.html';
+        console.error('Error during logout:', error);
+        // Still redirect even if there's an error
+        window.location.href = 'staff-portal.html';
     }
 }
 
 // Placeholder functions for future features
 function loadCustomers() {
-    const customersTable = document.getElementById('customersTable');
-    customersTable.innerHTML = `
-        <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
-            <i class="ph-light ph-users" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-            <h4>Customer Management</h4>
-            <p>Customer management features coming soon.</p>
-        </div>
-    `;
+    console.log('Loading customers section...');
+    
+    // Initialize the customer management system that's defined in the HTML file
+    if (typeof initializeCustomers === 'function') {
+        console.log('Calling initializeCustomers...');
+        initializeCustomers();
+    } else {
+        // If the function isn't available yet, try again after a short delay
+        console.log('initializeCustomers not yet available, trying again...');
+        setTimeout(() => {
+            if (typeof initializeCustomers === 'function') {
+                initializeCustomers();
+            } else {
+                console.error('Customer management system not found');
+                // Show a loading message instead of "coming soon"
+                const customersTableData = document.getElementById('customersTableData');
+                if (customersTableData) {
+                    customersTableData.innerHTML = `
+                        <div class="loading">
+                            <i class="ph-light ph-spinner"></i>
+                            Loading customer management system...
+                        </div>
+                    `;
+                }
+            }
+        }, 100);
+    }
 }
 
 function loadAppointments() {
-    const appointmentsTable = document.getElementById('appointmentsTable');
-    appointmentsTable.innerHTML = `
-        <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
-            <i class="ph-light ph-calendar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-            <h4>Appointment Management</h4>
-            <p>Appointment management features coming soon.</p>
-        </div>
-    `;
+    console.log('Loading appointments section...');
+    loadAppointmentsData();
 }
 
+/**
+ * Load and display appointments
+ */
+async function loadAppointmentsData() {
+    const appointmentsTable = document.getElementById('appointmentsTable');
+    
+    // Add safety check for the element
+    if (!appointmentsTable) {
+        console.error('appointmentsTable element not found');
+        return;
+    }
+    
+    try {
+        const result = await AdminDB.appointments.getAll();
+        
+        if (result.success) {
+            allAppointments = result.data || [];
+            displayAppointments(allAppointments);
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error loading appointments:', error);
+        
+        // Check if appointmentsTableData exists before trying to use it
+        const appointmentsTableData = document.getElementById('appointmentsTableData');
+        if (appointmentsTableData) {
+            appointmentsTableData.innerHTML = `
+                <div class="error" style="text-align: center; padding: 2rem;">
+                    <i class="ph-light ph-warning"></i>
+                    Error loading appointments: ${error.message}
+                </div>
+            `;
+        } else {
+            // Fallback to appointmentsTable if appointmentsTableData doesn't exist
+            appointmentsTable.innerHTML = `
+                <div class="error" style="text-align: center; padding: 2rem;">
+                    <i class="ph-light ph-warning"></i>
+                    Error loading appointments: ${error.message}
+                </div>
+            `;
+        }
+    }
+}
+
+/**
+ * Display appointments in table
+ */
+function displayAppointments(appointments) {
+    const appointmentsTableData = document.getElementById('appointmentsTableData');
+    
+    // Add safety check for the element
+    if (!appointmentsTableData) {
+        console.error('appointmentsTableData element not found');
+        return;
+    }
+    
+    if (appointments.length === 0) {
+        appointmentsTableData.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
+                <i class="ph-light ph-calendar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+                <h4>No Appointments Scheduled</h4>
+                <p>Create your first appointment to get started.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const appointmentsHTML = appointments.map(appointment => {
+        const customerName = appointment.customers?.full_name || 'Unknown Customer';
+        const customerEmail = appointment.customers?.email || '';
+        const appointmentDateTime = `${formatDate(appointment.appointment_date)} at ${formatTime(appointment.appointment_time)}`;
+        const duration = `${appointment.duration_minutes || 60} min`;
+        const appointmentType = appointment.notes ? (appointment.notes.length > 30 ? appointment.notes.substring(0, 30) + '...' : appointment.notes) : 'General Appointment';
+        
+        return `
+            <div class="table-row" ${!appointmentsEditMode ? `onclick="showAppointmentDetail('${appointment.id}')"` : ''}>
+                ${appointmentsEditMode ? `<div class="table-cell"><input type="checkbox" class="appointment-checkbox" value="${appointment.id}" onclick="updateSelectAllState('appointment-checkbox','selectAllAppointments')"></div>` : ''}
+                <div class="table-cell">
+                    <span class="status-badge status-${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
+                </div>
+                <div class="table-cell">
+                    <div style="font-weight: 500;">${appointmentDateTime}</div>
+                    ${isUpcoming(appointment.appointment_date, appointment.appointment_time) ? '<div style="color: #7877c6; font-size: 0.75rem; margin-top: 0.25rem;">Upcoming</div>' : ''}
+                </div>
+                <div class="table-cell">
+                    <div style="font-weight: 500;">${escapeHtml(customerName)}</div>
+                    ${customerEmail ? `<div style="color: rgba(255, 255, 255, 0.6); font-size: 0.8rem;">${escapeHtml(customerEmail)}</div>` : ''}
+                </div>
+                <div class="table-cell">${duration}</div>
+                <div class="table-cell">${escapeHtml(appointmentType)}</div>
+                <div class="table-cell">
+                    ${!appointmentsEditMode ? `
+                        <div style="display: flex; gap: 0.5rem;">
+                            ${appointment.status === 'scheduled' || appointment.status === 'confirmed' ? 
+                                `<button class="btn secondary small" onclick="event.stopPropagation(); completeAppointment('${appointment.id}')" title="Mark Complete">
+                                    <i class="ph-light ph-check"></i>
+                                </button>` : ''
+                            }
+                            <button class="btn secondary small" onclick="event.stopPropagation(); editAppointment('${appointment.id}')" title="Edit">
+                                <i class="ph-light ph-pencil"></i>
+                            </button>
+                            ${appointment.status !== 'cancelled' ? 
+                                `<button class="btn secondary small" onclick="event.stopPropagation(); cancelAppointment('${appointment.id}')" title="Cancel">
+                                    <i class="ph-light ph-x"></i>
+                                </button>` : ''
+                            }
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    appointmentsTableData.innerHTML = appointmentsHTML;
+}
+
+/**
+ * Filter appointments based on current filters
+ */
 function filterAppointments() {
-    // Placeholder
+    // Add safety checks for filter elements
+    const statusFilterElement = document.getElementById('appointmentStatusFilter');
+    const sortByElement = document.getElementById('appointmentSortBy');
+    const searchElement = document.getElementById('appointmentSearch');
+    
+    if (!statusFilterElement || !sortByElement) {
+        console.error('Appointment filter elements not found');
+        return;
+    }
+    
+    const statusFilter = statusFilterElement.value;
+    const sortBy = sortByElement.value;
+    const searchQuery = searchElement?.value.toLowerCase() || '';
+    
+    let filtered = [...allAppointments];
+    
+    // Apply status filter
+    if (statusFilter) {
+        filtered = filtered.filter(appointment => appointment.status === statusFilter);
+    }
+    
+    // Apply search filter
+    if (searchQuery) {
+        filtered = filtered.filter(appointment => {
+            const customerName = appointment.customers?.full_name || '';
+            const notes = appointment.notes || '';
+            return customerName.toLowerCase().includes(searchQuery) ||
+                   notes.toLowerCase().includes(searchQuery);
+        });
+    }
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+        switch (sortBy) {
+            case 'date_asc':
+                const dateTimeA = new Date(`${a.appointment_date}T${a.appointment_time}`);
+                const dateTimeB = new Date(`${b.appointment_date}T${b.appointment_time}`);
+                return dateTimeA - dateTimeB;
+            case 'date_desc':
+                const dateTimeA2 = new Date(`${a.appointment_date}T${a.appointment_time}`);
+                const dateTimeB2 = new Date(`${b.appointment_date}T${b.appointment_time}`);
+                return dateTimeB2 - dateTimeA2;
+            case 'customer':
+                const nameA = a.customers?.full_name || '';
+                const nameB = b.customers?.full_name || '';
+                return nameA.localeCompare(nameB);
+            case 'status':
+                return a.status.localeCompare(b.status);
+            default:
+                // Default to upcoming appointments first
+                const dateTimeDefaultA = new Date(`${a.appointment_date}T${a.appointment_time}`);
+                const dateTimeDefaultB = new Date(`${b.appointment_date}T${b.appointment_time}`);
+                return dateTimeDefaultA - dateTimeDefaultB;
+        }
+    });
+    
+    displayAppointments(filtered);
+}
+
+/**
+ * Format appointment status for display
+ */
+function formatAppointmentStatus(status) {
+    const statusMap = {
+        'scheduled': 'Scheduled',
+        'confirmed': 'Confirmed',
+        'completed': 'Completed',
+        'cancelled': 'Cancelled'
+    };
+    return statusMap[status] || status;
+}
+
+/**
+ * Format time (HH:MM format to readable format)
+ */
+function formatTime(timeString) {
+    const [hours, minutes] = timeString.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minutes} ${ampm}`;
+}
+
+/**
+ * Check if appointment is upcoming (within next 7 days)
+ */
+function isUpcoming(appointmentDate, appointmentTime) {
+    const appointmentDateTime = new Date(`${appointmentDate}T${appointmentTime}`);
+    const now = new Date();
+    const sevenDaysFromNow = new Date(now.getTime() + (7 * 24 * 60 * 60 * 1000));
+    
+    return appointmentDateTime > now && appointmentDateTime <= sevenDaysFromNow;
+}
+
+/**
+ * Show appointment detail modal/panel
+ */
+function showAppointmentDetail(appointmentId) {
+    const appointment = allAppointments.find(a => a.id === appointmentId);
+    if (!appointment) {
+        showNotification('Appointment not found', 'error');
+        return;
+    }
+    
+    const customerName = appointment.customers?.full_name || 'Unknown Customer';
+    const customerEmail = appointment.customers?.email || 'No email';
+    const customerPhone = appointment.customers?.phone || 'No phone';
+    const appointmentDateTime = `${formatDate(appointment.appointment_date)} at ${formatTime(appointment.appointment_time)}`;
+    const duration = `${appointment.duration_minutes || 60} minutes`;
+    const endTime = calculateEndTime(appointment.appointment_time, appointment.duration_minutes || 60);
+    
+    // Create detail modal content
+    const detailHTML = `
+        <div class="appointment-detail-content">
+            <div class="appointment-properties">
+                <div class="property-item">
+                    <div class="property-label">Status</div>
+                    <div class="property-value">
+                        <span class="status-badge status-${appointment.status}">${formatAppointmentStatus(appointment.status)}</span>
+                    </div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Date & Time</div>
+                    <div class="property-value">
+                        <strong>${appointmentDateTime}</strong>
+                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.25rem;">
+                            Duration: ${duration} (ends at ${endTime})
+                        </div>
+                    </div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Customer</div>
+                    <div class="property-value">
+                        <strong>${escapeHtml(customerName)}</strong>
+                        <div style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; margin-top: 0.25rem;">
+                            📧 ${escapeHtml(customerEmail)}<br>
+                            📞 ${escapeHtml(customerPhone)}
+                        </div>
+                    </div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Notes</div>
+                    <div class="property-value">
+                        ${appointment.notes ? escapeHtml(appointment.notes) : '<em style="color: rgba(255, 255, 255, 0.5);">No notes</em>'}
+                    </div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Created</div>
+                    <div class="property-value">${formatDateTime(appointment.created_at)}</div>
+                </div>
+                ${appointment.updated_at !== appointment.created_at ? `
+                    <div class="property-item">
+                        <div class="property-label">Last Updated</div>
+                        <div class="property-value">${formatDateTime(appointment.updated_at)}</div>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="appointment-actions" style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
+                ${appointment.status === 'scheduled' || appointment.status === 'confirmed' ? 
+                    `<button class="btn success" onclick="completeAppointment('${appointment.id}'); closeModal('appointmentDetailModal');">
+                        <i class="ph-light ph-check"></i> Mark Complete
+                    </button>` : ''
+                }
+                <button class="btn secondary" onclick="editAppointment('${appointment.id}'); closeModal('appointmentDetailModal');">
+                    <i class="ph-light ph-pencil"></i> Edit
+                </button>
+                ${appointment.status !== 'cancelled' ? 
+                    `<button class="btn danger" onclick="cancelAppointment('${appointment.id}'); closeModal('appointmentDetailModal');">
+                        <i class="ph-light ph-x"></i> Cancel
+                    </button>` : ''
+                }
+                <button class="btn secondary" onclick="closeModal('appointmentDetailModal')">Close</button>
+            </div>
+        </div>
+    `;
+    
+    // Show in a modal (we'll create this modal)
+    showAppointmentDetailModal(appointment.id, `Appointment: ${appointmentDateTime}`, detailHTML);
+}
+
+/**
+ * Calculate end time based on start time and duration
+ */
+function calculateEndTime(startTime, durationMinutes) {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const startMinutes = hours * 60 + minutes;
+    const endMinutes = startMinutes + durationMinutes;
+    
+    const endHours = Math.floor(endMinutes / 60) % 24;
+    const endMins = endMinutes % 60;
+    
+    const ampm = endHours >= 12 ? 'PM' : 'AM';
+    const displayHour = endHours % 12 || 12;
+    
+    return `${displayHour}:${endMins.toString().padStart(2, '0')} ${ampm}`;
+}
+
+/**
+ * Complete an appointment
+ */
+async function completeAppointment(appointmentId) {
+    if (!confirm('Mark this appointment as completed?')) return;
+    
+    try {
+        const result = await AdminDB.appointments.update(appointmentId, { 
+            status: 'completed',
+            updated_at: new Date().toISOString()
+        });
+        
+        if (result.success) {
+            showNotification('Appointment marked as completed', 'success');
+            await loadAppointmentsData();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Error completing appointment:', error);
+        showNotification('Error completing appointment: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Cancel an appointment
+ */
+async function cancelAppointment(appointmentId) {
+    if (!confirm('Cancel this appointment? This action cannot be undone.')) return;
+    
+    try {
+        const result = await AdminDB.appointments.update(appointmentId, { 
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+        });
+        
+        if (result.success) {
+            showNotification('Appointment cancelled', 'success');
+            await loadAppointmentsData();
+        } else {
+            throw new Error(result.error);
+        }
+    } catch (error) {
+        console.error('Error cancelling appointment:', error);
+        showNotification('Error cancelling appointment: ' + error.message, 'error');
+    }
+}
+
+/**
+ * Edit an appointment
+ */
+function editAppointment(appointmentId) {
+    const appointment = allAppointments.find(a => a.id === appointmentId);
+    if (!appointment) {
+        showNotification('Appointment not found', 'error');
+        return;
+    }
+    
+    // Pre-fill the edit modal with appointment data
+    document.getElementById('editAppointmentId').value = appointment.id;
+    document.getElementById('editAppointmentCustomer').value = appointment.customer_id || '';
+    document.getElementById('editAppointmentDate').value = appointment.appointment_date;
+    document.getElementById('editAppointmentTime').value = appointment.appointment_time;
+    document.getElementById('editAppointmentDuration').value = appointment.duration_minutes || 60;
+    document.getElementById('editAppointmentStatus').value = appointment.status;
+    document.getElementById('editAppointmentNotes').value = appointment.notes || '';
+    
+    // Load customers dropdown for editing
+    loadCustomersDropdownForAppointment('editAppointmentCustomer');
+    
+    // Show edit modal
+    document.getElementById('editAppointmentModal').style.display = 'block';
 }
 
 function showAddCustomerModal() {
-    showNotification('Customer management features coming soon', 'info');
+    const modal = document.getElementById('addCustomerModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        showNotification('Add Customer modal not found', 'error');
+    }
 }
 
-function showCreateAppointmentModal() {
-    showNotification('Appointment management features coming soon', 'info');
+async function showCreateAppointmentModal() {
+    console.log('showCreateAppointmentModal called');
+    const modal = document.getElementById('createAppointmentModal');
+    console.log('Modal element:', modal);
+    modal.style.display = 'block';
+    
+    // Load customers for dropdown
+    console.log('Loading customers for appointment dropdown');
+    try {
+        await loadCustomersDropdownForAppointment('appointmentCustomer');
+        
+        // Verify that customers were loaded
+        const customerSelect = document.getElementById('appointmentCustomer');
+        if (customerSelect && customerSelect.options.length <= 1) {
+            console.warn('No customers available in dropdown');
+            showNotification('No customers available. Please add customers first.', 'warning');
+        }
+    } catch (error) {
+        console.error('Failed to load customers for appointment:', error);
+        showNotification('Failed to load customer list: ' + error.message, 'error');
+    }
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appointmentDate').value = today;
+    
+    // Set default time to next available hour
+    const now = new Date();
+    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+    const timeString = nextHour.toTimeString().slice(0, 5);
+    document.getElementById('appointmentTime').value = timeString;
+    console.log('Modal setup completed');
+}
+
+/**
+ * Load customers dropdown for appointments
+ */
+async function loadCustomersDropdownForAppointment(selectElementId) {
+    console.log('loadCustomersDropdownForAppointment called with selectElementId:', selectElementId);
+    try {
+        console.log('About to call AdminDB.customers.getAll()');
+        console.log('AdminDB available:', !!window.AdminDB);
+        console.log('AdminDB.customers available:', !!window.AdminDB?.customers);
+        console.log('AdminDB.customers.getAll available:', !!window.AdminDB?.customers?.getAll);
+        
+        const result = await AdminDB.customers.getAll();
+        console.log('Customers result:', result);
+        
+        if (result.success) {
+            const select = document.getElementById(selectElementId);
+            console.log('Select element found:', select);
+            if (select) {
+                const optionsHTML = '<option value="">Select Customer</option>' +
+                    result.data.map(customer => {
+                        const customerName = customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+                        return `<option value="${customer.id}">${customerName} (${customer.email})</option>`;
+                    }).join('');
+                console.log('Options HTML generated:', optionsHTML);
+                select.innerHTML = optionsHTML;
+                console.log('Options set successfully');
+            } else {
+                console.error('Select element not found with ID:', selectElementId);
+            }
+        } else {
+            console.error('Failed to get customers:', result.error);
+        }
+    } catch (error) {
+        console.error('Error loading customers for appointment:', error);
+    }
+}
+
+/**
+ * Ensure AdminDB is properly initialized
+ */
+function ensureAdminDBInitialized() {
+    if (typeof window.AdminDB === 'undefined') {
+        console.error('AdminDB is not initialized');
+        showNotification('Database connection not ready. Please refresh the page.', 'error');
+        return false;
+    }
+    
+    if (!window.AdminDB.appointments) {
+        console.error('AdminDB.appointments is not available');
+        showNotification('Appointment functions not available. Please refresh the page.', 'error');
+        return false;
+    }
+    
+    if (!window.AdminDB.appointments.create) {
+        console.error('AdminDB.appointments.create is not available');
+        showNotification('Create appointment function not available. Please refresh the page.', 'error');
+        return false;
+    }
+    
+    return true;
+}
+
+/**
+ * Handle create appointment form submission
+ */
+async function handleCreateAppointment(e) {
+    e.preventDefault();
+    console.log('handleCreateAppointment called');
+    
+    // Check if AdminDB is properly initialized
+    if (!ensureAdminDBInitialized()) {
+        return;
+    }
+    
+    const submitBtn = e.target.querySelector('.btn.primary');
+    console.log('Submit button found:', submitBtn);
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Creating...';
+        
+        const formData = {
+            customer_id: document.getElementById('appointmentCustomer').value,
+            appointment_date: document.getElementById('appointmentDate').value,
+            appointment_time: document.getElementById('appointmentTime').value,
+            duration_minutes: parseInt(document.getElementById('appointmentDuration').value),
+            notes: document.getElementById('appointmentNotes').value,
+            status: 'scheduled',
+            created_by_staff: true
+        };
+        
+        console.log('Form data collected:', formData);
+        
+        // Validate required fields
+        if (!formData.customer_id) {
+            throw new Error('Please select a customer');
+        }
+        
+        if (!formData.appointment_date) {
+            throw new Error('Please select a date');
+        }
+        
+        if (!formData.appointment_time) {
+            throw new Error('Please select a time');
+        }
+        
+        // Validate date is not in the past
+        const appointmentDateTime = new Date(`${formData.appointment_date}T${formData.appointment_time}`);
+        if (appointmentDateTime < new Date()) {
+            throw new Error('Appointment date and time cannot be in the past');
+        }
+        
+        console.log('About to call AdminDB.appointments.create');
+        console.log('AdminDB object:', window.AdminDB);
+        console.log('AdminDB.appointments:', window.AdminDB?.appointments);
+        console.log('AdminDB.appointments.create:', window.AdminDB?.appointments?.create);
+        
+        const result = await AdminDB.appointments.create(formData);
+        console.log('Create result:', result);
+        
+        if (result.success) {
+            showNotification('Appointment created successfully', 'success');
+            closeModal('createAppointmentModal');
+            
+            // Refresh appointments if we're on that view
+            if (currentSection === 'appointments') {
+                await loadAppointmentsData();
+            }
+            
+            // Reset form
+            e.target.reset();
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error creating appointment:', error);
+        showNotification('Error creating appointment: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ph-light ph-plus"></i> Create Appointment';
+    }
+}
+
+/**
+ * Handle edit appointment form submission
+ */
+async function handleEditAppointment(e) {
+    e.preventDefault();
+    
+    const submitBtn = e.target.querySelector('.btn.primary');
+    const appointmentId = document.getElementById('editAppointmentId').value;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Updating...';
+        
+        const formData = {
+            customer_id: document.getElementById('editAppointmentCustomer').value,
+            appointment_date: document.getElementById('editAppointmentDate').value,
+            appointment_time: document.getElementById('editAppointmentTime').value,
+            duration_minutes: parseInt(document.getElementById('editAppointmentDuration').value),
+            status: document.getElementById('editAppointmentStatus').value,
+            notes: document.getElementById('editAppointmentNotes').value,
+            updated_at: new Date().toISOString()
+        };
+        
+        // Validate required fields
+        if (!formData.customer_id) {
+            throw new Error('Please select a customer');
+        }
+        
+        const result = await AdminDB.appointments.update(appointmentId, formData);
+        
+        if (result.success) {
+            showNotification('Appointment updated successfully', 'success');
+            closeModal('editAppointmentModal');
+            
+            // Refresh appointments
+            await loadAppointmentsData();
+        } else {
+            throw new Error(result.error);
+        }
+        
+    } catch (error) {
+        console.error('Error updating appointment:', error);
+        showNotification('Error updating appointment: ' + error.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="ph-light ph-check"></i> Update Appointment';
+    }
+}
+
+/**
+ * Show appointment detail modal
+ */
+function showAppointmentDetailModal(appointmentId, title, content) {
+    // Create or update the detail modal
+    let modal = document.getElementById('appointmentDetailModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'appointmentDetailModal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">${title}</h3>
+                <button class="modal-close" onclick="closeModal('appointmentDetailModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                ${content}
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
 }
 
 function convertToTicket(contactId) {
@@ -1486,3 +2215,118 @@ function exitWebformsEditMode() {
     document.getElementById('webformsCheckboxHeader').style.display = 'none';
     displayWebforms(allWebforms);
 }
+
+// --- Appointments Edit Mode Functions ---
+function enterAppointmentsEditMode() {
+    appointmentsEditMode = true;
+    document.getElementById('appointmentsEditBtn').style.display = 'none';
+    document.getElementById('appointmentsEditControls').style.display = 'flex';
+    document.getElementById('appointmentsCheckboxHeaderCell').style.display = 'block';
+    displayAppointments(allAppointments);
+}
+
+function exitAppointmentsEditMode() {
+    appointmentsEditMode = false;
+    document.getElementById('appointmentsEditBtn').style.display = 'block';
+    document.getElementById('appointmentsEditControls').style.display = 'none';
+    document.getElementById('appointmentsCheckboxHeaderCell').style.display = 'none';
+    displayAppointments(allAppointments);
+}
+
+async function deleteSelectedAppointments() {
+    const checkboxes = document.querySelectorAll('.appointment-checkbox:checked');
+    if (checkboxes.length === 0) return;
+    
+    if (!confirm('Are you sure you want to delete the selected appointments? This action cannot be undone.')) return;
+    
+    for (const cb of checkboxes) {
+        await AdminDB.appointments.delete(cb.value);
+    }
+    
+    await loadAppointmentsData();
+    exitAppointmentsEditMode();
+    showNotification(`${checkboxes.length} appointment(s) deleted successfully`, 'success');
+}
+
+/**
+ * Test function for manual debugging - call from browser console
+ */
+function testNavigation() {
+    console.log('=== NAVIGATION TEST ===');
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    console.log('Found nav items:', navItems.length);
+    
+    navItems.forEach((item, index) => {
+        const section = item.getAttribute('data-section');
+        console.log(`Item ${index}: data-section="${section}", text="${item.textContent.trim()}"`);
+    });
+    
+    // Test switching to tickets
+    console.log('Testing switch to tickets...');
+    switchSection('tickets');
+    
+    setTimeout(() => {
+        console.log('Testing switch to customers...');
+        switchSection('customers');
+    }, 1000);
+    
+    setTimeout(() => {
+        console.log('Testing switch back to dashboard...');
+        switchSection('dashboard');
+    }, 2000);
+}
+
+// Make test function globally available
+window.testNavigation = testNavigation;
+
+/**
+ * Test function to debug appointment creation
+ */
+async function testAppointmentCreation() {
+    console.log('=== Testing Appointment Creation ===');
+    
+    // Test 1: Check if AdminDB is available
+    console.log('1. AdminDB available:', !!window.AdminDB);
+    console.log('2. AdminDB.appointments available:', !!window.AdminDB?.appointments);
+    console.log('3. AdminDB.appointments.create available:', !!window.AdminDB?.appointments?.create);
+    
+    // Test 2: Check if we can get customers
+    try {
+        console.log('4. Testing customer retrieval...');
+        const customersResult = await AdminDB.customers.getAll();
+        console.log('5. Customers result:', customersResult);
+    } catch (error) {
+        console.error('6. Error getting customers:', error);
+    }
+    
+    // Test 3: Check form elements
+    console.log('7. appointmentCustomer element:', document.getElementById('appointmentCustomer'));
+    console.log('8. appointmentDate element:', document.getElementById('appointmentDate'));
+    console.log('9. appointmentTime element:', document.getElementById('appointmentTime'));
+    
+    // Test 4: Try creating a test appointment (commented out for safety)
+    /*
+    try {
+        const testData = {
+            customer_id: 'test-id',
+            appointment_date: '2025-01-20',
+            appointment_time: '10:00',
+            duration_minutes: 60,
+            notes: 'Test appointment',
+            status: 'scheduled',
+            created_by_staff: true
+        };
+        console.log('10. Testing appointment creation with test data:', testData);
+        const result = await AdminDB.appointments.create(testData);
+        console.log('11. Test creation result:', result);
+    } catch (error) {
+        console.error('12. Error in test creation:', error);
+    }
+    */
+    
+    console.log('=== End Test ===');
+}
+
+// Add to window for manual testing
+window.testAppointmentCreation = testAppointmentCreation;

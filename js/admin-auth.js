@@ -454,6 +454,21 @@ const AdminDB = {
                 console.error('Error updating customer:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async delete(customerId) {
+            try {
+                const { error } = await supabase
+                    .from('customers')
+                    .delete()
+                    .eq('id', customerId);
+                
+                if (error) throw error;
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting customer:', error);
+                return { success: false, error: error.message };
+            }
         }
     },
 

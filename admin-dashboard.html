@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - SpyderNet IT</title>
+    <link rel="icon" type="image/png" href="img/spydernet-spider-logo-gradient.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -13,7 +14,7 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
             display: flex;
-            overflow: hidden;
+            font-size: 12px; /* Further reduced from 14px */
         }
 
         .admin-dashboard::before {
@@ -31,7 +32,7 @@
 
         /* Sidebar Styles */
         .sidebar {
-            width: 260px;
+            width: 180px; /* Further reduced from 220px */
             background: rgba(10, 10, 10, 0.8);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
@@ -41,28 +42,29 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            flex-shrink: 0;
         }
 
         .sidebar-header {
-            padding: 1.5rem;
+            padding: 0.75rem; /* Further reduced from 1rem */
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 6px; /* Further reduced from 8px */
             text-decoration: none;
         }
 
         .sidebar-logo img {
-            width: 35px;
-            height: 35px;
+            width: 24px; /* Further reduced from 28px */
+            height: 24px; /* Further reduced from 28px */
         }
 
         .sidebar-logo .logo-text {
             color: #ffffff;
-            font-size: 1.25rem;
+            font-size: 0.95rem; /* Further reduced from 1.1rem */
             font-weight: 700;
             background: linear-gradient(135deg, #7877c6, #ffffff);
             -webkit-background-clip: text;
@@ -71,31 +73,31 @@
 
         .sidebar-nav {
             flex: 1;
-            padding: 1rem 0;
+            padding: 0.5rem 0; /* Further reduced from 0.75rem 0 */
             display: flex;
             flex-direction: column;
         }
 
         .nav-section {
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem; /* Further reduced from 1rem */
         }
 
         .nav-section-title {
             color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
+            font-size: 0.65rem; /* Further reduced from 0.7rem */
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            padding: 0 1.5rem;
-            margin-bottom: 0.75rem;
+            padding: 0 0.75rem; /* Further reduced from 0 1rem */
+            margin-bottom: 0.4rem; /* Further reduced from 0.5rem */
         }
 
         .nav-item {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            gap: 12px;
-            padding: 0.875rem 1.5rem;
+            gap: 6px; /* Further reduced from 8px */
+            padding: 0.5rem 0.75rem; /* Further reduced from 0.6rem 1rem */
             color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             transition: all 0.3s ease;
@@ -104,8 +106,8 @@
             background: none;
             width: 100%;
             text-align: left;
-            font-size: 0.9rem;
-            margin-bottom: 0.25rem;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
+            margin-bottom: 0.05rem; /* Further reduced from 0.1rem */
             border-radius: 0;
             position: relative;
         }
@@ -126,8 +128,8 @@
         }
 
         .nav-item i {
-            font-size: 1.1rem;
-            min-width: 20px;
+            font-size: 0.9rem; /* Further reduced from 1rem */
+            min-width: 16px; /* Further reduced from 18px */
             flex-shrink: 0;
         }
 
@@ -138,28 +140,28 @@
         .nav-badge {
             background: #7877c6;
             color: #ffffff;
-            font-size: 0.7rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 10px;
+            font-size: 0.6rem; /* Further reduced from 0.65rem */
+            padding: 0.15rem 0.3rem; /* Further reduced from 0.2rem 0.4rem */
+            border-radius: 6px; /* Further reduced from 8px */
             margin-left: auto;
             flex-shrink: 0;
         }
 
         .sidebar-footer {
-            padding: 1.5rem;
+            padding: 0.75rem; /* Further reduced from 1rem */
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .admin-info {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 0.4rem; /* Further reduced from 0.5rem */
+            margin-bottom: 0.6rem; /* Further reduced from 0.75rem */
         }
 
         .admin-avatar {
-            width: 32px;
-            height: 32px;
+            width: 24px; /* Further reduced from 28px */
+            height: 24px; /* Further reduced from 28px */
             background: linear-gradient(135deg, #7877c6, #9d4edd);
             border-radius: 50%;
             display: flex;
@@ -167,6 +169,7 @@
             justify-content: center;
             color: #ffffff;
             font-weight: 600;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
         }
 
         .admin-details {
@@ -176,23 +179,23 @@
         .admin-name {
             color: #ffffff;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .admin-role {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 0.75rem;
+            font-size: 0.65rem; /* Further reduced from 0.7rem */
         }
 
         .logout-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.8);
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.3rem 0.6rem; /* Further reduced from 0.4rem 0.8rem */
+            border-radius: 4px; /* Further reduced from 5px */
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
             width: 100%;
         }
 
@@ -209,14 +212,13 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden;
         }
 
         .main-header {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem 2rem;
+            padding: 0.5rem 1rem; /* Further reduced from 0.75rem 1.5rem */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -224,14 +226,14 @@
 
         .page-title {
             color: #ffffff;
-            font-size: 1.5rem;
+            font-size: 1.1rem; /* Further reduced from 1.3rem */
             font-weight: 600;
             margin: 0;
         }
 
         .header-actions {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem; /* Further reduced from 0.75rem */
             align-items: center;
         }
 
@@ -242,11 +244,11 @@
         .global-search {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            border-radius: 4px; /* Further reduced from 6px */
+            padding: 0.3rem 0.5rem 0.3rem 1.8rem; /* Further reduced padding */
             color: #ffffff;
-            width: 300px;
-            font-size: 0.9rem;
+            width: 200px; /* Further reduced from 250px */
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .global-search:focus {
@@ -257,24 +259,25 @@
 
         .search-icon {
             position: absolute;
-            left: 0.75rem;
+            left: 0.5rem; /* Further reduced from 0.6rem */
             top: 50%;
             transform: translateY(-50%);
             color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
         }
 
         .header-btn {
             background: rgba(255, 255, 255, 0.1);
             color: rgba(255, 255, 255, 0.8);
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
+            padding: 0.3rem 0.6rem; /* Further reduced from 0.4rem 0.8rem */
+            border-radius: 4px; /* Further reduced from 5px */
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.3rem; /* Further reduced from 0.4rem */
         }
 
         .header-btn:hover {
@@ -295,8 +298,9 @@
         /* Content Area */
         .content-area {
             flex: 1;
-            padding: 2rem;
+            padding: 1rem; /* Further reduced from 1.25rem */
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .content-section {
@@ -310,19 +314,23 @@
         /* Dashboard Overview */
         .dashboard-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Increased from 160px to 220px */
+            gap: 1rem; /* Increased back to 1rem for better spacing */
+            margin-bottom: 1.5rem; /* Increased back to 1.5rem */
         }
 
         .stat-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
+            border-radius: 8px; /* Further reduced from 10px */
+            padding: 1rem; /* Increased back to 1rem for more space */
             position: relative;
             overflow: hidden;
+            min-height: 120px; /* Add minimum height to ensure consistent card sizes */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .stat-card::before {
@@ -331,7 +339,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
+            height: 2px; /* Further reduced from 3px */
             background: linear-gradient(90deg, #7877c6, #9d4edd);
         }
 
@@ -339,30 +347,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem; /* Increased back from 0.5rem */
         }
 
         .stat-title {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+            font-size: 0.8rem; /* Increased from 0.7rem */
             font-weight: 500;
+            line-height: 1.2;
+            flex: 1;
         }
 
         .stat-icon {
             color: #7877c6;
-            font-size: 1.25rem;
+            font-size: 1.1rem; /* Increased back from 0.95rem */
+            flex-shrink: 0;
         }
 
         .stat-value {
-            font-size: 2.25rem;
+            font-size: 1.8rem; /* Increased back from 1.5rem */
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.5rem; /* Increased from 0.3rem */
+            line-height: 1.1;
         }
 
         .stat-change {
-            font-size: 0.8rem;
+            font-size: 0.75rem; /* Increased from 0.65rem */
             color: #28a745;
+            line-height: 1.2;
         }
 
         .stat-change.negative {
@@ -374,20 +387,20 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.5rem;
+            border-radius: 8px; /* Further reduced from 10px */
+            padding: 0.75rem; /* Further reduced from 1rem */
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem; /* Further reduced from 1rem */
         }
 
         .section-title {
             color: #ffffff;
-            font-size: 1.25rem;
+            font-size: 0.95rem; /* Further reduced from 1.1rem */
             font-weight: 600;
             margin: 0;
         }
@@ -395,8 +408,8 @@
         .activity-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            padding: 1rem 0;
+            gap: 0.5rem; /* Further reduced from 0.75rem */
+            padding: 0.5rem 0; /* Further reduced from 0.75rem 0 */
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
@@ -405,14 +418,15 @@
         }
 
         .activity-icon {
-            width: 32px;
-            height: 32px;
+            width: 24px; /* Further reduced from 28px */
+            height: 24px; /* Further reduced from 28px */
             background: rgba(120, 119, 198, 0.2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #7877c6;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .activity-content {
@@ -422,17 +436,18 @@
         .activity-title {
             color: #ffffff;
             font-weight: 500;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem; /* Further reduced from 0.2rem */
+            font-size: 0.8rem; /* Further reduced from 0.9rem */
         }
 
         .activity-meta {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 0.85rem;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
         }
 
         .activity-time {
             color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8rem;
+            font-size: 0.65rem; /* Further reduced from 0.75rem */
         }
 
         /* Table Styles */
@@ -440,66 +455,78 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 8px; /* Further reduced from 10px */
             overflow: hidden;
         }
 
         .table-header {
             background: rgba(255, 255, 255, 0.1);
-            padding: 1rem 1.5rem;
+            padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
             display: grid;
-            grid-template-columns: 1fr 1.5fr 3fr 1.2fr 2fr 1.5fr;
+            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
             gap: 1rem;
             font-weight: 600;
             color: #ffffff;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             align-items: center;
+            min-width: 800px;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .table-controls {
             display: flex;
-            gap: 1rem;
+            gap: 0.5rem;
             align-items: center;
+            flex-wrap: nowrap; /* Keep horizontal by default */
+            min-width: 0;
+            width: 100%;
         }
 
         .filter-dropdown, .sort-dropdown {
             background: #232345 !important;
             color: #fff !important;
             border: 1px solid #39396a;
-            border-radius: 8px;
-            padding: 0.35rem 1.5rem 0.35rem 0.75rem;
-            font-size: 0.92rem;
-            min-width: 120px;
+            border-radius: 4px;
+            padding: 0.25rem 1rem 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            min-width: 90px;
+            max-width: 160px;
             box-shadow: 0 2px 8px rgba(30,30,60,0.08);
             transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
             appearance: none;
             cursor: pointer;
+            flex: 0 0 auto; /* Don't grow or shrink */
+            white-space: nowrap;
         }
+        
         .filter-dropdown:focus, .sort-dropdown:focus {
             border-color: #7877c6;
             box-shadow: 0 0 0 2px #7877c6;
         }
+        
         .filter-dropdown option, .sort-dropdown option {
             background: #232345 !important;
             color: #fff !important;
-            font-size: 0.92rem;
+            font-size: 0.7rem;
         }
 
         .table-content {
             max-height: 600px;
             overflow-y: auto;
+            overflow-x: auto;
         }
 
         .table-row {
             display: grid;
-            grid-template-columns: 1fr 1.5fr 3fr 1.2fr 2fr 1.5fr;
+            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
             gap: 1rem;
-            padding: 1.1rem 1.5rem;
+            padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             align-items: center;
             cursor: pointer;
             transition: all 0.3s ease;
+            min-width: 800px;
         }
 
         .table-row:hover {
@@ -508,25 +535,29 @@
 
         .table-cell {
             color: rgba(255, 255, 255, 0.92);
-            font-size: 1rem;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            min-width: 0;
         }
 
         .table-cell.subject {
             font-weight: 500;
             color: #fff;
+            white-space: normal;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .status-badge {
-            padding: 0.35rem 1rem;
-            border-radius: 20px;
-            font-size: 0.95rem;
+            padding: 0.2rem 0.5rem; /* Further reduced from 0.25rem 0.7rem */
+            border-radius: 12px; /* Further reduced from 15px */
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
             font-weight: 600;
             text-align: center;
             display: inline-block;
-            min-width: 90px;
+            min-width: 60px; /* Further reduced from 70px */
         }
 
         .status-new { background: rgba(255, 193, 7, 0.18); color: #ffc107; }
@@ -717,15 +748,15 @@
         }
 
         .btn {
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 0.8rem; /* Reduced from 0.5rem 1rem */
             border: none;
-            border-radius: 6px;
+            border-radius: 5px; /* Reduced from 6px */
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
+            font-size: 0.8rem; /* Reduced from 0.85rem */
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem; /* Reduced from 0.5rem */
         }
 
         .btn.primary {
@@ -767,17 +798,17 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: 90%;
-            max-width: 600px;
+            max-width: 450px; /* Further reduced from 500px */
             max-height: 90vh;
             background: rgba(26, 26, 46, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            border-radius: 8px; /* Further reduced from 10px */
             overflow: hidden;
         }
 
         .modal-header {
-            padding: 1.5rem;
+            padding: 0.75rem; /* Further reduced from 1rem */
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
             justify-content: space-between;
@@ -786,7 +817,7 @@
 
         .modal-title {
             color: #ffffff;
-            font-size: 1.25rem;
+            font-size: 0.95rem; /* Further reduced from 1.1rem */
             font-weight: 600;
             margin: 0;
         }
@@ -795,37 +826,37 @@
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.7);
-            font-size: 1.5rem;
+            font-size: 1.1rem; /* Further reduced from 1.3rem */
             cursor: pointer;
-            padding: 0.25rem;
+            padding: 0.15rem; /* Further reduced from 0.2rem */
         }
 
         .modal-body {
-            padding: 1.5rem;
+            padding: 0.75rem; /* Further reduced from 1rem */
             max-height: 60vh;
             overflow-y: auto;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.75rem; /* Further reduced from 1rem */
         }
 
         .form-label {
             display: block;
             color: #ffffff;
             font-weight: 500;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.3rem; /* Further reduced from 0.4rem */
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .form-input, .form-select, .form-textarea {
             width: 100%;
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 6px;
-            padding: 0.75rem;
+            border-radius: 4px; /* Further reduced from 5px */
+            padding: 0.5rem; /* Further reduced from 0.6rem */
             color: #ffffff;
-            font-size: 0.9rem;
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
         }
 
         .form-input:focus, .form-select:focus, .form-textarea:focus {
@@ -835,27 +866,72 @@
         }
 
         .form-textarea {
-            min-height: 100px;
+            min-height: 60px; /* Further reduced from 80px */
             resize: vertical;
+        }
+
+        .btn {
+            padding: 0.3rem 0.6rem; /* Further reduced from 0.4rem 0.8rem */
+            border: none;
+            border-radius: 4px; /* Further reduced from 5px */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
+            display: flex;
+            align-items: center;
+            gap: 0.25rem; /* Further reduced from 0.4rem */
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            color: #ffffff;
+        }
+
+        .btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(120, 119, 198, 0.3);
+        }
+
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
         }
 
         /* Responsive Design */
         @media (max-width: 1024px) {
             .sidebar {
-                width: 200px;
+                width: 160px; /* Further reduced from 180px */
             }
             
             .global-search {
-                width: 200px;
+                width: 150px; /* Further reduced from 180px */
             }
             
-            .ticket-detail-panel {
-                width: 100%;
-                right: -100%;
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Slightly smaller for medium screens */
+                gap: 0.875rem;
+            }
+            
+            .stat-card {
+                padding: 0.875rem;
+                min-height: 110px;
+            }
+            
+            .stat-value {
+                font-size: 1.6rem;
             }
         }
 
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
             .admin-dashboard {
                 flex-direction: column;
             }
@@ -865,64 +941,898 @@
                 min-height: auto;
                 border-right: none;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                order: 2;
+            }
+            
+            .sidebar-nav {
+                display: none;
+            }
+            
+            .sidebar.mobile-open .sidebar-nav {
+                display: flex;
             }
             
             .main-content {
-                min-height: calc(100vh - 200px);
-            }
-            
-            .content-area {
-                padding: 1rem;
-            }
-            
-            .dashboard-stats {
-                grid-template-columns: 1fr;
+                order: 1;
+                min-height: auto;
             }
             
             .main-header {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: stretch;
+                padding: 0.5rem; /* Further reduced from 0.75rem */
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            .page-title {
+                font-size: 0.95rem; /* Further reduced from 1.1rem */
             }
             
             .header-actions {
+                flex-wrap: wrap;
+                gap: 0.4rem; /* Further reduced from 0.5rem */
+            }
+            
+            .global-search {
+                width: 130px; /* Further reduced from 160px */
+                font-size: 0.7rem; /* Further reduced from 0.8rem */
+            }
+            
+            .content-area {
+                padding: 0.6rem; /* Further reduced from 0.75rem */
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Smaller for tablets */
+                gap: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 0.875rem;
+                min-height: 100px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .stat-title {
+                font-size: 0.75rem;
+            }
+            
+            .activity-section {
+                padding: 0.5rem; /* Further reduced from 0.75rem */
+            }
+            
+            .section-title {
+                font-size: 0.85rem; /* Further reduced from 1rem */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .main-header {
+                padding: 0.5rem;
+            }
+            
+            .page-title {
+                font-size: 0.9rem; /* Further reduced */
+            }
+            
+            .header-actions {
+                width: 100%;
                 justify-content: space-between;
             }
             
             .global-search {
-                width: 100%;
+                width: 120px; /* Further reduced */
+                padding: 0.25rem 0.4rem 0.25rem 1.6rem; /* Further reduced */
+                font-size: 0.65rem; /* Further reduced */
+            }
+            
+            .header-btn {
+                padding: 0.25rem 0.5rem; /* Further reduced */
+                font-size: 0.65rem; /* Further reduced */
+            }
+            
+            .content-area {
+                padding: 0.5rem; /* Further reduced */
+            }
+            
+            .dashboard-stats {
+                grid-template-columns: 1fr; /* Single column on very small screens */
+                gap: 0.75rem;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+                min-height: 90px;
+                text-align: center; /* Center content on small screens */
+            }
+            
+            .stat-header {
+                margin-bottom: 0.5rem;
+                justify-content: center;
+                gap: 0.5rem;
+            }
+            
+            .stat-title {
+                font-size: 0.75rem;
+                text-align: center;
+            }
+            
+            .stat-icon {
+                font-size: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.4rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            .stat-change {
+                font-size: 0.7rem;
+                text-align: center;
+            }
+            
+            .activity-section {
+                padding: 0.6rem;
+            }
+            
+            .section-title {
+                font-size: 0.8rem; /* Further reduced */
+            }
+            
+            .activity-item {
+                padding: 0.4rem 0; /* Further reduced */
+                gap: 0.4rem; /* Further reduced */
+            }
+            
+            .activity-icon {
+                width: 20px; /* Further reduced */
+                height: 20px; /* Further reduced */
+                font-size: 0.7rem; /* Further reduced */
+            }
+            
+            .activity-title {
+                font-size: 0.7rem; /* Further reduced */
+            }
+            
+            .activity-meta {
+                font-size: 0.6rem; /* Further reduced */
             }
         }
 
-        /* Loading and Animation States */
-        .loading {
+        /* Large screens optimization */
+        @media (min-width: 1400px) {
+            .dashboard-stats {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 2rem;
+            }
+            
+            .stat-card {
+                padding: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Ultra-wide screens */
+        @media (min-width: 1800px) {
+            .content-area {
+                padding: 2.5rem;
+            }
+            
+            .dashboard-stats {
+                gap: 2.5rem;
+            }
+        }
+
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .mobile-menu-toggle:hover {
+            color: #ffffff;
+        }
+
+        /* Customer Management Styles */
+        .customer-search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            flex: 1 1 auto; /* Take remaining space */
+            min-width: 120px; /* Smaller minimum for better fit */
+            max-width: 250px;
+        }
+
+        .customer-search-container i {
+            position: absolute;
+            left: 0.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            z-index: 1;
+            font-size: 0.8rem;
+        }
+
+        .customer-search-input {
+            background: #232345 !important;
+            color: #fff !important;
+            border: 1px solid #39396a;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem 0.25rem 1.8rem;
+            font-size: 0.7rem;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .customer-search-input:focus {
+            border-color: #7877c6;
+            box-shadow: 0 0 0 2px rgba(120, 119, 198, 0.3);
+        }
+
+        .customer-search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-btn.primary {
+            flex: 0 0 auto; /* Don't grow or shrink */
+            white-space: nowrap;
+        }
+
+        /* Responsive Design Updates */
+        @media (max-width: 1200px) {
+            .table-controls {
+                flex-wrap: nowrap; /* Still keep horizontal */
+                gap: 0.4rem;
+            }
+            
+            .filter-dropdown, .sort-dropdown {
+                min-width: 80px;
+                max-width: 130px;
+                font-size: 0.65rem;
+                padding: 0.2rem 0.8rem 0.2rem 0.4rem;
+            }
+            
+            .customer-search-container {
+                min-width: 100px;
+                max-width: 200px;
+            }
+            
+            .customer-search-input {
+                font-size: 0.65rem;
+            }
+            
+            .header-btn.primary {
+                font-size: 0.65rem;
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .table-controls {
+                flex-wrap: nowrap; /* Still horizontal */
+                gap: 0.3rem;
+            }
+
+            .filter-dropdown, .sort-dropdown {
+                min-width: 70px;
+                max-width: 110px;
+                font-size: 0.6rem;
+                padding: 0.2rem 0.6rem 0.2rem 0.3rem;
+            }
+
+            .customer-search-container {
+                min-width: 90px;
+                max-width: 150px;
+            }
+
+            .customer-search-input {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem 0.2rem 1.6rem;
+            }
+
+            .header-btn.primary {
+                font-size: 0.6rem;
+                padding: 0.2rem 0.4rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .table-controls {
+                flex-wrap: wrap; /* Allow wrapping only on small screens */
+                gap: 0.25rem;
+            }
+
+            .customer-search-container {
+                flex: 1 1 100%; /* Take full width first */
+                min-width: auto;
+                max-width: none;
+                margin-bottom: 0.3rem;
+            }
+
+            .filter-dropdown, .sort-dropdown {
+                flex: 1 1 auto; /* Share remaining space */
+                min-width: 60px;
+                max-width: none;
+                font-size: 0.55rem;
+                padding: 0.15rem 0.5rem 0.15rem 0.25rem;
+            }
+
+            .header-btn.primary {
+                flex: 0 0 auto;
+                font-size: 0.55rem;
+                padding: 0.15rem 0.3rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .table-controls {
+                flex-direction: column; /* Stack only on very small screens */
+                align-items: stretch;
+                gap: 0.3rem;
+            }
+
+            .customer-search-container {
+                width: 100%;
+                margin-bottom: 0.3rem;
+            }
+
+            .filter-dropdown, .sort-dropdown {
+                width: 100%;
+                margin-bottom: 0.2rem;
+            }
+
+            .customer-search-input {
+                font-size: 0.55rem;
+                padding: 0.15rem 0.3rem 0.15rem 1.4rem;
+            }
+
+            .customer-search-container i {
+                left: 0.4rem;
+                font-size: 0.7rem;
+            }
+
+            .header-btn.primary {
+                width: 100%;
+                font-size: 0.55rem;
+                padding: 0.15rem 0.3rem;
+            }
+        }
+
+        /* Customer Management Styles */
+        .customer-table-header {
+            display: grid;
+            grid-template-columns: minmax(70px, 0.8fr) minmax(150px, 1.8fr) minmax(180px, 2fr) minmax(120px, 1.2fr) minmax(130px, 1.3fr) minmax(100px, 1fr) minmax(100px, 1fr);
+            gap: 1rem;
+            padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+            color: #ffffff;
+            align-items: center;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
+            min-width: 850px;
+        }
+
+        .customer-table-row {
+            display: grid;
+            grid-template-columns: minmax(70px, 0.8fr) minmax(150px, 1.8fr) minmax(180px, 2fr) minmax(120px, 1.2fr) minmax(130px, 1.3fr) minmax(100px, 1fr) minmax(100px, 1fr);
+            gap: 1rem;
+            padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 850px;
+        }
+
+        .customer-table-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .customer-status-badge {
+            padding: 0.15rem 0.4rem; /* Further reduced from 0.2rem 0.6rem */
+            border-radius: 10px; /* Further reduced from 12px */
+            font-size: 0.65rem; /* Further reduced from 0.75rem */
+            font-weight: 600;
             text-align: center;
-            padding: 3rem;
+            display: inline-block;
+            min-width: 50px; /* Further reduced from 60px */
+        }
+
+        .customer-status-active {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .customer-status-inactive {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .customer-status-suspended {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .customer-name {
+            color: #ffffff;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .customer-name:hover {
+            color: #7877c6;
+        }
+
+        .customer-email {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
+        }
+
+        .customer-phone, .customer-company {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
+        }
+
+        .customer-last-contact {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.65rem; /* Further reduced from 0.75rem */
+        }
+
+        .customer-actions {
+            display: flex;
+            gap: 0.3rem; /* Further reduced from 0.4rem */
+            align-items: center;
+        }
+
+        .customer-action-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 3px; /* Further reduced from 4px */
+            padding: 0.25rem 0.4rem; /* Further reduced from 0.3rem 0.5rem */
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.65rem; /* Further reduced from 0.75rem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .customer-action-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+        }
+
+        .customer-action-btn.view {
+            color: #007bff;
+        }
+
+        .customer-action-btn.edit {
+            color: #ffc107;
+        }
+
+        .customer-action-btn.delete {
+            color: #dc3545;
+        }
+
+        .customer-avatar {
+            width: 24px; /* Further reduced from 28px */
+            height: 24px; /* Further reduced from 28px */
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.7rem; /* Further reduced from 0.8rem */
+            margin-right: 0.4rem; /* Further reduced from 0.5rem */
+        }
+
+        .customer-info-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .customer-details {
+            flex: 1;
+        }
+
+        .customer-name-primary {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.05rem; /* Further reduced from 0.1rem */
+            font-size: 0.75rem; /* Further reduced from 0.85rem */
+        }
+
+        .customer-email-secondary {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.65rem; /* Further reduced from 0.75rem */
+        }
+
+        /* Empty state for customers */
+        .customers-empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
             color: rgba(255, 255, 255, 0.6);
         }
 
-        .loading i {
-            font-size: 2rem;
-            margin-bottom: 1rem;
+        .customers-empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
             display: block;
-            animation: spin 1s linear infinite;
+            color: rgba(255, 255, 255, 0.3);
         }
 
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .customers-empty-state h3 {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
         }
 
-        .fade-in {
-            animation: fadeIn 0.3s ease;
+        .customers-empty-state p {
+            margin-bottom: 2rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Responsive customer table */
+        @media (max-width: 1400px) {
+            .customer-table-header,
+            .customer-table-row {
+                grid-template-columns: minmax(60px, 0.7fr) minmax(140px, 1.6fr) minmax(160px, 1.8fr) minmax(110px, 1.1fr) minmax(120px, 1.2fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr);
+                font-size: 0.85rem;
+                min-width: 750px;
+            }
         }
 
-        /* Notification Styles */
+        @media (max-width: 1200px) {
+            .table-header,
+            .table-row {
+                grid-template-columns: minmax(70px, 0.8fr) minmax(100px, 1fr) minmax(150px, 2fr) minmax(80px, 0.8fr) minmax(120px, 1.2fr) minmax(100px, 1fr);
+                font-size: 0.9rem;
+                min-width: 700px;
+            }
+
+            .customer-table-header,
+            .customer-table-row {
+                grid-template-columns: minmax(50px, 0.6fr) minmax(120px, 1.4fr) minmax(140px, 1.6fr) minmax(100px, 1fr) minmax(110px, 1.1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr);
+                font-size: 0.8rem;
+                min-width: 650px;
+                padding: 1rem;
+                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .table-header,
+            .table-row {
+                grid-template-columns: minmax(60px, 0.7fr) minmax(80px, 0.8fr) minmax(120px, 1.5fr) minmax(70px, 0.7fr) minmax(100px, 1fr) minmax(80px, 0.8fr);
+                font-size: 0.85rem;
+                min-width: 600px;
+                padding: 0.9rem 1rem;
+                gap: 0.5rem;
+            }
+
+            .customer-table-header,
+            .customer-table-row {
+                grid-template-columns: minmax(45px, 0.5fr) minmax(100px, 1.2fr) minmax(120px, 1.4fr) minmax(90px, 0.9fr) minmax(100px, 1fr) minmax(70px, 0.7fr) minmax(70px, 0.7fr);
+                font-size: 0.75rem;
+                min-width: 550px;
+                padding: 0.9rem;
+                gap: 0.5rem;
+            }
+
+            .table-content {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .table-content {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table-header,
+            .table-row {
+                min-width: 500px;
+                font-size: 0.8rem;
+                padding: 0.8rem;
+                gap: 0.4rem;
+            }
+
+            .customer-table-header,
+            .customer-table-row {
+                min-width: 450px;
+                font-size: 0.7rem;
+                padding: 0.8rem;
+                gap: 0.4rem;
+            }
+
+            /* Keep table controls horizontal on tablets */
+            .table-controls {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                justify-content: flex-start;
+            }
+
+            .customer-search-container {
+                flex: 1;
+                min-width: 180px;
+                margin-bottom: 0;
+            }
+
+            .customer-search-input {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .filter-dropdown, .sort-dropdown {
+                min-width: 110px;
+                max-width: 150px;
+                font-size: 0.85rem;
+                flex-shrink: 0;
+            }
+
+            .header-btn.primary {
+                min-width: 120px;
+                flex-shrink: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .table-header,
+            .table-row {
+                min-width: 400px;
+                font-size: 0.75rem;
+                padding: 0.7rem;
+                gap: 0.3rem;
+            }
+
+            .customer-table-header,
+            .customer-table-row {
+                min-width: 350px;
+                font-size: 0.65rem;
+                padding: 0.7rem;
+                gap: 0.3rem;
+            }
+
+            .table-cell {
+                font-size: 0.75rem;
+            }
+
+            .customer-action-btn {
+                padding: 0.3rem 0.4rem;
+                font-size: 0.7rem;
+            }
+
+            .customer-status-badge {
+                padding: 0.2rem 0.6rem;
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+
+            /* Only stack controls on very small screens */
+            .table-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+
+            .customer-search-container {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .filter-dropdown, .sort-dropdown {
+                min-width: auto;
+                max-width: none;
+                width: 100%;
+                margin-bottom: 0.25rem;
+            }
+
+            .header-btn.primary {
+                width: 100%;
+                margin-top: 0.5rem;
+            }
+        }
+
+        /* Form styling enhancements */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: #ffffff;
+        }
+
+        .btn.danger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Customer detail view styles */
+        .customer-detail-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .customer-detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .customer-detail-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7877c6, #9d4edd);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .customer-detail-info h3 {
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .customer-detail-info p {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
+
+        .customer-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .customer-detail-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .customer-detail-item label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .customer-detail-item span {
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .customer-tickets-section {
+            margin-top: 2rem;
+        }
+
+        .customer-tickets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .customer-ticket-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+            border-left: 3px solid #7877c6;
+            transition: all 0.3s ease;
+        }
+
+        .customer-ticket-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .customer-ticket-title {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .customer-ticket-meta {
+            display: flex;
+            gap: 1rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .customer-ticket-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .customer-ticket-meta i {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .priority-badge {
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.65rem !important;
+            font-weight: 600 !important;
+            text-align: center;
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        .priority-badge.priority-urgent { 
+            background: rgba(220, 53, 69, 0.2); 
+            color: #dc3545; 
+        }
+        
+        .priority-badge.priority-high { 
+            background: rgba(253, 126, 20, 0.2); 
+            color: #fd7e14; 
+        }
+        
+        .priority-badge.priority-normal { 
+            background: rgba(255, 255, 255, 0.1); 
+            color: #ffffff; 
+        }
+        
+        .priority-badge.priority-low { 
+            background: rgba(108, 117, 125, 0.2); 
+            color: #6c757d; 
+        }
+
+        /* Mobile responsiveness for customer tickets */
+        @media (max-width: 768px) {
+            .customer-ticket-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .customer-ticket-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem;
+            }
+            
+            .customer-ticket-title {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Loading and notification styles */
         .notification {
             position: fixed;
             top: 20px;
@@ -932,6 +1842,7 @@
             z-index: 3000;
             max-width: 400px;
             animation: slideInRight 0.3s ease;
+            display: none;
         }
 
         .notification.success {
@@ -963,21 +1874,69 @@
             }
         }
 
-        .table-header, .table-row, .table-cell {
-            font-size: 0.95rem !important;
-        }
-        .table-header {
-            font-size: 1rem !important;
+        /* Status badges - appointments */
+        .status-scheduled {
+            background-color: rgba(121, 119, 198, 0.2);
+            color: #7877c6;
+            border: 1px solid rgba(121, 119, 198, 0.3);
         }
 
-        select, select option {
-            background: #232345 !important;
-            color: #fff !important;
-            border: 1px solid #39396a;
+        .status-confirmed {
+            background-color: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+            border: 1px solid rgba(40, 167, 69, 0.3);
         }
-        select:focus {
-            border-color: #7877c6;
-            box-shadow: 0 0 0 2px #7877c6;
+
+        .status-completed {
+            background-color: rgba(23, 162, 184, 0.2);
+            color: #17a2b8;
+            border: 1px solid rgba(23, 162, 184, 0.3);
+        }
+
+        .status-cancelled {
+            background-color: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        /* Appointment specific styles */
+        .appointment-detail-content {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .appointment-properties {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn.success {
+            background-color: #28a745;
+            color: #ffffff;
+            border: 1px solid #28a745;
+        }
+
+        .btn.success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+        .btn.danger {
+            background-color: #dc3545;
+            color: #ffffff;
+            border: 1px solid #dc3545;
+        }
+
+        .btn.danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+
+        .btn.small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            line-height: 1.2;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -1063,7 +2022,12 @@
     <div class="main-content">
         <!-- Header -->
         <div class="main-header">
-            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+                    <i class="ph-light ph-list"></i>
+                </button>
+                <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            </div>
             <div class="header-actions">
                 <div class="search-container">
                     <i class="ph-light ph-magnifying-glass search-icon"></i>
@@ -1161,6 +2125,7 @@
                             </select>
                             <select class="sort-dropdown" id="sortBy">
                                 <option value="created_at">Date Created</option>
+                                <option value="ticket_number">Ticket Number</option>
                                 <option value="priority">Priority</option>
                                 <option value="status">Status</option>
                             </select>
@@ -1303,20 +2268,72 @@
                     <div class="table-header">
                         <h2 class="section-title">Customer Management</h2>
                         <div class="table-controls">
+                            <div class="customer-search-container">
+                                <i class="ph-light ph-magnifying-glass"></i>
+                                <input type="text" placeholder="Search customers..." id="customerSearch" class="customer-search-input">
+                            </div>
+                            <select class="filter-dropdown" id="customerStatusFilter">
+                                <option value="">All Customers</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="suspended">Suspended</option>
+                            </select>
+                            <select class="filter-dropdown" id="customerSortBy">
+                                <option value="name">Sort by Name</option>
+                                <option value="email">Sort by Email</option>
+                                <option value="created_at">Sort by Date Added</option>
+                                <option value="last_contact">Sort by Last Contact</option>
+                            </select>
                             <button class="header-btn primary" onclick="showAddCustomerModal()">
                                 <i class="ph-light ph-plus"></i>
                                 Add Customer
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-content" id="customersTable">
+                        <!-- Table Controls -->
+                        <div id="customersTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterCustomersEditMode()" id="customersEditBtn">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="customersEditControls" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedCustomers()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
                                 </button>
+                                <button class="btn secondary" onclick="exportSelectedCustomers()">
+                                    <i class="ph-light ph-download"></i> Export Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitCustomersEditMode()">Cancel</button>
+                            </div>
+                            <div style="margin-left: auto; color: rgba(255, 255, 255, 0.7); font-size: 0.9rem;" id="customerCount">
+                                Loading customers...
                             </div>
                         </div>
-                    <div class="table-content" id="customersTable">
-                        <div class="loading">
-                            <i class="ph-light ph-spinner"></i>
-                            Loading customers...
+                        
+                        <!-- Table Header -->
+                        <div class="customer-table-header" id="customersTableHeader">
+                            <div id="customersCheckboxHeader" style="display:none;">
+                                <input type="checkbox" id="selectAllCustomers" onclick="toggleSelectAll('customer-checkbox', this.checked)">
                             </div>
-                                </div>
-                                </div>
+                            <div>Status</div>
+                            <div>Name</div>
+                            <div>Email</div>
+                            <div>Phone</div>
+                            <div>Company</div>
+                            <div>Last Contact</div>
+                            <div>Actions</div>
+                        </div>
+                        
+                        <!-- Data Content -->
+                        <div id="customersTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading customers...
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Appointments Section -->
             <div id="appointments-section" class="content-section">
@@ -1324,27 +2341,87 @@
                     <div class="table-header">
                         <h2 class="section-title">Appointments</h2>
                         <div class="table-controls">
-                            <select class="filter-dropdown" id="appointmentStatusFilter">
+                            <div class="search-container">
+                                <input type="text" class="search-input" id="appointmentSearch" placeholder="Search appointments...">
+                                <i class="ph-light ph-magnifying-glass search-icon"></i>
+                            </div>
+                            <select class="filter-dropdown" id="appointmentStatusFilter" onchange="filterAppointments()">
                                 <option value="">All Appointments</option>
                                 <option value="scheduled">Scheduled</option>
                                 <option value="confirmed">Confirmed</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
                             </select>
+                            <select class="sort-dropdown" id="appointmentSortBy" onchange="filterAppointments()">
+                                <option value="date_asc">Date (Earliest First)</option>
+                                <option value="date_desc">Date (Latest First)</option>
+                                <option value="customer">Customer Name</option>
+                                <option value="status">Status</option>
+                            </select>
+                            
+                            <!-- Edit Mode Controls (Initially Hidden) -->
+                            <div id="appointmentsEditControls" style="display: none;">
+                                <button class="btn danger" onclick="deleteSelectedAppointments()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitAppointmentsEditMode()">
+                                    <i class="ph-light ph-x"></i> Cancel
+                                </button>
+                            </div>
+                            
+                            <!-- Normal Mode Controls -->
+                            <button id="appointmentsEditBtn" class="header-btn secondary" onclick="enterAppointmentsEditMode()">
+                                <i class="ph-light ph-pencil"></i>
+                                Edit
+                            </button>
                             <button class="header-btn primary" onclick="showCreateAppointmentModal()">
                                 <i class="ph-light ph-plus"></i>
                                 New Appointment
                             </button>
+                        </div>
                     </div>
-                </div>
+                    
+                    <!-- Checkbox Header (Hidden by default) -->
+                    <div id="appointmentsCheckboxHeader" style="display: none;">
+                        <input type="checkbox" id="selectAllAppointments" onchange="toggleSelectAll('appointment-checkbox', this.checked)">
+                        <span>Select All</span>
+                    </div>
+                    
+                    <!-- Appointments Table -->
                     <div class="table-content" id="appointmentsTable">
-                        <div class="loading">
-                            <i class="ph-light ph-spinner"></i>
-                            Loading appointments...
-                            </div>
+                        <!-- Fixed Table Header -->
+                        <div id="appointmentsTableControls" style="display:flex; align-items:center; gap:1rem; margin-bottom:0.5rem;">
+                            <button class="btn secondary" onclick="enterAppointmentsEditMode()" id="appointmentsEditBtn2" style="display:none;">
+                                <i class="ph-light ph-pencil"></i> Edit
+                            </button>
+                            <div id="appointmentsEditControls2" style="display:none;">
+                                <button class="btn danger" onclick="deleteSelectedAppointments()">
+                                    <i class="ph-light ph-trash"></i> Delete Selected
+                                </button>
+                                <button class="btn secondary" onclick="exitAppointmentsEditMode()">Cancel</button>
                             </div>
                         </div>
+                        <div class="table-header" id="appointmentsTableHeader">
+                            <div id="appointmentsCheckboxHeaderCell" style="display:none;">
+                                <input type="checkbox" id="selectAllAppointments2" onclick="toggleSelectAll('appointment-checkbox', this.checked)">
                             </div>
+                            <div>Status</div>
+                            <div>Date & Time</div>
+                            <div>Customer</div>
+                            <div>Duration</div>
+                            <div>Type</div>
+                            <div>Actions</div>
+                        </div>
+                        <!-- Data Content -->
+                        <div id="appointmentsTableData">
+                            <div class="loading">
+                                <i class="ph-light ph-spinner"></i>
+                                Loading appointments...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Analytics Section -->
             <div id="analytics-section" class="content-section">
@@ -1352,14 +2429,14 @@
                     <div class="section-header">
                         <h2 class="section-title">Analytics Dashboard</h2>
                         <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Comprehensive insights into your support operations</p>
-                            </div>
+                    </div>
                     <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                         <i class="ph-light ph-chart-line" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Analytics Coming Soon</h3>
                         <p>Advanced analytics and reporting features will be available in the next update.</p>
-                        </div>
-                        </div>
                     </div>
+                </div>
+            </div>
 
             <!-- Reports Section -->
             <div id="reports-section" class="content-section">
@@ -1367,16 +2444,16 @@
                     <div class="section-header">
                         <h2 class="section-title">Reports</h2>
                         <p style="color: rgba(255, 255, 255, 0.7); margin: 0;">Generate and export detailed reports</p>
-                            </div>
+                    </div>
                     <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                         <i class="ph-light ph-file-text" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
                         <h3>Reports Coming Soon</h3>
                         <p>Custom report generation will be available in the next update.</p>
-                            </div>
-                            </div>
-                            </div>
-                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Ticket Detail Panel -->
     <div id="ticketDetailPanel" class="ticket-detail-panel">
@@ -1394,86 +2471,364 @@
         </div>
     </div>
 
+    <!-- Add Customer Modal -->
+    <div id="addCustomerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add New Customer</h3>
+                <button class="modal-close" onclick="closeModal('addCustomerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerFirstName">First Name *</label>
+                            <input type="text" id="customerFirstName" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerLastName">Last Name *</label>
+                            <input type="text" id="customerLastName" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email *</label>
+                        <input type="email" id="customerEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">Phone</label>
+                        <input type="tel" id="customerPhone" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerStatus">Status</label>
+                            <select id="customerStatus" class="form-select">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="prospect">Prospect</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customerCompany">Company</label>
+                            <input type="text" id="customerCompany" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Address</label>
+                        <input type="text" id="customerAddress" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customerCity">City</label>
+                            <input type="text" id="customerCity" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerState">State</label>
+                            <input type="text" id="customerState" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="customerZip">ZIP</label>
+                            <input type="text" id="customerZip" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerCountry">Country</label>
+                        <input type="text" id="customerCountry" class="form-input" value="United States">
+                    </div>
+                    <div class="form-group">
+                        <label for="customerNotes">Notes</label>
+                        <textarea id="customerNotes" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn secondary" onclick="closeModal('addCustomerModal')">Cancel</button>
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-plus"></i> Add Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div id="editCustomerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Customer</h3>
+                <button class="modal-close" onclick="closeModal('editCustomerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editCustomerForm">
+                    <input type="hidden" id="editCustomerId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCustomerFirstName">First Name *</label>
+                            <input type="text" id="editCustomerFirstName" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerLastName">Last Name *</label>
+                            <input type="text" id="editCustomerLastName" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerEmail">Email *</label>
+                        <input type="email" id="editCustomerEmail" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerPhone">Phone</label>
+                        <input type="tel" id="editCustomerPhone" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCustomerStatus">Status</label>
+                            <select id="editCustomerStatus" class="form-select">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="prospect">Prospect</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerCompany">Company</label>
+                            <input type="text" id="editCustomerCompany" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerAddress">Address</label>
+                        <input type="text" id="editCustomerAddress" class="form-input">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCustomerCity">City</label>
+                            <input type="text" id="editCustomerCity" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerState">State</label>
+                            <input type="text" id="editCustomerState" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="editCustomerZip">ZIP</label>
+                            <input type="text" id="editCustomerZip" class="form-input">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerCountry">Country</label>
+                        <input type="text" id="editCustomerCountry" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="editCustomerNotes">Notes</label>
+                        <textarea id="editCustomerNotes" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn secondary" onclick="closeModal('editCustomerModal')">Cancel</button>
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-check"></i> Update Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Appointment Modal -->
+    <div id="createAppointmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Schedule New Appointment</h3>
+                <button class="modal-close" onclick="closeModal('createAppointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createAppointmentForm" onsubmit="handleCreateAppointment(event)">
+                    <div class="form-group">
+                        <label for="appointmentCustomer">Customer *</label>
+                        <select id="appointmentCustomer" class="form-select" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="appointmentDate">Date *</label>
+                            <input type="date" id="appointmentDate" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointmentTime">Time *</label>
+                            <input type="time" id="appointmentTime" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentDuration">Duration</label>
+                        <select id="appointmentDuration" class="form-select">
+                            <option value="15">15 minutes</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="appointmentNotes">Notes</label>
+                        <textarea id="appointmentNotes" class="form-textarea" rows="3" placeholder="Enter appointment details, purpose, or special instructions..."></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn secondary" onclick="closeModal('createAppointmentModal')">Cancel</button>
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-plus"></i> Create Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Appointment Modal -->
+    <div id="editAppointmentModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Appointment</h3>
+                <button class="modal-close" onclick="closeModal('editAppointmentModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editAppointmentForm" onsubmit="handleEditAppointment(event)">
+                    <input type="hidden" id="editAppointmentId">
+                    <div class="form-group">
+                        <label for="editAppointmentCustomer">Customer *</label>
+                        <select id="editAppointmentCustomer" class="form-select" required>
+                            <option value="">Select Customer</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editAppointmentDate">Date *</label>
+                            <input type="date" id="editAppointmentDate" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAppointmentTime">Time *</label>
+                            <input type="time" id="editAppointmentTime" class="form-input" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editAppointmentDuration">Duration</label>
+                            <select id="editAppointmentDuration" class="form-select">
+                                <option value="15">15 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">1 hour</option>
+                                <option value="90">1.5 hours</option>
+                                <option value="120">2 hours</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAppointmentStatus">Status</label>
+                            <select id="editAppointmentStatus" class="form-select">
+                                <option value="scheduled">Scheduled</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAppointmentNotes">Notes</label>
+                        <textarea id="editAppointmentNotes" class="form-textarea" rows="3"></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn secondary" onclick="closeModal('editAppointmentModal')">Cancel</button>
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-check"></i> Update Appointment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Create Ticket Modal -->
-    <div id="createTicketModal" class="modal">
+    <div id="createTicketModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Create New Ticket</h3>
                 <button class="modal-close" onclick="closeModal('createTicketModal')">&times;</button>
             </div>
             <div class="modal-body">
-            <form id="createTicketForm">
+                <form id="createTicketForm">
                     <div class="form-group">
-                        <label class="form-label">Customer</label>
-                        <select class="form-select" id="ticketCustomer" required>
+                        <label for="ticketCustomer">Customer</label>
+                        <select id="ticketCustomer" class="form-select">
                             <option value="">Select Customer</option>
+                            <option value="anonymous">No Customer (Anonymous)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Title</label>
-                        <input type="text" class="form-input" id="ticketTitle" required>
+                        <label for="ticketTitle">Subject *</label>
+                        <input type="text" id="ticketTitle" class="form-input" required>
                     </div>
-                <div class="form-group">
-                        <label class="form-label">Priority</label>
-                        <select class="form-select" id="ticketPriority" required>
-                            <option value="normal">Normal</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
-                            <option value="low">Low</option>
-                        </select>
-                </div>
-                <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-textarea" id="ticketDescription" required></textarea>
-                </div>
                     <div class="form-group">
-                        <label class="form-label">Staff Notes (Internal)</label>
-                        <textarea class="form-textarea" id="ticketNotes"></textarea>
+                        <label for="ticketDescription">Description *</label>
+                        <textarea id="ticketDescription" class="form-textarea" rows="4" required></textarea>
                     </div>
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ticketPriority">Priority</label>
+                            <select id="ticketPriority" class="form-select">
+                                <option value="low">Low</option>
+                                <option value="normal" selected>Normal</option>
+                                <option value="high">High</option>
+                                <option value="urgent">Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ticketNotes">Staff Notes</label>
+                            <textarea id="ticketNotes" class="form-textarea" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
                         <button type="button" class="btn secondary" onclick="closeModal('createTicketModal')">Cancel</button>
-                        <button type="submit" class="btn primary">Create Ticket</button>
+                        <button type="submit" class="btn primary">
+                            <i class="ph-light ph-plus"></i> Create Ticket
+                        </button>
                     </div>
-            </form>
-                </div>
-                </div>
-                </div>
-                
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Convert Contact to Ticket Modal -->
-    <div id="convertToTicketModal" class="modal">
+    <div id="convertToTicketModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Convert Contact Request to Ticket</h3>
+                <h3 class="modal-title">Convert Contact to Ticket</h3>
                 <button class="modal-close" onclick="closeModal('convertToTicketModal')">&times;</button>
-                    </div>
+            </div>
             <div class="modal-body">
                 <form id="convertToTicketForm">
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-input" id="convertName" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="convertName">Customer Name</label>
+                            <input type="text" id="convertName" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="convertEmail">Email</label>
+                            <input type="email" id="convertEmail" class="form-input" readonly>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input" id="convertEmail" required>
-                </div>
+                        <label for="convertSubject">Subject *</label>
+                        <input type="text" id="convertSubject" class="form-input" required>
+                    </div>
                     <div class="form-group">
-                        <label class="form-label">Subject</label>
-                        <input type="text" class="form-input" id="convertSubject" required>
-        </div>
+                        <label for="convertDescription">Description *</label>
+                        <textarea id="convertDescription" class="form-textarea" rows="4" required></textarea>
+                    </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-textarea" id="convertDescription" required></textarea>
-    </div>
-                    <div class="form-group">
-                        <label class="form-label">Priority</label>
-                        <select class="form-select" id="convertPriority" required>
-                            <option value="normal">Normal</option>
+                        <label for="convertPriority">Priority</label>
+                        <select id="convertPriority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
                             <option value="urgent">Urgent</option>
-                            <option value="low">Low</option>
                         </select>
-            </div>
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    </div>
+                    <div class="modal-actions">
                         <button type="button" class="btn secondary" onclick="closeModal('convertToTicketModal')">Cancel</button>
                         <button type="submit" class="btn primary">Convert & Create Ticket</button>
                     </div>
@@ -1482,8 +2837,8 @@
         </div>
     </div>
 
-    <!-- Convert Web Form to Ticket Modal -->
-    <div id="convertWebformToTicketModal" class="modal">
+    <!-- Convert Webform to Ticket Modal -->
+    <div id="convertWebformToTicketModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Convert Web Form to Ticket</h3>
@@ -1491,32 +2846,34 @@
             </div>
             <div class="modal-body">
                 <form id="convertWebformToTicketForm">
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-input" id="convertWebformName" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="convertWebformName">Name</label>
+                            <input type="text" id="convertWebformName" class="form-input" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="convertWebformEmail">Email</label>
+                            <input type="email" id="convertWebformEmail" class="form-input" readonly>
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-input" id="convertWebformEmail" required>
+                        <label for="convertWebformSubject">Subject *</label>
+                        <input type="text" id="convertWebformSubject" class="form-input" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Subject</label>
-                        <input type="text" class="form-input" id="convertWebformSubject" required>
+                        <label for="convertWebformDescription">Description *</label>
+                        <textarea id="convertWebformDescription" class="form-textarea" rows="4" required></textarea>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Description</label>
-                        <textarea class="form-textarea" id="convertWebformDescription" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Priority</label>
-                        <select class="form-select" id="convertWebformPriority" required>
-                            <option value="normal">Normal</option>
+                        <label for="convertWebformPriority">Priority</label>
+                        <select id="convertWebformPriority" class="form-select">
+                            <option value="low">Low</option>
+                            <option value="normal" selected>Normal</option>
                             <option value="high">High</option>
                             <option value="urgent">Urgent</option>
-                            <option value="low">Low</option>
                         </select>
                     </div>
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <div class="modal-actions">
                         <button type="button" class="btn secondary" onclick="closeModal('convertWebformToTicketModal')">Cancel</button>
                         <button type="submit" class="btn primary">Convert & Create Ticket</button>
                     </div>
@@ -1525,7 +2882,679 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <script>
+        // Wrap form event listeners in DOMContentLoaded to ensure elements exist
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add customer form submission
+            const addCustomerForm = document.getElementById('addCustomerForm');
+            if (addCustomerForm) {
+                addCustomerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = e.target.querySelector('.btn.primary');
+                    const originalText = submitBtn.textContent;
+                    
+                    try {
+                        // Disable form and show loading
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Adding Customer...';
+                        
+                        const formData = {
+                            first_name: document.getElementById('customerFirstName').value,
+                            last_name: document.getElementById('customerLastName').value,
+                            full_name: `${document.getElementById('customerFirstName').value} ${document.getElementById('customerLastName').value}`.trim(),
+                            email: document.getElementById('customerEmail').value,
+                            phone: document.getElementById('customerPhone').value,
+                            status: document.getElementById('customerStatus').value,
+                            company: document.getElementById('customerCompany').value,
+                            address: document.getElementById('customerAddress').value,
+                            city: document.getElementById('customerCity').value,
+                            state: document.getElementById('customerState').value,
+                            zip: document.getElementById('customerZip').value,
+                            country: document.getElementById('customerCountry').value,
+                            notes: document.getElementById('customerNotes').value
+                        };
+
+                        // Validate required fields
+                        if (!formData.first_name || !formData.last_name || !formData.email) {
+                            showNotification('Please fill in all required fields', 'error');
+                            return;
+                        }
+
+                        // Create customer in database
+                        const result = await AdminDB.customers.create(formData);
+                        
+                        if (result.success) {
+                            showNotification('Customer added successfully', 'success');
+                            closeModal('addCustomerModal');
+                            document.getElementById('addCustomerForm').reset();
+                            
+                            // Reload customers from database
+                            await loadCustomersFromDatabase();
+                        } else {
+                            throw new Error(result.error || 'Failed to create customer');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error adding customer:', error);
+                        showNotification('Error adding customer: ' + error.message, 'error');
+                    } finally {
+                        // Re-enable form
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                });
+            }
+
+            // Edit customer form submission
+            const editCustomerForm = document.getElementById('editCustomerForm');
+            if (editCustomerForm) {
+                editCustomerForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const customerId = document.getElementById('editCustomerId').value;
+                    const submitBtn = e.target.querySelector('.btn.primary');
+                    const originalText = submitBtn.textContent;
+                    
+                    try {
+                        // Disable form and show loading
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Updating Customer...';
+                        
+                        const formData = {
+                            first_name: document.getElementById('editCustomerFirstName').value,
+                            last_name: document.getElementById('editCustomerLastName').value,
+                            full_name: `${document.getElementById('editCustomerFirstName').value} ${document.getElementById('editCustomerLastName').value}`.trim(),
+                            email: document.getElementById('editCustomerEmail').value,
+                            phone: document.getElementById('editCustomerPhone').value,
+                            status: document.getElementById('editCustomerStatus').value,
+                            company: document.getElementById('editCustomerCompany').value,
+                            address: document.getElementById('editCustomerAddress').value,
+                            city: document.getElementById('editCustomerCity').value,
+                            state: document.getElementById('editCustomerState').value,
+                            zip: document.getElementById('editCustomerZip').value,
+                            country: document.getElementById('editCustomerCountry').value,
+                            notes: document.getElementById('editCustomerNotes').value
+                        };
+
+                        // Validate required fields
+                        if (!formData.first_name || !formData.last_name || !formData.email) {
+                            showNotification('Please fill in all required fields', 'error');
+                            return;
+                        }
+
+                        // Update customer in database
+                        const result = await AdminDB.customers.update(customerId, formData);
+                        
+                        if (result.success) {
+                            showNotification('Customer updated successfully', 'success');
+                            closeModal('editCustomerModal');
+                            
+                            // Reload customers from database
+                            await loadCustomersFromDatabase();
+                        } else {
+                            throw new Error(result.error || 'Failed to update customer');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error updating customer:', error);
+                        showNotification('Error updating customer: ' + error.message, 'error');
+                    } finally {
+                        // Re-enable form
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                });
+            }
+        });
+
+        // Delete customer function
+        async function deleteCustomer(customerId) {
+            console.log('deleteCustomer called with ID:', customerId, typeof customerId);
+            const customer = customers.find(c => c.id == customerId); // Use == for flexible comparison
+            if (!customer) {
+                console.error('Customer not found with ID:', customerId);
+                showNotification('Customer not found', 'error');
+                return;
+            }
+
+            console.log('Found customer to delete:', customer);
+            const customerName = customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'this customer';
+            
+            if (confirm(`Are you sure you want to delete ${customerName}?`)) {
+                try {
+                    // Delete customer from database
+                    const result = await AdminDB.customers.delete(customerId);
+                    
+                    if (result.success) {
+                        showNotification('Customer deleted successfully', 'success');
+                        // Reload customers from database
+                        await loadCustomersFromDatabase();
+                    } else {
+                        throw new Error(result.error || 'Failed to delete customer');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting customer:', error);
+                    showNotification('Error deleting customer: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // Search and filter functions
+        function applyFilters() {
+            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+            const statusFilter = document.getElementById('customerStatusFilter').value;
+            const sortBy = document.getElementById('customerSortBy').value;
+
+            // Filter customers
+            filteredCustomers = customers.filter(customer => {
+                const firstName = customer.first_name || customer.firstName || '';
+                const lastName = customer.last_name || customer.lastName || '';
+                const fullName = customer.full_name || `${firstName} ${lastName}`.trim();
+                
+                const matchesSearch = !searchTerm || 
+                    firstName.toLowerCase().includes(searchTerm) ||
+                    lastName.toLowerCase().includes(searchTerm) ||
+                    fullName.toLowerCase().includes(searchTerm) ||
+                    customer.email.toLowerCase().includes(searchTerm) ||
+                    (customer.company && customer.company.toLowerCase().includes(searchTerm)) ||
+                    (customer.phone && customer.phone.includes(searchTerm));
+
+                const matchesStatus = !statusFilter || customer.status === statusFilter;
+
+                return matchesSearch && matchesStatus;
+            });
+
+            // Sort customers
+            filteredCustomers.sort((a, b) => {
+                switch (sortBy) {
+                    case 'name':
+                        const nameA = a.full_name || `${a.first_name || ''} ${a.last_name || ''}`.trim();
+                        const nameB = b.full_name || `${b.first_name || ''} ${b.last_name || ''}`.trim();
+                        return nameA.localeCompare(nameB);
+                    case 'email':
+                        return a.email.localeCompare(b.email);
+                    case 'created_at':
+                        return new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt);
+                    case 'last_contact':
+                        return new Date(b.last_contact || b.lastContact || 0) - new Date(a.last_contact || a.lastContact || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderCustomers();
+        }
+
+        // Event listeners for search and filters
+        document.getElementById('customerSearch').addEventListener('input', applyFilters);
+        document.getElementById('customerStatusFilter').addEventListener('change', applyFilters);
+        document.getElementById('customerSortBy').addEventListener('change', applyFilters);
+
+        // Edit mode functions
+        function enterCustomersEditMode() {
+            customersEditMode = true;
+            document.getElementById('customersEditBtn').style.display = 'none';
+            document.getElementById('customersEditControls').style.display = 'flex';
+            document.getElementById('customersCheckboxHeader').style.display = 'block';
+            
+            // Show checkboxes in all rows
+            document.querySelectorAll('#customersCheckboxCell').forEach(cell => {
+                cell.style.display = 'block';
+            });
+            
+            // Update grid template to include checkbox column
+            const header = document.getElementById('customersTableHeader');
+            const rows = document.querySelectorAll('.customer-table-row');
+            
+            // Get current screen size and adjust accordingly
+            const screenWidth = window.innerWidth;
+            if (screenWidth <= 480) {
+                header.style.gridTemplateColumns = 'minmax(30px, 0.3fr) minmax(50px, 0.6fr) minmax(120px, 1.4fr) minmax(140px, 1.6fr) minmax(100px, 1fr) minmax(110px, 1.1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr)';
+                rows.forEach(row => {
+                    row.style.gridTemplateColumns = 'minmax(30px, 0.3fr) minmax(50px, 0.6fr) minmax(120px, 1.4fr) minmax(140px, 1.6fr) minmax(100px, 1fr) minmax(110px, 1.1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr)';
+                });
+            } else if (screenWidth <= 768) {
+                header.style.gridTemplateColumns = 'minmax(35px, 0.4fr) minmax(60px, 0.7fr) minmax(140px, 1.6fr) minmax(160px, 1.8fr) minmax(110px, 1.1fr) minmax(120px, 1.2fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr)';
+                rows.forEach(row => {
+                    row.style.gridTemplateColumns = 'minmax(35px, 0.4fr) minmax(60px, 0.7fr) minmax(140px, 1.6fr) minmax(160px, 1.8fr) minmax(110px, 1.1fr) minmax(120px, 1.2fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr)';
+                });
+            } else if (screenWidth <= 992) {
+                header.style.gridTemplateColumns = 'minmax(40px, 0.4fr) minmax(45px, 0.5fr) minmax(100px, 1.2fr) minmax(120px, 1.4fr) minmax(90px, 0.9fr) minmax(100px, 1fr) minmax(70px, 0.7fr) minmax(70px, 0.7fr)';
+                rows.forEach(row => {
+                    row.style.gridTemplateColumns = 'minmax(40px, 0.4fr) minmax(45px, 0.5fr) minmax(100px, 1.2fr) minmax(120px, 1.4fr) minmax(90px, 0.9fr) minmax(100px, 1fr) minmax(70px, 0.7fr) minmax(70px, 0.7fr)';
+                });
+            } else if (screenWidth <= 1200) {
+                header.style.gridTemplateColumns = 'minmax(45px, 0.5fr) minmax(50px, 0.6fr) minmax(120px, 1.4fr) minmax(140px, 1.6fr) minmax(100px, 1fr) minmax(110px, 1.1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr)';
+                rows.forEach(row => {
+                    row.style.gridTemplateColumns = 'minmax(45px, 0.5fr) minmax(50px, 0.6fr) minmax(120px, 1.4fr) minmax(140px, 1.6fr) minmax(100px, 1fr) minmax(110px, 1.1fr) minmax(80px, 0.8fr) minmax(80px, 0.8fr)';
+                });
+            } else {
+                header.style.gridTemplateColumns = 'minmax(50px, 0.5fr) minmax(70px, 0.8fr) minmax(150px, 1.8fr) minmax(180px, 2fr) minmax(120px, 1.2fr) minmax(130px, 1.3fr) minmax(100px, 1fr) minmax(100px, 1fr)';
+                rows.forEach(row => {
+                    row.style.gridTemplateColumns = 'minmax(50px, 0.5fr) minmax(70px, 0.8fr) minmax(150px, 1.8fr) minmax(180px, 2fr) minmax(120px, 1.2fr) minmax(130px, 1.3fr) minmax(100px, 1fr) minmax(100px, 1fr)';
+                });
+            }
+        }
+
+        function exitCustomersEditMode() {
+            customersEditMode = false;
+            document.getElementById('customersEditBtn').style.display = 'flex';
+            document.getElementById('customersEditControls').style.display = 'none';
+            document.getElementById('customersCheckboxHeader').style.display = 'none';
+            
+            // Hide checkboxes in all rows
+            document.querySelectorAll('#customersCheckboxCell').forEach(cell => {
+                cell.style.display = 'none';
+            });
+            
+            // Reset grid template to original responsive state
+            const header = document.getElementById('customersTableHeader');
+            const rows = document.querySelectorAll('.customer-table-row');
+            
+            header.style.gridTemplateColumns = '';
+            rows.forEach(row => {
+                row.style.gridTemplateColumns = '';
+            });
+            
+            // Uncheck all checkboxes
+            document.querySelectorAll('.customer-checkbox').forEach(cb => cb.checked = false);
+            document.getElementById('selectAllCustomers').checked = false;
+        }
+
+        function toggleSelectAll(checkboxClass, isChecked) {
+            document.querySelectorAll(`.${checkboxClass}`).forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+        }
+
+        async function deleteSelectedCustomers() {
+            const selectedIds = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
+                .map(cb => cb.value); // Keep as string since database IDs might be UUIDs
+            
+            if (selectedIds.length === 0) {
+                showNotification('Please select customers to delete', 'error');
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete ${selectedIds.length} customer(s)?`)) {
+                try {
+                    // Delete customers from database
+                    let successCount = 0;
+                    let errorCount = 0;
+                    
+                    for (const customerId of selectedIds) {
+                        try {
+                            const result = await AdminDB.customers.delete(customerId);
+                            if (result.success) {
+                                successCount++;
+                            } else {
+                                errorCount++;
+                                console.error('Failed to delete customer:', customerId, result.error);
+                            }
+                        } catch (error) {
+                            errorCount++;
+                            console.error('Error deleting customer:', customerId, error);
+                        }
+                    }
+                    
+                    if (successCount > 0) {
+                        showNotification(`${successCount} customer(s) deleted successfully`, 'success');
+                    }
+                    if (errorCount > 0) {
+                        showNotification(`${errorCount} customer(s) failed to delete`, 'error');
+                    }
+                    
+                    // Reload customers from database
+                    await loadCustomersFromDatabase();
+                    exitCustomersEditMode();
+                    
+                } catch (error) {
+                    console.error('Error in bulk delete:', error);
+                    showNotification('Error deleting customers: ' + error.message, 'error');
+                }
+            }
+        }
+
+        function exportSelectedCustomers() {
+            const selectedIds = Array.from(document.querySelectorAll('.customer-checkbox:checked'))
+                .map(cb => cb.value);
+            
+            let customersToExport;
+            if (selectedIds.length === 0) {
+                customersToExport = filteredCustomers;
+            } else {
+                customersToExport = customers.filter(c => selectedIds.includes(c.id));
+            }
+
+            if (customersToExport.length === 0) {
+                showNotification('No customers to export', 'error');
+                return;
+            }
+
+            // Create CSV content
+            const headers = ['First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Status', 'Address', 'City', 'State', 'ZIP', 'Country', 'Notes', 'Last Contact', 'Created At'];
+            const csvContent = [
+                headers.join(','),
+                ...customersToExport.map(customer => [
+                    customer.firstName,
+                    customer.lastName,
+                    customer.email,
+                    customer.phone || '',
+                    customer.company || '',
+                    customer.status,
+                    customer.address || '',
+                    customer.city || '',
+                    customer.state || '',
+                    customer.zip || '',
+                    customer.country || '',
+                    (customer.notes || '').replace(/,/g, ';'),
+                    customer.lastContact || '',
+                    customer.createdAt || ''
+                ].map(field => `"${field}"`).join(','))
+            ].join('\n');
+
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `customers_export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification(`${customersToExport.length} customer(s) exported successfully`, 'success');
+        }
+
+        // Create ticket for customer function
+        function createTicketForCustomer(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (customer) {
+                // Close customer detail modal
+                closeModal('customerDetailModal');
+                
+                // Open create ticket modal with customer pre-selected
+                showCreateTicketModal();
+                
+                // Pre-populate customer in ticket form
+                const customerSelect = document.getElementById('ticketCustomer');
+                if (customerSelect) {
+                    // Add option if it doesn't exist
+                    const optionExists = Array.from(customerSelect.options).some(option => option.value == customerId);
+                    if (!optionExists) {
+                        const option = new Option(`${customer.firstName} ${customer.lastName} (${customer.email})`, customerId);
+                        customerSelect.add(option);
+                    }
+                    customerSelect.value = customerId;
+                }
+                
+                showNotification(`Creating ticket for ${customer.firstName} ${customer.lastName}`, 'info');
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'info') {
+            // Remove existing notifications
+            document.querySelectorAll('.notification').forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="ph-light ${type === 'success' ? 'ph-check-circle' : type === 'error' ? 'ph-x-circle' : 'ph-info'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            notification.style.display = 'block';
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 5000);
+        }
+
+        // Initialize customers when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize customers after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeCustomers();
+            }, 100);
+        });
+
+        // Missing functions that are referenced by the JavaScript
+        
+        // Customers data variables
+        let customers = [];
+        let filteredCustomers = [];
+        let customersEditMode = false;
+
+        // Close modal function
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Show modal functions
+        function showCreateTicketModal() {
+            const modal = document.getElementById('createTicketModal');
+            if (modal) {
+                modal.style.display = 'block';
+                loadCustomersDropdown();
+            }
+        }
+
+        function showAddCustomerModal() {
+            const modal = document.getElementById('addCustomerModal');
+            if (modal) {
+                modal.style.display = 'block';
+            }
+        }
+
+        // Load customers from database function
+        async function loadCustomersFromDatabase() {
+            try {
+                const result = await AdminDB.customers.getAll();
+                if (result.success) {
+                    customers = result.data || [];
+                    filteredCustomers = [...customers];
+                    renderCustomers();
+                    updateCustomerCount();
+                } else {
+                    console.error('Failed to load customers:', result.error);
+                    showNotification('Error loading customers: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading customers:', error);
+                showNotification('Error loading customers: ' + error.message, 'error');
+            }
+        }
+
+        // Initialize customers function
+        function initializeCustomers() {
+            console.log('Initializing customers...');
+            loadCustomersFromDatabase();
+        }
+
+        // Load customers dropdown for create ticket
+        async function loadCustomersDropdown() {
+            try {
+                const result = await AdminDB.customers.getAll();
+                if (result.success) {
+                    const select = document.getElementById('ticketCustomer');
+                    if (select) {
+                        select.innerHTML = '<option value="">Select Customer</option>' +
+                            '<option value="anonymous">No Customer (Anonymous)</option>' +
+                            result.data.map(customer => 
+                                `<option value="${customer.id}">${customer.full_name || customer.first_name + ' ' + customer.last_name} (${customer.email})</option>`
+                            ).join('');
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading customers dropdown:', error);
+            }
+        }
+
+        // Render customers function
+        function renderCustomers() {
+            const tableData = document.getElementById('customersTableData');
+            if (!tableData) return;
+
+            if (filteredCustomers.length === 0) {
+                tableData.innerHTML = `
+                    <div class="customers-empty-state">
+                        <i class="ph-light ph-users"></i>
+                        <h3>No Customers Found</h3>
+                        <p>Add your first customer to get started with customer management.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const customersHTML = filteredCustomers.map(customer => {
+                const fullName = customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim();
+                const lastContact = customer.last_contact || customer.updated_at || customer.created_at;
+                
+                return `
+                    <div class="customer-table-row">
+                        ${customersEditMode ? `<div id="customersCheckboxCell" class="table-cell"><input type="checkbox" class="customer-checkbox" value="${customer.id}" onclick="updateSelectAllState('customer-checkbox','selectAllCustomers')"></div>` : ''}
+                        <div class="table-cell">
+                            <span class="customer-status-badge customer-status-${customer.status || 'active'}">${(customer.status || 'active').charAt(0).toUpperCase() + (customer.status || 'active').slice(1)}</span>
+                        </div>
+                        <div class="table-cell customer-info-cell">
+                            <div class="customer-avatar">${fullName.charAt(0).toUpperCase()}</div>
+                            <div class="customer-details">
+                                <div class="customer-name-primary">${escapeHtml(fullName)}</div>
+                                <div class="customer-email-secondary">${escapeHtml(customer.email)}</div>
+                            </div>
+                        </div>
+                        <div class="table-cell customer-email">${escapeHtml(customer.email)}</div>
+                        <div class="table-cell customer-phone">${escapeHtml(customer.phone || 'N/A')}</div>
+                        <div class="table-cell customer-company">${escapeHtml(customer.company || 'N/A')}</div>
+                        <div class="table-cell customer-last-contact">${lastContact ? formatDate(lastContact) : 'Never'}</div>
+                        <div class="table-cell customer-actions">
+                            ${!customersEditMode ? `
+                                <button class="customer-action-btn edit" onclick="editCustomer('${customer.id}')" title="Edit Customer">
+                                    <i class="ph-light ph-pencil"></i>
+                                </button>
+                                <button class="customer-action-btn delete" onclick="deleteCustomer('${customer.id}')" title="Delete Customer">
+                                    <i class="ph-light ph-trash"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            tableData.innerHTML = customersHTML;
+        }
+
+        // Edit customer function
+        function editCustomer(customerId) {
+            const customer = customers.find(c => c.id === customerId);
+            if (!customer) {
+                showNotification('Customer not found', 'error');
+                return;
+            }
+
+            // Pre-fill the edit form
+            document.getElementById('editCustomerId').value = customer.id;
+            document.getElementById('editCustomerFirstName').value = customer.first_name || '';
+            document.getElementById('editCustomerLastName').value = customer.last_name || '';
+            document.getElementById('editCustomerEmail').value = customer.email || '';
+            document.getElementById('editCustomerPhone').value = customer.phone || '';
+            document.getElementById('editCustomerStatus').value = customer.status || 'active';
+            document.getElementById('editCustomerCompany').value = customer.company || '';
+            document.getElementById('editCustomerAddress').value = customer.address || '';
+            document.getElementById('editCustomerCity').value = customer.city || '';
+            document.getElementById('editCustomerState').value = customer.state || '';
+            document.getElementById('editCustomerZip').value = customer.zip || '';
+            document.getElementById('editCustomerCountry').value = customer.country || '';
+            document.getElementById('editCustomerNotes').value = customer.notes || '';
+
+            // Show edit modal
+            document.getElementById('editCustomerModal').style.display = 'block';
+        }
+
+        // Update customer count function
+        function updateCustomerCount() {
+            const countElement = document.getElementById('customerCount');
+            if (countElement) {
+                const total = customers.length;
+                const filtered = filteredCustomers.length;
+                countElement.textContent = filtered === total ? 
+                    `${total} customer${total !== 1 ? 's' : ''}` :
+                    `${filtered} of ${total} customers`;
+            }
+        }
+
+        // Update select all state function
+        function updateSelectAllState(className, selectAllId) {
+            const all = document.querySelectorAll('.' + className);
+            const checked = document.querySelectorAll('.' + className + ':checked');
+            const selectAll = document.getElementById(selectAllId);
+            if (selectAll) selectAll.checked = all.length === checked.length;
+        }
+
+        // Escape HTML function
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Format date function
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        // Delete customer function
+        async function deleteCustomer(customerId) {
+            console.log('deleteCustomer called with ID:', customerId, typeof customerId);
+            const customer = customers.find(c => c.id == customerId); // Use == for flexible comparison
+            if (!customer) {
+                console.error('Customer not found with ID:', customerId);
+                showNotification('Customer not found', 'error');
+                return;
+            }
+
+            console.log('Found customer to delete:', customer);
+            const customerName = customer.full_name || `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'this customer';
+            
+            if (confirm(`Are you sure you want to delete ${customerName}?`)) {
+                try {
+                    // Delete customer from database
+                    const result = await AdminDB.customers.delete(customerId);
+                    
+                    if (result.success) {
+                        showNotification('Customer deleted successfully', 'success');
+                        // Reload customers from database
+                        await loadCustomersFromDatabase();
+                    } else {
+                        throw new Error(result.error || 'Failed to delete customer');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting customer:', error);
+                    showNotification('Error deleting customer: ' + error.message, 'error');
+                }
+            }
+        }
+    </script>
+    
+    <!-- External Scripts -->
     <script src="js/supabase-client.js"></script>
     <script src="js/admin-auth.js"></script>
     <script src="js/admin-dashboard.js"></script>
