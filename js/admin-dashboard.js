@@ -833,7 +833,7 @@ async function handleReplySubmit(e) {
         // Create message data
         const messageData = {
             ticket_id: currentTicketId,
-            staff_id: currentAdmin.admin_id,
+            staff_id: currentAdmin.id,
             message: message,
             is_from_staff: true,
             is_internal: replyMode === 'internal'
