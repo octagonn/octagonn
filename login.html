@@ -184,7 +184,7 @@
                         throw new Error('Database connection not available. Please refresh the page.');
                     }
                     
-                    const result = await auth.signIn(email, password);
+                    const result = await SpyderNetDB.auth.signIn(email, password);
                     
                     if (result.success) {
                         showMessage('Successfully signed in! Redirecting...', 'success');
@@ -221,7 +221,7 @@
                         throw new Error('Database connection not available. Please refresh the page.');
                     }
                     
-                    const result = await auth.signUp(email, password, name);
+                    const result = await SpyderNetDB.auth.signUp(email, password, name);
                     
                     if (result.success) {
                         showMessage('Account created successfully! Please check your email to confirm your account.', 'success');
@@ -246,7 +246,7 @@
             setTimeout(async () => {
                 try {
                     if (supabase) {
-                        const isLoggedIn = await auth.isLoggedIn();
+                        const isLoggedIn = await SpyderNetDB.auth.isLoggedIn();
                         if (isLoggedIn) {
                             window.location.href = 'customer-portal.html';
                         }
