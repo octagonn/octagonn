@@ -394,16 +394,22 @@ async function handleCreateTicket(e) {
         const result = await db.contactSubmissions.create(formData);
         
         if (result.success) {
-            showMessage('Your request has been submitted successfully! Our team will review it and create a support ticket for you.', 'success', messageDiv);
-            
-            // Reset form
+            // Clear the form
             e.target.reset();
             document.getElementById('file-list').innerHTML = '';
             
-            // Pre-fill customer info again
-            document.getElementById('ticketName').value = currentCustomer.full_name || '';
-            document.getElementById('ticketEmail').value = currentCustomer.email || '';
+            // Show success message on home page
+            const homeMessage = document.getElementById('home-section-message');
+            homeMessage.innerHTML = `<div class="success">Your request has been submitted successfully! Our team will review it and create a support ticket for you.</div>`;
+
+            // Redirect to home page
+            showSection('home');
             
+            // Clear the message after 5 seconds
+            setTimeout(() => {
+                homeMessage.innerHTML = '';
+            }, 5000);
+
             // Refresh dashboard data
             setTimeout(() => {
                 loadDashboardData();
