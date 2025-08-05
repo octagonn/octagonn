@@ -736,6 +736,11 @@ async function openTicketDetail(ticketId) {
         setTimeout(() => {
             const editBtn = document.getElementById('editTicketBtn');
             if (editBtn) editBtn.onclick = () => enableTicketEdit(ticketId);
+            
+            const replyForm = document.getElementById('replyForm');
+            if (replyForm) {
+                replyForm.addEventListener('submit', handleReplySubmit);
+            }
         }, 0);
         
     } catch (error) {
@@ -794,6 +799,7 @@ function switchReplyMode(mode) {
  */
 async function handleReplySubmit(e) {
     e.preventDefault();
+    console.log('handleReplySubmit called');
     
     if (!currentTicketId) return;
     

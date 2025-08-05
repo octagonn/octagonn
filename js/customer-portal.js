@@ -486,7 +486,7 @@ function displayTickets(tickets) {
     
     ticketsList.innerHTML = tickets.map(ticket => `
         <div class="ticket-row" onclick="openTicketDetail('${ticket.id}')">
-            <div class="ticket-number">#${ticket.id.substring(0, 8)}</div>
+            <div class="ticket-number">#${ticket.ticket_number}</div>
             <div class="ticket-subject">${escapeHtml(ticket.title)}</div>
             <div>
                 <span class="status-badge ${getStatusClass(ticket.status)}">
@@ -740,9 +740,9 @@ function getStatusClass(status) {
 // Format status for display
 function formatStatus(status) {
     const statusMap = {
-        'new': 'Open',
+        'new': 'New',
         'in_progress': 'In Progress',
-        'completed': 'Resolved', 
+        'completed': 'Completed', 
         'cancelled': 'Cancelled'
     };
     return statusMap[status] || status;
