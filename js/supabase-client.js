@@ -29,6 +29,9 @@ function initializeSupabase() {
         
         console.log('Supabase client initialized successfully:', supabase);
         
+        // Dispatch a custom event to signal that Supabase is ready
+        document.dispatchEvent(new Event('supabase-ready'));
+        
         // Test connection
         testConnection();
         
