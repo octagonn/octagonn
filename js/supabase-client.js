@@ -1,7 +1,6 @@
 // Supabase Client Configuration
-// Load credentials from the config file
-const SUPABASE_URL = SUPABASE_CONFIG.URL;
-const SUPABASE_ANON_KEY = SUPABASE_CONFIG.ANON_KEY;
+const SUPABASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40'
 
 // Initialize Supabase client with error checking
 let supabase;
@@ -112,7 +111,8 @@ const auth = {
     // Sign in existing customer
     async signIn(email, password) {
         try {
-            console.log('CLIENT: Attempting sign in for:', email);
+            console.log('Attempting sign in for:', email);
+            
             if (!supabase) {
                 throw new Error('Supabase client not initialized');
             }
@@ -120,32 +120,15 @@ const auth = {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
-            });
+            })
             
-            // VERBOSE LOGGING
-            console.log('CLIENT: Supabase response received.');
-            console.log('CLIENT: Data object:', data);
-            console.log('CLIENT: Error object:', error);
+            console.log('Sign in response:', { data, error });
             
-            if (error) {
-                // Throw the error to be caught by the catch block
-                throw error;
-            }
-
-            if (!data || !data.user) {
-                // This case handles unexpected successful responses without a user
-                throw new Error('Authentication successful, but no user data returned.');
-            }
-            
-            console.log('CLIENT: Sign in successful. Returning success.');
-            return { success: true, data: data };
-
+            if (error) throw error
+            return { success: true, data }
         } catch (error) {
-            // VERBOSE LOGGING
-            console.error('CLIENT: Sign in catch block triggered.');
-            console.error('CLIENT: Caught error details:', error);
-            const errorMessage = (error && error.message) ? error.message : 'An unknown authentication error occurred.';
-            return { success: false, error: errorMessage };
+            console.error('Sign in error:', error)
+            return { success: false, error: error.message }
         }
     },
 
