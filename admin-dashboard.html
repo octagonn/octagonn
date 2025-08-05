@@ -673,6 +673,23 @@
             border-left-color: rgba(255, 255, 255, 0.3);
         }
 
+        .message.internal {
+            background: rgba(255, 229, 180, 0.1); /* A soft yellow/gold */
+            border-left-color: #ffc107;
+        }
+        
+        .message.internal::before {
+            content: 'Internal Note';
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #ffc107;
+            background: rgba(255, 193, 7, 0.18);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.75rem;
+            display: inline-block;
+        }
+
         .message-header {
             display: flex;
             justify-content: space-between;

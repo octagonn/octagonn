@@ -712,7 +712,7 @@ async function openTicketDetail(ticketId) {
                     ${messages.length === 0 ? 
                         '<p style="color: rgba(255, 255, 255, 0.6); text-align: center; padding: 2rem;">No messages yet</p>' :
                         messages.map(message => `
-                            <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
+                            <div class="message ${message.is_from_staff ? 'staff' : 'customer'} ${message.is_internal ? 'internal' : ''}">
                     <div class="message-header">
                         <span class="message-author">
                                         ${message.is_from_staff ? 
