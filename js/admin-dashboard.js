@@ -228,11 +228,26 @@ function setupModalHandlers() {
  * Setup reply tabs functionality
  */
 function setupReplyTabs() {
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('reply-tab')) {
-            switchReplyMode(e.target.dataset.mode);
-        }
-    });
+    const publicTab = document.querySelector('.reply-tab[data-mode="public"]');
+    const internalTab = document.querySelector('.reply-tab[data-mode="internal"]');
+    const replyForm = document.getElementById('replyForm');
+
+    if (publicTab) {
+        publicTab.addEventListener('click', () => switchReplyMode('public'));
+    }
+
+    if (internalTab) {
+        internalTab.addEventListener('click', () => switchReplyMode('internal'));
+    }
+    
+    if (replyForm) {
+        // Remove existing listener to prevent duplicates
+        replyForm.removeEventListener('submit', handleReplySubmit);
+        replyForm.addEventListener('submit', handleReplySubmit);
+    }
+
+    // Set initial state
+    switchReplyMode('public');
 }
 
 /**
@@ -719,7 +734,7 @@ async function openTicketDetail(ticketId) {
                     <button class="reply-tab active" data-mode="public">Public Reply</button>
                     <button class="reply-tab" data-mode="internal">Internal Note</button>
                 </div>
-                <form id="replyForm" onsubmit="handleReplySubmit(event)">
+                <form id="replyForm">
                     <textarea class="reply-textarea" id="replyMessage" placeholder="Type your ${replyMode} message here..." required></textarea>
                     <div class="reply-actions">
                         <button type="submit" class="btn primary">
@@ -732,15 +747,13 @@ async function openTicketDetail(ticketId) {
                 </div>
             `;
         
-        // After rendering, add event listener:
+        // After rendering, add event listeners:
         setTimeout(() => {
             const editBtn = document.getElementById('editTicketBtn');
             if (editBtn) editBtn.onclick = () => enableTicketEdit(ticketId);
             
-            const replyForm = document.getElementById('replyForm');
-            if (replyForm) {
-                replyForm.addEventListener('submit', handleReplySubmit);
-            }
+            // Setup reply functionality
+            setupReplyTabs();
         }, 0);
         
     } catch (error) {
