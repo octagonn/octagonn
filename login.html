@@ -170,6 +170,7 @@
             // Sign In
             signInForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                console.log('UI: Sign in form submitted.');
                 
                 const email = document.getElementById('loginEmail').value;
                 const password = document.getElementById('loginPassword').value;
@@ -179,25 +180,29 @@
                 button.innerHTML = '<i class="ph-light ph-spinner"></i> Signing In...';
 
                 try {
-                    // Wait for Supabase to be initialized
-                    if (!supabase) {
-                        throw new Error('Database connection not available. Please refresh the page.');
-                    }
-                    
+                    console.log('UI: Calling SpyderNetDB.auth.signIn...');
                     const result = await SpyderNetDB.auth.signIn(email, password);
                     
-                    if (result.success) {
+                    // VERBOSE LOGGING
+                    console.log('UI: Received result from signIn:', result);
+
+                    if (result && result.success) {
+                        console.log('UI: Login success branch. Redirecting...');
                         showMessage('Successfully signed in! Redirecting...', 'success');
                         setTimeout(() => {
                             window.location.href = 'customer-portal.html';
                         }, 1500);
                     } else {
-                        showMessage(result.error, 'error');
+                        // Ensure we always have a message to show
+                        const errorMessage = result ? result.error : 'An unknown error occurred.';
+                        console.error('UI: Login failure branch. Error:', errorMessage);
+                        showMessage(errorMessage, 'error');
                     }
                 } catch (error) {
-                    console.error('Sign in error:', error);
-                    showMessage(error.message || 'An error occurred. Please try again.', 'error');
+                    console.error('UI: Sign in "catch" block error:', error);
+                    showMessage(error.message || 'A critical error occurred. Please try again.', 'error');
                 } finally {
+                    console.log('UI: "finally" block reached. Re-enabling button.');
                     button.disabled = false;
                     button.innerHTML = '<i class="ph-light ph-sign-in"></i> Sign In';
                 }

@@ -112,8 +112,7 @@ const auth = {
     // Sign in existing customer
     async signIn(email, password) {
         try {
-            console.log('Attempting sign in for:', email);
-            
+            console.log('CLIENT: Attempting sign in for:', email);
             if (!supabase) {
                 throw new Error('Supabase client not initialized');
             }
@@ -121,15 +120,32 @@ const auth = {
             const { data, error } = await supabase.auth.signInWithPassword({
                 email: email,
                 password: password
-            })
+            });
             
-            console.log('Sign in response:', { data, error });
+            // VERBOSE LOGGING
+            console.log('CLIENT: Supabase response received.');
+            console.log('CLIENT: Data object:', data);
+            console.log('CLIENT: Error object:', error);
             
-            if (error) throw error
-            return { success: true, data }
+            if (error) {
+                // Throw the error to be caught by the catch block
+                throw error;
+            }
+
+            if (!data || !data.user) {
+                // This case handles unexpected successful responses without a user
+                throw new Error('Authentication successful, but no user data returned.');
+            }
+            
+            console.log('CLIENT: Sign in successful. Returning success.');
+            return { success: true, data: data };
+
         } catch (error) {
-            console.error('Sign in error:', error)
-            return { success: false, error: error.message }
+            // VERBOSE LOGGING
+            console.error('CLIENT: Sign in catch block triggered.');
+            console.error('CLIENT: Caught error details:', error);
+            const errorMessage = (error && error.message) ? error.message : 'An unknown authentication error occurred.';
+            return { success: false, error: errorMessage };
         }
     },
 
