@@ -602,6 +602,10 @@
             </a>
             
             <nav class="portal-nav">
+                <a href="index.html" class="nav-link">
+                    <i class="ph-light ph-arrow-left"></i>
+                    Back to Main Site
+                </a>
                 <a href="#" class="nav-link active" onclick="showSection('home')" data-section="home">
                     <i class="ph-light ph-house"></i>
                     Home
@@ -636,8 +640,11 @@
                     <p class="welcome-subtitle">Get help when you need it, track your requests, and stay connected with our support team.</p>
                     <button class="create-ticket-cta" onclick="showSection('create-ticket')">
                         <i class="ph-light ph-plus-circle"></i>
-                        Create New Ticket
+                        Create New Request
                     </button>
+                    <p class="welcome-subtitle" style="font-size: 0.9rem; margin-top: 1rem;">
+                        Once a request is created, it will be reviewed by our team and converted to a ticket, which can be accessed through the "My Tickets" tab.
+                    </p>
                 </div>
 
                 <div class="quick-stats">
@@ -756,6 +763,7 @@
     </div>
 
     <!-- Scripts -->
+        <script src="js/config.js"></script>
     <script src="js/supabase-client.js"></script>
     <script src="js/customer-portal.js"></script>
 </body>

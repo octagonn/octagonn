@@ -1,6 +1,7 @@
 // Supabase Client Configuration
-const SUPABASE_URL = 'https://zlskmowbxeurzoisqlkp.supabase.co'
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpsc2ttb3dieGV1cnpvaXNxbGtwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg5Nzg2NjksImV4cCI6MjA2NDU1NDY2OX0.55NUR0EMGGzM43XKTFNcFLVJRK4zQwkg-h7jC7w-N40'
+// Load credentials from the config file
+const SUPABASE_URL = SUPABASE_CONFIG.URL;
+const SUPABASE_ANON_KEY = SUPABASE_CONFIG.ANON_KEY;
 
 // Initialize Supabase client with error checking
 let supabase;
