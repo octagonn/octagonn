@@ -625,6 +625,44 @@
             line-height: 1.5;
         }
 
+        .attachments-list {
+            margin-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 1rem;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            background-color: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+
+        .attachment-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .attachment-item i {
+            font-size: 1.5rem;
+            color: #7877c6;
+        }
+
+        .attachment-item span {
+            font-weight: 500;
+        }
+
+        .attachment-item small {
+            color: rgba(255, 255, 255, 0.5);
+            margin-left: auto;
+        }
+
         .reply-form {
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             padding-top: 1.5rem;
@@ -890,6 +928,18 @@
                         <div class="form-group">
                             <label class="form-label">Your Reply</label>
                             <textarea id="replyMessage" class="form-textarea" placeholder="Type your message here..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Attachments (Optional)</label>
+                            <div class="file-upload-dropzone" id="replyFileDropzone">
+                                <input type="file" id="replyAttachments" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" class="file-input">
+                                <div class="dropzone-text">
+                                    <i class="ph-light ph-cloud-arrow-up"></i>
+                                    <p>Drag & drop files here, or <span>browse</span></p>
+                                    <small>Max file size: 10MB</small>
+                                </div>
+                            </div>
+                            <div id="reply-file-list-container" class="file-list-container"></div>
                         </div>
                         <button type="submit" class="submit-btn">
                             <i class="ph-light ph-paper-plane-right"></i>

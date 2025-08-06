@@ -166,7 +166,8 @@ function setupEventListeners() {
     setupSearchListeners();
 
     // File upload
-    setupFileUpload();
+    setupFileUpload('ticketAttachments', 'fileDropzone', 'file-list-container', 'createTicketFiles');
+    setupFileUpload('replyAttachments', 'replyFileDropzone', 'reply-file-list-container', 'replyTicketFiles');
 }
 
 /**
@@ -233,15 +234,30 @@ function setupSearchListeners() {
 /**
  * Setup file upload functionality with dropzone
  */
-function setupFileUpload() {
-    const fileInput = document.getElementById('ticketAttachments');
-    const dropzone = document.getElementById('fileDropzone');
-    let selectedFiles = [];
+// Globally accessible object to store file selections for different forms
+window.fileSelections = {
+    createTicketFiles: [],
+    replyTicketFiles: []
+};
+
+/**
+ * Setup file upload functionality with dropzone
+ */
+function setupFileUpload(fileInputId, dropzoneId, fileListContainerId, selectionKey) {
+    const fileInput = document.getElementById(fileInputId);
+    const dropzone = document.getElementById(dropzoneId);
+    
+    // Ensure the selection array exists
+    if (!window.fileSelections[selectionKey]) {
+        window.fileSelections[selectionKey] = [];
+    }
+    const selectedFiles = window.fileSelections[selectionKey];
 
     if (!fileInput || !dropzone) return;
 
     const renderFileList = () => {
-        const fileListContainer = document.getElementById('file-list-container');
+        const fileListContainer = document.getElementById(fileListContainerId);
+        if (!fileListContainer) return;
         fileListContainer.innerHTML = '';
         selectedFiles.forEach((file, index) => {
             const fileItem = document.createElement('div');
@@ -287,16 +303,16 @@ function setupFileUpload() {
     });
     fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
-    document.getElementById('file-list-container').addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-file-btn')) {
-            const index = parseInt(e.target.dataset.index, 10);
-            selectedFiles.splice(index, 1);
-            renderFileList();
-        }
-    });
-
-    // Make selectedFiles accessible to the form handler
-    window.getSelectedFiles = () => selectedFiles;
+    const fileListContainer = document.getElementById(fileListContainerId);
+    if (fileListContainer) {
+        fileListContainer.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-file-btn')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                selectedFiles.splice(index, 1);
+                renderFileList();
+            }
+        });
+    }
 }
 
 /**
@@ -401,7 +417,7 @@ async function handleCreateTicket(e) {
     
     const submitBtn = e.target.querySelector('.submit-btn');
     const messageDiv = document.getElementById('create-ticket-message');
-    const selectedFiles = window.getSelectedFiles ? window.getSelectedFiles() : [];
+    const selectedFiles = window.fileSelections.createTicketFiles || [];
     
     try {
         submitBtn.disabled = true;
@@ -455,7 +471,7 @@ async function handleCreateTicket(e) {
         // --- Success ---
         e.target.reset();
         document.getElementById('file-list-container').innerHTML = '';
-        if(window.getSelectedFiles) window.getSelectedFiles().length = 0; // Clear the files array
+        window.fileSelections.createTicketFiles = []; // Clear the files array
         
         const homeMessage = document.getElementById('home-section-message');
         homeMessage.innerHTML = `<div class="success">Your request has been submitted successfully! Our team will review it shortly.</div>`;
@@ -620,7 +636,7 @@ async function openTicketDetail(ticketId) {
         const ticket = ticketResult.data;
         
         // Update modal title
-        titleElement.textContent = `#${ticket.id.substring(0, 8)} - ${ticket.title}`;
+        titleElement.textContent = `#${ticket.ticket_number} - ${ticket.title}`;
         
         // Display ticket details
         detailsElement.innerHTML = `
@@ -668,12 +684,14 @@ async function loadTicketConversation(ticketId) {
     const conversationElement = document.getElementById('ticketConversation');
     
     try {
-        const result = await db.messages.getByTicketId(ticketId);
-        
-        if (result.success) {
-            const messages = result.data || [];
+        const messagesResult = await db.messages.getByTicketId(ticketId);
+        const attachmentsResult = await db.attachments.getByTicketId(ticketId);
+
+        if (messagesResult.success && attachmentsResult.success) {
+            const messages = messagesResult.data || [];
+            const attachments = attachmentsResult.data || [];
             
-            if (messages.length === 0) {
+            if (messages.length === 0 && attachments.filter(a => !a.message_id).length === 0) {
                 conversationElement.innerHTML = `
                     <div style="text-align: center; padding: 2rem; color: rgba(255, 255, 255, 0.6);">
                         <i class="ph-light ph-chat-circle" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
@@ -683,26 +701,69 @@ async function loadTicketConversation(ticketId) {
                 return;
             }
             
-            conversationElement.innerHTML = messages.map(message => `
-                <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
-                <div class="message-header">
-                        <span class="message-author">
-                            ${message.is_from_staff ? 
-                                (message.staff_name || 'Support Team') : 
-                                (currentCustomer.full_name || 'You')
-                            }
-                        </span>
-                        <span class="message-time">${formatDateTime(message.created_at)}</span>
+            let conversationHTML = '';
+
+            // First, display any attachments not linked to a specific message (e.g., initial ticket attachments)
+            const initialAttachments = attachments.filter(a => !a.message_id);
+            if (initialAttachments.length > 0) {
+                conversationHTML += `
+                    <div class="message customer">
+                        <div class="message-header">
+                            <span class="message-author">${currentCustomer.full_name || 'You'}</span>
+                            <span class="message-time">Initial Attachments</span>
+                        </div>
+                        <div class="message-content">
+                            <div class="attachments-list">
+                                ${initialAttachments.map(attachment => `
+                                    <a href="${attachment.url}" target="_blank" class="attachment-item">
+                                        <i class="ph-light ph-file"></i>
+                                        <span>${escapeHtml(attachment.file_name)}</span>
+                                        <small>(${formatFileSize(attachment.file_size)})</small>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
-                    <div class="message-content">${escapeHtml(message.message)}</div>
-                </div>
-            `).join('');
+                `;
+            }
+
+            // Then, display messages and their linked attachments
+            conversationHTML += messages.map(message => {
+                const messageAttachments = attachments.filter(a => a.message_id === message.id);
+                return `
+                    <div class="message ${message.is_from_staff ? 'staff' : 'customer'}">
+                        <div class="message-header">
+                            <span class="message-author">
+                                ${message.is_from_staff ? 
+                                    (message.staff_name || 'Support Team') : 
+                                    (currentCustomer.full_name || 'You')
+                                }
+                            </span>
+                            <span class="message-time">${formatDateTime(message.created_at)}</span>
+                        </div>
+                        <div class="message-content">${escapeHtml(message.message)}</div>
+                        ${messageAttachments.length > 0 ? `
+                            <div class="attachments-list">
+                                ${messageAttachments.map(attachment => `
+                                    <a href="${attachment.url}" target="_blank" class="attachment-item">
+                                        <i class="ph-light ph-file"></i>
+                                        <span>${escapeHtml(attachment.file_name)}</span>
+                                        <small>(${formatFileSize(attachment.file_size)})</small>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            conversationElement.innerHTML = conversationHTML;
             
             // Scroll to bottom
             conversationElement.scrollTop = conversationElement.scrollHeight;
             
         } else {
-            throw new Error(result.error);
+            throw new Error(messagesResult.error || attachmentsResult.error);
         }
         
     } catch (error) {
@@ -727,40 +788,72 @@ async function handleReplySubmit(e) {
     const messageInput = document.getElementById('replyMessage');
     const submitBtn = e.target.querySelector('.submit-btn');
     const message = messageInput.value.trim();
+    const selectedFiles = window.fileSelections.replyTicketFiles || [];
     
-    if (!message) {
-        showMessage('Please enter a message', 'error');
+    if (!message && selectedFiles.length === 0) {
+        showMessage('Please enter a message or add a file.', 'error');
         return;
-}
+    }
 
     try {
         // Disable form
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Sending...';
         
-        // Create message data
-        const messageData = {
-            ticket_id: currentTicketId,
-            customer_id: currentCustomer.id,
-            message: message,
-            is_from_staff: false,
-            is_internal: false
-        };
-        
-        // Send message
-        const result = await db.messages.create(messageData);
-        
-        if (result.success) {
-            // Clear form
-            messageInput.value = '';
-            
-            // Conversation will be reloaded by the realtime subscription, so no need to call it here.
-            
-            showMessage('Message sent successfully', 'success');
-            
-        } else {
-            throw new Error(result.error);
+        let messageId = null;
+
+        // If there's a text message, send it first
+        if (message) {
+            const messageData = {
+                ticket_id: currentTicketId,
+                customer_id: currentCustomer.id,
+                message: message,
+                is_from_staff: false,
+                is_internal: false
+            };
+            const result = await db.messages.create(messageData);
+            if (result.success) {
+                messageId = result.data.id; // Get the ID of the new message
+                messageInput.value = '';
+            } else {
+                throw new Error(result.error);
+            }
         }
+        
+        // Upload files if any
+        if (selectedFiles.length > 0) {
+            submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Uploading files...';
+            for (const file of selectedFiles) {
+                const filePath = `${currentUser.id}/${currentTicketId}/${Date.now()}-${file.name}`;
+                const uploadResult = await storage.uploadFile('ticket-attachments', filePath, file);
+                
+                if (uploadResult.success) {
+                    await db.attachments.create({
+                        ticket_id: currentTicketId,
+                        message_id: messageId, // Link to the message if it exists
+                        customer_id: currentCustomer.id,
+                        user_id: currentUser.id,
+                        file_name: file.name,
+                        file_path: uploadResult.data.path,
+                        mime_type: file.type,
+                        file_size: file.size
+                    });
+                } else {
+                    throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
+                }
+            }
+        }
+
+        // --- Success ---
+        // Clear form elements
+        messageInput.value = '';
+        document.getElementById('reply-file-list-container').innerHTML = '';
+        window.fileSelections.replyTicketFiles = [];
+
+        // Reload conversation which will now include the new message and attachments
+        await loadTicketConversation(currentTicketId);
+        
+        showMessage('Reply sent successfully!', 'success');
         
     } catch (error) {
         console.error('Error sending message:', error);
