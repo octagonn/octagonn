@@ -431,7 +431,9 @@ const AdminDB = {
                     const { data: urlData, error: urlError } = await supabase
                         .storage
                         .from('ticket-attachments')
-                        .createSignedUrl(attachment.file_path, 3600); // URL is valid for 1 hour for admins
+                        .createSignedUrl(attachment.file_path, 3600, {
+                            download: attachment.file_name
+                        }); // URL is valid for 1 hour for admins and forces download
 
                     if (urlError) {
                         console.error('Error creating signed URL for', attachment.file_path, urlError);

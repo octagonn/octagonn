@@ -467,7 +467,9 @@ const db = {
                     const { data: urlData, error: urlError } = await supabase
                         .storage
                         .from('ticket-attachments')
-                        .createSignedUrl(attachment.file_path, 60); // URL is valid for 60 seconds
+                        .createSignedUrl(attachment.file_path, 60, {
+                            download: attachment.file_name
+                        }); // URL is valid for 60 seconds and forces download
 
                     if (urlError) {
                         console.error('Error creating signed URL for', attachment.file_path, urlError);
