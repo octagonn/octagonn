@@ -703,7 +703,7 @@ async function loadTicketConversation(ticketId) {
                         <div class="message-content">
                             <div class="attachments-list">
                                 ${initialAttachments.map(attachment => `
-                                    <a href="${attachment.url}" target="_blank" class="attachment-item">
+                                    <a href="${attachment.url}" target="_blank" download="${escapeHtml(attachment.file_name)}" class="attachment-item">
                                         <i class="ph-light ph-file"></i>
                                         <span>${escapeHtml(attachment.file_name)}</span>
                                         <small>(${formatFileSize(attachment.file_size)})</small>
@@ -733,7 +733,7 @@ async function loadTicketConversation(ticketId) {
                         ${messageAttachments.length > 0 ? `
                             <div class="attachments-list">
                                 ${messageAttachments.map(attachment => `
-                                    <a href="${attachment.url}" target="_blank" class="attachment-item">
+                                    <a href="${attachment.url}" target="_blank" download="${escapeHtml(attachment.file_name)}" class="attachment-item">
                                         <i class="ph-light ph-file"></i>
                                         <span>${escapeHtml(attachment.file_name)}</span>
                                         <small>(${formatFileSize(attachment.file_size)})</small>
