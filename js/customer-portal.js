@@ -426,11 +426,12 @@ async function handleCreateTicket(e) {
                     await db.attachments.create({
                         ticket_id: null, // This will be linked when the ticket is created from the submission
                         submission_id: submissionId,
+                        customer_id: currentCustomer.id,
                         file_name: file.name,
                         file_path: uploadResult.data.path,
-                        file_type: file.type,
+                        mime_type: file.type,
                         file_size: file.size,
-                        uploaded_by_customer_id: currentCustomer.id
+                        uploaded_by_customer_id: currentUser.id
                     });
                 } else {
                     throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
