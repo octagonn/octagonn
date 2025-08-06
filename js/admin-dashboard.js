@@ -1080,13 +1080,15 @@ function subscribeToTicketMessages(ticketId) {
     if (messageSubscription) {
         supabase.removeChannel(messageSubscription);
         messageSubscription = null;
-        console.log('Removed previous message subscription.');
+        console.log('Removed previous subscription.');
     }
 
-    console.log('Subscribing to messages for ticket:', ticketId);
+    console.log('Subscribing to messages and attachments for ticket:', ticketId);
+    
+    const channelName = `ticket-conversation-updates-${ticketId}`;
+    messageSubscription = supabase.channel(channelName);
 
-    messageSubscription = supabase
-        .channel(`public:ticket_messages:ticket_id=eq.${ticketId}`)
+    messageSubscription
         .on('postgres_changes', { 
             event: 'INSERT', 
             schema: 'public', 
@@ -1094,15 +1096,29 @@ function subscribeToTicketMessages(ticketId) {
             filter: `ticket_id=eq.${ticketId}`
         }, payload => {
             console.log('New message received via realtime:', payload.new);
-            // Reload the conversation to show the new message
-            openTicketDetail(ticketId); // Re-opens and refreshes the ticket detail view
+            openTicketDetail(ticketId);
+        })
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'ticket_attachments',
+            filter: `ticket_id=eq.${ticketId}`
+        }, payload => {
+            console.log('New attachment received via realtime:', payload.new);
+            // A short delay can help ensure the message is processed first, preventing a UI flicker.
+            setTimeout(() => {
+                // Ensure the panel is still open for this ticket before refreshing
+                if (currentTicketId === ticketId) {
+                    openTicketDetail(ticketId);
+                }
+            }, 250);
         })
         .subscribe((status, err) => {
             if (status === 'SUBSCRIBED') {
-                console.log('Successfully subscribed to ticket messages!');
+                console.log(`Successfully subscribed to ${channelName}!`);
             }
             if (status === 'CHANNEL_ERROR') {
-                console.error('Subscription error:', err);
+                console.error(`Subscription error on ${channelName}:`, err);
             }
         });
 }
