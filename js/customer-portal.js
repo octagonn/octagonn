@@ -424,14 +424,14 @@ async function handleCreateTicket(e) {
                 
                 if (uploadResult.success) {
                     await db.attachments.create({
-                        ticket_id: null, // This will be linked when the ticket is created from the submission
+                        ticket_id: null, // Will be linked when staff converts submission to ticket
                         submission_id: submissionId,
                         customer_id: currentCustomer.id,
+                        user_id: currentUser.id,
                         file_name: file.name,
                         file_path: uploadResult.data.path,
                         mime_type: file.type,
-                        file_size: file.size,
-                        uploaded_by_customer_id: currentUser.id
+                        file_size: file.size
                     });
                 } else {
                     throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
@@ -909,4 +909,4 @@ style.textContent = `
         }
     }
 `;
-document.head.appendChild(style); 
+document.head.appendChild(style);

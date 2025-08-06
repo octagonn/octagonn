@@ -674,6 +674,10 @@ async function openTicketDetail(ticketId) {
         // Get messages
         const messagesResult = await AdminDB.ticketMessages.getByTicketId(ticketId);
         const messages = messagesResult.success ? messagesResult.data : [];
+
+        // Get attachments
+        const attachmentsResult = await AdminDB.attachments.getByTicketId(ticketId);
+        const attachments = attachmentsResult.success ? attachmentsResult.data : [];
         
         // Add Edit button
         let editBtnHtml = `<button class="btn secondary" id="editTicketBtn" style="float:right; margin-bottom:1rem;">Edit</button>`;
@@ -705,6 +709,22 @@ async function openTicketDetail(ticketId) {
             <div style="background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h4 style="color: #ffffff; margin-bottom: 0.5rem;">Description</h4>
                 <p style="color: rgba(255, 255, 255, 0.9); line-height: 1.5; margin: 0;">${escapeHtml(ticket.description)}</p>
+            </div>
+
+            <div class="attachments-section">
+                <h4>Attachments</h4>
+                ${attachments.length === 0 ? 
+                    '<p>No attachments found.</p>' : 
+                    attachments.map(attachment => `
+                        <div class="attachment-item">
+                            <a href="${attachment.url}" target="_blank" rel="noopener noreferrer">
+                                <i class="ph-light ph-file"></i>
+                                ${escapeHtml(attachment.file_name)}
+                            </a>
+                            <span>(${(attachment.file_size / 1024 / 1024).toFixed(2)} MB)</span>
+                        </div>
+                    `).join('')
+                }
             </div>
             
             <div class="conversation">
