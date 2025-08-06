@@ -289,7 +289,7 @@ function setupFileUpload(fileInputId, fileListContainerId, selectionKey) {
         renderFileList();
     };
     
-    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+    fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
     const fileListContainer = document.getElementById(fileListContainerId);
     if (fileListContainer) {
