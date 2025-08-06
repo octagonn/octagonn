@@ -13,6 +13,7 @@ let currentContactToConvert = null;
 let currentWebformToConvert = null;
 let ticketEditMode = false;
 let ticketEditData = null;
+let messageSubscription = null;
 
 // --- Edit Mode State ---
 let ticketsEditMode = false;
@@ -752,9 +753,12 @@ async function openTicketDetail(ticketId) {
             const editBtn = document.getElementById('editTicketBtn');
             if (editBtn) editBtn.onclick = () => enableTicketEdit(ticketId);
             
-            // Setup reply functionality
-            setupReplyTabs();
-        }, 0);
+                    // Setup reply functionality
+        setupReplyTabs();
+        
+        // Subscribe to realtime updates
+        subscribeToTicketMessages(ticketId);
+    }, 0);
         
     } catch (error) {
         console.error('Error loading ticket details:', error);
@@ -773,6 +777,13 @@ async function openTicketDetail(ticketId) {
 function closeTicketDetail() {
     document.getElementById('ticketDetailPanel').classList.remove('open');
     currentTicketId = null;
+
+    // Unsubscribe from messages when the panel is closed
+    if (messageSubscription) {
+        supabase.removeChannel(messageSubscription);
+        messageSubscription = null;
+        console.log('Unsubscribed from ticket messages.');
+    }
 }
 
 /**
@@ -846,8 +857,7 @@ async function handleReplySubmit(e) {
         // Clear form
             messageInput.value = '';
             
-            // Reload ticket details to show new message
-            await openTicketDetail(currentTicketId);
+            // Reloading is now handled by the realtime subscription
             
             showNotification('Message sent successfully', 'success');
             
@@ -863,6 +873,41 @@ async function handleReplySubmit(e) {
         submitBtn.disabled = false;
         switchReplyMode(replyMode); // Reset button text
     }
+}
+
+/**
+ * Subscribe to realtime updates for ticket messages
+ */
+function subscribeToTicketMessages(ticketId) {
+    // If there's an existing subscription, remove it first
+    if (messageSubscription) {
+        supabase.removeChannel(messageSubscription);
+        messageSubscription = null;
+        console.log('Removed previous message subscription.');
+    }
+
+    console.log('Subscribing to messages for ticket:', ticketId);
+
+    messageSubscription = supabase
+        .channel(`public:ticket_messages:ticket_id=eq.${ticketId}`)
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'ticket_messages',
+            filter: `ticket_id=eq.${ticketId}`
+        }, payload => {
+            console.log('New message received via realtime:', payload.new);
+            // Reload the conversation to show the new message
+            openTicketDetail(ticketId); // Re-opens and refreshes the ticket detail view
+        })
+        .subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Successfully subscribed to ticket messages!');
+            }
+            if (status === 'CHANNEL_ERROR') {
+                console.error('Subscription error:', err);
+            }
+        });
 }
 
 /**

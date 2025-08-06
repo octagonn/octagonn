@@ -3,6 +3,7 @@ let currentCustomer = null;
 let currentUser = null;
 let allTickets = [];
 let currentTicketId = null;
+let messageSubscription = null;
 
 // Initialize portal when DOM loads
 document.addEventListener('DOMContentLoaded', async function() {
@@ -217,52 +218,72 @@ function setupSearchListeners() {
 }
 
 /**
- * Setup file upload functionality
+ * Setup file upload functionality with dropzone
  */
 function setupFileUpload() {
     const fileInput = document.getElementById('ticketAttachments');
-    const fileList = document.getElementById('file-list');
-    
-    if (fileInput && fileList) {
-        fileInput.addEventListener('change', function() {
-            displaySelectedFiles(this.files, fileList);
-        });
-    }
-}
+    const dropzone = document.getElementById('fileDropzone');
+    let selectedFiles = [];
 
-/**
- * Display selected files
- */
-function displaySelectedFiles(files, container) {
-    container.innerHTML = '';
+    if (!fileInput || !dropzone) return;
+
+    const renderFileList = () => {
+        const fileListContainer = document.getElementById('file-list-container');
+        fileListContainer.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-list-item';
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <i class="ph-light ph-file"></i>
+                    <span>${file.name} (${formatFileSize(file.size)})</span>
+                </div>
+                <button type="button" class="remove-file-btn" data-index="${index}">&times;</button>
+            `;
+            fileListContainer.appendChild(fileItem);
+        });
+    };
+
+    const handleFiles = (files) => {
+        for (const file of files) {
+            if (selectedFiles.length >= 5) {
+                showMessage('You can upload a maximum of 5 files.', 'error');
+                break;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                showMessage(`File "${file.name}" is too large. Max size is 10MB.`, 'error');
+                continue;
+            }
+            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                selectedFiles.push(file);
+            }
+        }
+        renderFileList();
+    };
     
-    if (files.length === 0) return;
-    
-    const fileContainer = document.createElement('div');
-    fileContainer.style.marginTop = '1rem';
-    
-    Array.from(files).forEach(file => {
-        const fileItem = document.createElement('div');
-        fileItem.style.cssText = `
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.5rem;
-            margin: 0.25rem 0;
-            border-radius: 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 0.9rem;
-        `;
-        
-        fileItem.innerHTML = `
-            <span><i class="ph-light ph-file"></i> ${file.name} (${formatFileSize(file.size)})</span>
-        `;
-        
-        fileContainer.appendChild(fileItem);
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
     });
-    
-    container.appendChild(fileContainer);
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    document.getElementById('file-list-container').addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-file-btn')) {
+            const index = parseInt(e.target.dataset.index, 10);
+            selectedFiles.splice(index, 1);
+            renderFileList();
+        }
+    });
+
+    // Make selectedFiles accessible to the form handler
+    window.getSelectedFiles = () => selectedFiles;
 }
 
 /**
@@ -367,13 +388,12 @@ async function handleCreateTicket(e) {
     
     const submitBtn = e.target.querySelector('.submit-btn');
     const messageDiv = document.getElementById('create-ticket-message');
+    const selectedFiles = window.getSelectedFiles ? window.getSelectedFiles() : [];
     
     try {
-        // Disable submit button
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Submitting...';
         
-        // Get form data
         const formData = {
             name: document.getElementById('ticketName').value.trim(),
             email: document.getElementById('ticketEmail').value.trim(),
@@ -383,47 +403,57 @@ async function handleCreateTicket(e) {
             customer_id: currentCustomer.id
         };
         
-        // Validate required fields
         if (!formData.name || !formData.email || !formData.subject || !formData.message) {
             throw new Error('Please fill in all required fields');
         }
         
-        console.log('Submitting contact form:', formData);
-        
-        // Submit as contact submission (staff will convert to ticket)
         const result = await db.contactSubmissions.create(formData);
         
-        if (result.success) {
-            // Clear the form
-            e.target.reset();
-            document.getElementById('file-list').innerHTML = '';
-            
-            // Show success message on home page
-            const homeMessage = document.getElementById('home-section-message');
-            homeMessage.innerHTML = `<div class="success">Your request has been submitted successfully! Our team will review it and create a support ticket for you.</div>`;
-
-            // Redirect to home page
-            showSection('home');
-            
-            // Clear the message after 5 seconds
-            setTimeout(() => {
-                homeMessage.innerHTML = '';
-            }, 5000);
-
-            // Refresh dashboard data
-            setTimeout(() => {
-                loadDashboardData();
-            }, 1000);
-            
-        } else {
+        if (!result.success || !result.data) {
             throw new Error(result.error || 'Failed to submit request');
         }
+
+        const submissionId = result.data.id;
+
+        // Upload files if any
+        if (selectedFiles.length > 0) {
+            submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Uploading files...';
+            for (const file of selectedFiles) {
+                const filePath = `${currentCustomer.id}/${submissionId}/${file.name}`;
+                const uploadResult = await storage.uploadFile('ticket-attachments', filePath, file);
+                
+                if (uploadResult.success) {
+                    await db.attachments.create({
+                        ticket_id: null, // This will be linked when the ticket is created from the submission
+                        submission_id: submissionId,
+                        file_name: file.name,
+                        file_path: uploadResult.data.path,
+                        file_type: file.type,
+                        file_size: file.size,
+                        uploaded_by_customer_id: currentCustomer.id
+                    });
+                } else {
+                    throw new Error(`Failed to upload ${file.name}: ${uploadResult.error}`);
+                }
+            }
+        }
+
+        // --- Success ---
+        e.target.reset();
+        document.getElementById('file-list-container').innerHTML = '';
+        if(window.getSelectedFiles) window.getSelectedFiles().length = 0; // Clear the files array
         
+        const homeMessage = document.getElementById('home-section-message');
+        homeMessage.innerHTML = `<div class="success">Your request has been submitted successfully! Our team will review it shortly.</div>`;
+        showSection('home');
+        
+        setTimeout(() => { homeMessage.innerHTML = ''; }, 5000);
+        setTimeout(() => { loadDashboardData(); }, 1000);
+
     } catch (error) {
         console.error('Error creating ticket:', error);
         showMessage(error.message, 'error', messageDiv);
     } finally {
-        // Re-enable submit button
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="ph-light ph-paper-plane-right"></i> Submit Request';
     }
@@ -571,6 +601,9 @@ async function openTicketDetail(ticketId) {
         // Load conversation
         await loadTicketConversation(ticketId);
         
+        // Subscribe to realtime updates for this ticket
+        subscribeToTicketMessages(ticketId);
+        
     } catch (error) {
         console.error('Error loading ticket details:', error);
         detailsElement.innerHTML = `
@@ -675,8 +708,7 @@ async function handleReplySubmit(e) {
             // Clear form
             messageInput.value = '';
             
-            // Reload conversation
-            await loadTicketConversation(currentTicketId);
+            // Conversation will be reloaded by the realtime subscription, so no need to call it here.
             
             showMessage('Message sent successfully', 'success');
             
@@ -695,11 +727,53 @@ async function handleReplySubmit(e) {
 }
 
 /**
+ * Subscribe to realtime updates for ticket messages
+ */
+function subscribeToTicketMessages(ticketId) {
+    // If there's an existing subscription, remove it first
+    if (messageSubscription) {
+        supabase.removeChannel(messageSubscription);
+        messageSubscription = null;
+        console.log('Removed previous message subscription.');
+    }
+
+    console.log('Subscribing to messages for ticket:', ticketId);
+
+    messageSubscription = supabase
+        .channel(`public:ticket_messages:ticket_id=eq.${ticketId}`)
+        .on('postgres_changes', { 
+            event: 'INSERT', 
+            schema: 'public', 
+            table: 'ticket_messages',
+            filter: `ticket_id=eq.${ticketId}`
+        }, payload => {
+            console.log('New message received:', payload.new);
+            // Reload the conversation to show the new message
+            loadTicketConversation(ticketId);
+        })
+        .subscribe((status, err) => {
+            if (status === 'SUBSCRIBED') {
+                console.log('Successfully subscribed to ticket messages!');
+            }
+            if (status === 'CHANNEL_ERROR') {
+                console.error('Subscription error:', err);
+            }
+        });
+}
+
+/**
  * Close ticket modal
  */
 function closeTicketModal() {
     document.getElementById('ticketModal').style.display = 'none';
     currentTicketId = null;
+
+    // Unsubscribe from messages when the modal is closed
+    if (messageSubscription) {
+        supabase.removeChannel(messageSubscription);
+        messageSubscription = null;
+        console.log('Unsubscribed from ticket messages.');
+    }
 }
 
 /**

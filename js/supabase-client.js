@@ -434,8 +434,41 @@ const db = {
                 return { success: false, error: error.message }
             }
         }
+    },
+
+    // Ticket attachments
+    attachments: {
+        async create(attachmentData) {
+            try {
+                const { data, error } = await supabase
+                    .from('ticket_attachments')
+                    .insert([attachmentData])
+                    .select();
+                if (error) throw error;
+                return { success: true, data: data[0] };
+            } catch (error) {
+                console.error('Create attachment error:', error);
+                return { success: false, error: error.message };
+            }
+        }
     }
 }
+
+// Storage helpers
+const storage = {
+    async uploadFile(bucket, filePath, file) {
+        try {
+            const { data, error } = await supabase.storage
+                .from(bucket)
+                .upload(filePath, file);
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            console.error('File upload error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+};
 
 // Utility functions
 const utils = {
@@ -497,5 +530,6 @@ window.SpyderNetDB = {
     supabase,
     auth,
     db,
+    storage,
     utils
 } 
