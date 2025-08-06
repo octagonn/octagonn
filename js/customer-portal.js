@@ -4,6 +4,7 @@ let currentUser = null;
 let allTickets = [];
 let currentTicketId = null;
 let messageSubscription = null;
+let attachmentSubscription = null;
 
 // Initialize portal when DOM loads
 document.addEventListener('DOMContentLoaded', async function() {
@@ -652,7 +653,7 @@ async function openTicketDetail(ticketId) {
         await loadTicketConversation(ticketId);
         
         // Subscribe to realtime updates for this ticket
-        subscribeToTicketMessages(ticketId);
+        subscribeToTicketChanges(ticketId);
         
     } catch (error) {
         console.error('Error loading ticket details:', error);
@@ -856,51 +857,39 @@ async function handleReplySubmit(e) {
 /**
  * Subscribe to realtime updates for ticket messages
  */
-function subscribeToTicketMessages(ticketId) {
+function subscribeToTicketChanges(ticketId) {
+    // Unsubscribe from previous channels if they exist
     if (messageSubscription) {
         supabase.removeChannel(messageSubscription);
         messageSubscription = null;
-        console.log('Removed previous message subscription.');
+    }
+    if (attachmentSubscription) {
+        supabase.removeChannel(attachmentSubscription);
+        attachmentSubscription = null;
     }
 
-    console.log('Subscribing to messages and attachments for ticket:', ticketId);
-
-    const channelName = `customer-ticket-updates-${ticketId}`;
-    messageSubscription = supabase.channel(channelName);
-
-    messageSubscription
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'ticket_messages',
-            filter: `ticket_id=eq.${ticketId}`
-        }, payload => {
-            console.log('New message received via realtime:', payload.new);
+    // Subscribe to new messages
+    messageSubscription = supabase
+        .channel(`customer-messages-${ticketId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${ticketId}` }, payload => {
+            console.log('New message received:', payload.new);
             if (currentTicketId === ticketId) {
                 loadTicketConversation(ticketId);
             }
         })
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'ticket_attachments',
-            filter: `ticket_id=eq.${ticketId}`
-        }, payload => {
-            console.log('New attachment received via realtime:', payload.new);
-            setTimeout(() => {
-                if (currentTicketId === ticketId) {
-                    loadTicketConversation(ticketId);
-                }
-            }, 250);
+        .subscribe();
+
+    // Subscribe to new attachments
+    attachmentSubscription = supabase
+        .channel(`customer-attachments-${ticketId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_attachments', filter: `ticket_id=eq.${ticketId}` }, payload => {
+            console.log('New attachment received:', payload.new);
+            if (currentTicketId === ticketId) {
+                // Delay slightly to ensure the message (if any) is processed first
+                setTimeout(() => loadTicketConversation(ticketId), 250);
+            }
         })
-        .subscribe((status, err) => {
-            if (status === 'SUBSCRIBED') {
-                console.log(`Successfully subscribed to ${channelName}!`);
-            }
-            if (status === 'CHANNEL_ERROR') {
-                console.error(`Subscription error on ${channelName}:`, err);
-            }
-        });
+        .subscribe();
 }
 
 /**
@@ -915,6 +904,11 @@ function closeTicketModal() {
         supabase.removeChannel(messageSubscription);
         messageSubscription = null;
         console.log('Unsubscribed from ticket messages.');
+    }
+    if (attachmentSubscription) {
+        supabase.removeChannel(attachmentSubscription);
+        attachmentSubscription = null;
+        console.log('Unsubscribed from ticket attachments.');
     }
 }
 

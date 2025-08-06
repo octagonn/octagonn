@@ -14,6 +14,7 @@ let currentWebformToConvert = null;
 let ticketEditMode = false;
 let ticketEditData = null;
 let messageSubscription = null;
+let attachmentSubscription = null;
 let adminReplyFiles = [];
 
 // --- Edit Mode State ---
@@ -921,8 +922,8 @@ async function openTicketDetail(ticketId) {
             setupReplyTabs();
             setupAdminFileUpload();
         
-            // Subscribe to realtime updates
-            subscribeToTicketMessages(ticketId);
+                    // Subscribe to realtime updates
+        subscribeToTicketChanges(ticketId);
     }, 0);
         
     } catch (error) {
@@ -948,6 +949,11 @@ function closeTicketDetail() {
         supabase.removeChannel(messageSubscription);
         messageSubscription = null;
         console.log('Unsubscribed from ticket messages.');
+    }
+    if (attachmentSubscription) {
+        supabase.removeChannel(attachmentSubscription);
+        attachmentSubscription = null;
+        console.log('Unsubscribed from ticket attachments.');
     }
 }
 
@@ -1075,52 +1081,39 @@ async function handleReplySubmit(e) {
 /**
  * Subscribe to realtime updates for ticket messages
  */
-function subscribeToTicketMessages(ticketId) {
-    // If there's an existing subscription, remove it first
+function subscribeToTicketChanges(ticketId) {
+    // Unsubscribe from previous channels if they exist
     if (messageSubscription) {
         supabase.removeChannel(messageSubscription);
         messageSubscription = null;
-        console.log('Removed previous subscription.');
+    }
+    if (attachmentSubscription) {
+        supabase.removeChannel(attachmentSubscription);
+        attachmentSubscription = null;
     }
 
-    console.log('Subscribing to messages and attachments for ticket:', ticketId);
-    
-    const channelName = `ticket-conversation-updates-${ticketId}`;
-    messageSubscription = supabase.channel(channelName);
+    // Subscribe to new messages
+    messageSubscription = supabase
+        .channel(`admin-messages-${ticketId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_messages', filter: `ticket_id=eq.${ticketId}` }, payload => {
+            console.log('New message received:', payload.new);
+            if (currentTicketId === ticketId) {
+                openTicketDetail(ticketId);
+            }
+        })
+        .subscribe();
 
-    messageSubscription
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'ticket_messages',
-            filter: `ticket_id=eq.${ticketId}`
-        }, payload => {
-            console.log('New message received via realtime:', payload.new);
-            openTicketDetail(ticketId);
-        })
-        .on('postgres_changes', { 
-            event: 'INSERT', 
-            schema: 'public', 
-            table: 'ticket_attachments',
-            filter: `ticket_id=eq.${ticketId}`
-        }, payload => {
-            console.log('New attachment received via realtime:', payload.new);
-            // A short delay can help ensure the message is processed first, preventing a UI flicker.
-            setTimeout(() => {
-                // Ensure the panel is still open for this ticket before refreshing
-                if (currentTicketId === ticketId) {
-                    openTicketDetail(ticketId);
-                }
-            }, 250);
-        })
-        .subscribe((status, err) => {
-            if (status === 'SUBSCRIBED') {
-                console.log(`Successfully subscribed to ${channelName}!`);
+    // Subscribe to new attachments
+    attachmentSubscription = supabase
+        .channel(`admin-attachments-${ticketId}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ticket_attachments', filter: `ticket_id=eq.${ticketId}` }, payload => {
+            console.log('New attachment received:', payload.new);
+            if (currentTicketId === ticketId) {
+                // Delay slightly to ensure the message (if any) is processed first
+                setTimeout(() => openTicketDetail(ticketId), 250);
             }
-            if (status === 'CHANNEL_ERROR') {
-                console.error(`Subscription error on ${channelName}:`, err);
-            }
-        });
+        })
+        .subscribe();
 }
 
 /**
