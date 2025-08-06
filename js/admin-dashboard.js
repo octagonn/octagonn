@@ -449,6 +449,12 @@ async function loadDashboard() {
         if (webformsResult.success) {
             allWebforms = webformsResult.data || [];
         }
+
+        // Load customers for global search
+        const customersResult = await AdminDB.customers.getAll();
+        if (customersResult.success) {
+            allCustomers = customersResult.data || [];
+        }
         
         updateNavigationBadges();
         
@@ -1371,28 +1377,77 @@ function refreshActivity() {
 // Handle global search
 function handleGlobalSearch(e) {
     const query = e.target.value.toLowerCase();
-    
-    if (currentSection === 'tickets') {
-        document.getElementById('ticketSearch').value = query;
-        filterTickets();
-    } else if (currentSection === 'contacts') {
-        const filtered = allContacts.filter(contact => 
-            contact.subject.toLowerCase().includes(query) ||
-            contact.name.toLowerCase().includes(query) ||
-            contact.email.toLowerCase().includes(query) ||
-            (contact.message && contact.message.toLowerCase().includes(query))
-        );
-        displayContacts(filtered);
-    } else if (currentSection === 'webforms') {
-        const filtered = allWebforms.filter(webform => 
-            (webform.form_type && webform.form_type.toLowerCase().includes(query)) ||
-            (webform.name && webform.name.toLowerCase().includes(query)) ||
-            (webform.email && webform.email.toLowerCase().includes(query)) ||
-            (webform.subject && webform.subject.toLowerCase().includes(query)) ||
-            (webform.message && webform.message.toLowerCase().includes(query))
-        );
-        displayWebforms(filtered);
+    const searchResultsSection = document.getElementById('global-search-results-section');
+    const searchResultsContainer = document.getElementById('globalSearchResults');
+
+    if (query.length < 3) {
+        searchResultsSection.classList.remove('active');
+        if (currentSection !== 'global-search-results') {
+            switchSection(currentSection);
+        } else {
+            switchSection('dashboard');
+        }
+        return;
     }
+
+    // Switch to search results view
+    switchSection('global-search-results');
+
+    let resultsHTML = '';
+
+    // Search tickets
+    const ticketResults = allTickets.filter(ticket =>
+        ticket.title.toLowerCase().includes(query) ||
+        ticket.description.toLowerCase().includes(query) ||
+        (ticket.customers?.full_name && ticket.customers.full_name.toLowerCase().includes(query)) ||
+        (ticket.customer_name && ticket.customer_name.toLowerCase().includes(query)) ||
+        (ticket.anonymous_name && ticket.anonymous_name.toLowerCase().includes(query)) ||
+        (ticket.ticket_number && ticket.ticket_number.toString().includes(query))
+    );
+
+    if (ticketResults.length > 0) {
+        resultsHTML += '<h3 class="search-result-category-title">Tickets</h3>';
+        resultsHTML += ticketResults.map(ticket => `
+            <div class="table-row" onclick="openTicketDetail('${ticket.id}')">
+                <div class="table-cell"><span class="status-badge status-${ticket.status.replace(/_/g, '_')}">${formatStatus(ticket.status)}</span></div>
+                <div class="table-cell">#${ticket.ticket_number || ticket.id.substring(0, 8)}</div>
+                <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
+                <div class="table-cell">${ticket.customers?.full_name || ticket.customer_name || ticket.anonymous_name || 'N/A'}</div>
+            </div>
+        `).join('');
+    }
+
+    // Search customers
+    const customerResults = allCustomers.filter(customer =>
+        customer.full_name.toLowerCase().includes(query) ||
+        customer.email.toLowerCase().includes(query) ||
+        (customer.company && customer.company.toLowerCase().includes(query))
+    );
+
+    if (customerResults.length > 0) {
+        resultsHTML += '<h3 class="search-result-category-title">Customers</h3>';
+        resultsHTML += customerResults.map(customer => `
+            <div class="table-row" onclick="viewCustomerDetail('${customer.id}')">
+                <div class="table-cell">${escapeHtml(customer.full_name)}</div>
+                <div class="table-cell">${escapeHtml(customer.email)}</div>
+                <div class="table-cell">${escapeHtml(customer.company) || 'N/A'}</div>
+            </div>
+        `).join('');
+    }
+
+    if (resultsHTML === '') {
+        resultsHTML = '<p>No results found.</p>';
+    }
+
+    searchResultsContainer.innerHTML = resultsHTML;
+}
+
+function clearGlobalSearch() {
+    const globalSearch = document.getElementById('globalSearch');
+    globalSearch.value = '';
+    const searchResultsSection = document.getElementById('global-search-results-section');
+    searchResultsSection.classList.remove('active');
+    switchSection(localStorage.getItem('adminDashboardActiveSection') || 'dashboard');
 }
 
 // Show create ticket modal

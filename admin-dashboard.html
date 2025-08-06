@@ -2100,6 +2100,15 @@
             line-height: 1.2;
             border-radius: 4px;
         }
+
+        .search-result-category-title {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
     </style>
 </head>
 <body class="admin-dashboard">
@@ -2208,6 +2217,13 @@
 
         <!-- Content Area -->
         <div class="content-area">
+            <!-- Global Search Results Section -->
+            <div id="global-search-results-section" class="content-section">
+                <div id="globalSearchResults">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+
             <!-- Dashboard Section -->
             <div id="dashboard-section" class="content-section active">
                 <div class="dashboard-stats">
