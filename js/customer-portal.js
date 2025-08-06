@@ -166,8 +166,8 @@ function setupEventListeners() {
     setupSearchListeners();
 
     // File upload
-    setupFileUpload('ticketAttachments', 'fileDropzone', 'file-list-container', 'createTicketFiles');
-    setupFileUpload('replyAttachments', 'replyFileDropzone', 'reply-file-list-container', 'replyTicketFiles');
+    setupFileUpload('ticketAttachments', 'file-list-container', 'createTicketFiles');
+    setupFileUpload('replyAttachments', 'reply-file-list-container', 'replyTicketFiles');
 }
 
 /**

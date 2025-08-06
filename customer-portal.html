@@ -331,6 +331,18 @@
             transform: none;
         }
 
+        .form-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .form-actions .submit-btn {
+            flex-grow: 1;
+            margin-top: 0;
+        }
+
         /* File Upload Dropzone */
         .file-upload-dropzone {
             border: 2px dashed rgba(255, 255, 255, 0.3);
@@ -863,21 +875,19 @@
                         
                         <div class="form-group">
                             <label class="form-label">Attachments (Optional)</label>
-                            <div class="file-upload-dropzone" id="fileDropzone">
-                                <input type="file" id="ticketAttachments" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" class="file-input">
-                                <div class="dropzone-text">
-                                    <i class="ph-light ph-cloud-arrow-up"></i>
-                                    <p>Drag & drop files here, or <span>browse</span></p>
-                                    <small>Max file size: 10MB</small>
-                                </div>
-                            </div>
                             <div id="file-list-container" class="file-list-container"></div>
                         </div>
-                        
-                        <button type="submit" class="submit-btn">
-                            <i class="ph-light ph-paper-plane-right"></i>
-                            Submit Request
-                        </button>
+
+                        <div class="form-actions">
+                            <label for="ticketAttachments" class="attachment-btn">
+                                <i class="ph-light ph-paperclip"></i>
+                            </label>
+                            <input type="file" id="ticketAttachments" multiple accept=".jpg,.jpeg,.png,.pdf,.doc,.docx" style="display: none;">
+                            <button type="submit" class="submit-btn">
+                                <i class="ph-light ph-paper-plane-right"></i>
+                                Submit Request
+                            </button>
+                        </div>
                     </form>
                 </div>
             </section>
