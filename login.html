@@ -7,6 +7,22 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/light/style.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .terms-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .terms-group a {
+            color: #7877c6;
+            text-decoration: none;
+        }
+        .terms-group a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="top-bar">
@@ -103,6 +119,10 @@
                         </div>
                         <div class="form-group">
                             <input type="password" id="signupPassword" placeholder="Password (min. 6 characters)" required minlength="6">
+                        </div>
+                        <div class="form-group terms-group">
+                            <input type="checkbox" id="signupTerms" required>
+                            <label for="signupTerms">I agree to the <a href="terms-conditions.html" target="_blank">Terms and Conditions</a></label>
                         </div>
                         <div class="form-submit">
                             <button type="submit" class="btn btn-primary">
@@ -209,6 +229,12 @@
                 const name = document.getElementById('signupName').value;
                 const email = document.getElementById('signupEmail').value;
                 const password = document.getElementById('signupPassword').value;
+                const terms = document.getElementById('signupTerms').checked;
+
+                if (!terms) {
+                    showMessage('You must agree to the Terms and Conditions to create an account.', 'error');
+                    return;
+                }
 
                 const button = e.target.querySelector('button');
                 button.disabled = true;
