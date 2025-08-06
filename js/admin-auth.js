@@ -426,18 +426,23 @@ const AdminDB = {
                 
                 if (error) throw error;
                 
-                // Get public URLs for each attachment
-                const attachmentsWithUrls = data.map(attachment => {
-                    const { data: urlData } = supabase
+                // Create signed URLs for each attachment
+                const attachmentsWithUrls = await Promise.all(data.map(async (attachment) => {
+                    const { data: urlData, error: urlError } = await supabase
                         .storage
                         .from('ticket-attachments')
-                        .getPublicUrl(attachment.file_path);
+                        .createSignedUrl(attachment.file_path, 3600); // URL is valid for 1 hour for admins
+
+                    if (urlError) {
+                        console.error('Error creating signed URL for', attachment.file_path, urlError);
+                        return { ...attachment, url: null, error: urlError.message };
+                    }
                     
                     return {
                         ...attachment,
-                        url: urlData.publicUrl
+                        url: urlData.signedUrl
                     };
-                });
+                }));
                 
                 return { success: true, data: attachmentsWithUrls };
             } catch (error) {
