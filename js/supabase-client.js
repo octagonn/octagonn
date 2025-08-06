@@ -450,6 +450,35 @@ const db = {
                 console.error('Create attachment error:', error);
                 return { success: false, error: error.message };
             }
+        },
+
+        async getByTicketId(ticketId) {
+            try {
+                const { data, error } = await supabase
+                    .from('ticket_attachments')
+                    .select('*')
+                    .eq('ticket_id', ticketId)
+                    .order('created_at', { ascending: true });
+                
+                if (error) throw error;
+                
+                const attachmentsWithUrls = data.map(attachment => {
+                    const { data: urlData } = supabase
+                        .storage
+                        .from('ticket-attachments')
+                        .getPublicUrl(attachment.file_path);
+                    
+                    return {
+                        ...attachment,
+                        url: urlData.publicUrl
+                    };
+                });
+                
+                return { success: true, data: attachmentsWithUrls };
+            } catch (error) {
+                console.error('Get attachments error:', error);
+                return { success: false, error: error.message };
+            }
         }
     }
 }

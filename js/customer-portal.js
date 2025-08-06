@@ -243,9 +243,8 @@ window.fileSelections = {
 /**
  * Setup file upload functionality with dropzone
  */
-function setupFileUpload(fileInputId, dropzoneId, fileListContainerId, selectionKey) {
+function setupFileUpload(fileInputId, fileListContainerId, selectionKey) {
     const fileInput = document.getElementById(fileInputId);
-    const dropzone = document.getElementById(dropzoneId);
     
     // Ensure the selection array exists
     if (!window.fileSelections[selectionKey]) {
@@ -253,7 +252,7 @@ function setupFileUpload(fileInputId, dropzoneId, fileListContainerId, selection
     }
     const selectedFiles = window.fileSelections[selectionKey];
 
-    if (!fileInput || !dropzone) return;
+    if (!fileInput) return;
 
     const renderFileList = () => {
         const fileListContainer = document.getElementById(fileListContainerId);
@@ -290,17 +289,6 @@ function setupFileUpload(fileInputId, dropzoneId, fileListContainerId, selection
         renderFileList();
     };
     
-    dropzone.addEventListener('click', () => fileInput.click());
-    dropzone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropzone.classList.add('dragover');
-    });
-    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
-    dropzone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropzone.classList.remove('dragover');
-        handleFiles(e.dataTransfer.files);
-    });
     fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
     const fileListContainer = document.getElementById(fileListContainerId);
