@@ -183,9 +183,6 @@ function setupEventListeners() {
     
     // Reply tabs
     setupReplyTabs();
-
-    // File upload for admin replies
-    setupAdminFileUpload();
 }
 
 /**
@@ -921,10 +918,11 @@ async function openTicketDetail(ticketId) {
             if (editBtn) editBtn.onclick = () => enableTicketEdit(ticketId);
             
                     // Setup reply functionality
-        setupReplyTabs();
+            setupReplyTabs();
+            setupAdminFileUpload();
         
-        // Subscribe to realtime updates
-        subscribeToTicketMessages(ticketId);
+            // Subscribe to realtime updates
+            subscribeToTicketMessages(ticketId);
     }, 0);
         
     } catch (error) {
