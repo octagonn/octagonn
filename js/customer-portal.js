@@ -175,14 +175,14 @@ function setupEventListeners() {
  * Setup navigation event listeners
  */
 function setupNavigationListeners() {
-    // Add click handlers for navigation links
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', function(e) {
-            e.preventDefault();
             const section = this.getAttribute('data-section');
             if (section) {
+                e.preventDefault();
                 showSection(section);
             }
+            // If there's no data-section, the link will behave normally (e.g., go to index.html)
         });
     });
 }
