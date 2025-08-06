@@ -407,6 +407,38 @@ const AdminDB = {
         }
     },
 
+    // Attachments
+    attachments: {
+        async getByTicketId(ticketId) {
+            try {
+                const { data, error } = await supabase
+                    .from('ticket_attachments')
+                    .select('*')
+                    .eq('ticket_id', ticketId);
+                
+                if (error) throw error;
+                
+                // Get public URLs for each attachment
+                const attachmentsWithUrls = data.map(attachment => {
+                    const { data: urlData } = supabase
+                        .storage
+                        .from('ticket-attachments')
+                        .getPublicUrl(attachment.file_path);
+                    
+                    return {
+                        ...attachment,
+                        url: urlData.publicUrl
+                    };
+                });
+                
+                return { success: true, data: attachmentsWithUrls };
+            } catch (error) {
+                console.error('Error getting attachments:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    },
+
     // Customers
     customers: {
         async getAll() {
