@@ -211,9 +211,22 @@ function setupReplyForm() {
 function setupSearchListeners() {
     const searchInput = document.getElementById('ticketsSearch');
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            filterTickets(this.value);
-        });
+        searchInput.addEventListener('input', () => filterAndSortTickets());
+    }
+
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', () => filterAndSortTickets());
+    }
+
+    const sortBy = document.getElementById('sortBy');
+    if (sortBy) {
+        sortBy.addEventListener('change', () => filterAndSortTickets());
+    }
+
+    const priorityFilter = document.getElementById('priorityFilter');
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', () => filterAndSortTickets());
     }
 }
 
@@ -473,7 +486,8 @@ async function loadTickets() {
         
         if (result.success) {
             allTickets = result.data || [];
-            displayTickets(allTickets);
+            // Initial display
+            filterAndSortTickets(); 
         } else {
             ticketsList.innerHTML = `
                 <div class="error">
@@ -504,12 +518,8 @@ function displayTickets(tickets) {
         ticketsList.innerHTML = `
             <div style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.6);">
                 <i class="ph-light ph-ticket" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-                <h4 style="margin-bottom: 1rem;">No Support Tickets</h4>
-                <p>You don't have any support tickets yet.</p>
-                <button class="create-ticket-cta" onclick="showSection('create-ticket')" style="margin-top: 1rem; font-size: 1rem; padding: 0.75rem 1.5rem;">
-                    <i class="ph-light ph-plus-circle"></i>
-                    Create Your First Ticket
-                </button>
+                <h4 style="margin-bottom: 1rem;">No Matching Tickets</h4>
+                <p>No support tickets match your current filters.</p>
             </div>
         `;
         return;
@@ -524,27 +534,62 @@ function displayTickets(tickets) {
                     ${formatStatus(ticket.status)}
                 </span>
             </div>
+            <div>
+                <span class="status-badge priority-${ticket.priority || 'low'}">
+                    ${formatPriority(ticket.priority || 'low')}
+                </span>
+            </div>
+            <div class="ticket-assigned-to">${ticket.assigned_to_name || 'Unassigned'}</div>
             <div class="ticket-date">${formatDate(ticket.created_at)}</div>
+            <div class="ticket-date">${formatDate(ticket.updated_at)}</div>
         </div>
     `).join('');
 }
 
 /**
- * Filter tickets based on search term
+ * Filter and sort tickets based on user selections
  */
-function filterTickets(searchTerm) {
-    if (!searchTerm.trim()) {
-        displayTickets(allTickets);
-        return;
+function filterAndSortTickets() {
+    const searchTerm = document.getElementById('ticketsSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const sortBy = document.getElementById('sortBy').value;
+
+    let processedTickets = [...allTickets];
+
+    // 1. Filter by search term
+    if (searchTerm) {
+        processedTickets = processedTickets.filter(ticket =>
+            ticket.title.toLowerCase().includes(searchTerm) ||
+            (ticket.description && ticket.description.toLowerCase().includes(searchTerm)) ||
+            `#${ticket.ticket_number}`.includes(searchTerm)
+        );
     }
-    
-    const filtered = allTickets.filter(ticket => 
-        ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ticket.status.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    
-    displayTickets(filtered);
+
+    // 2. Filter by status
+    if (statusFilter !== 'all') {
+        processedTickets = processedTickets.filter(ticket => ticket.status === statusFilter);
+    }
+
+    // 3. Filter by priority
+    if (priorityFilter !== 'all') {
+        processedTickets = processedTickets.filter(ticket => ticket.priority === priorityFilter);
+    }
+
+    // 4. Sort
+    processedTickets.sort((a, b) => {
+        switch (sortBy) {
+            case 'created_at_asc':
+                return new Date(a.created_at) - new Date(b.created_at);
+            case 'updated_at_desc':
+                return new Date(b.updated_at) - new Date(a.updated_at);
+            case 'created_at_desc':
+            default:
+                return new Date(b.created_at) - new Date(a.created_at);
+        }
+    });
+
+    displayTickets(processedTickets);
 }
 
 /**

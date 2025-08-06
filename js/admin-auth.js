@@ -274,6 +274,10 @@ const AdminDB = {
                             full_name,
                             email,
                             phone
+                        ),
+                        staff (
+                            id,
+                            full_name
                         )
                     `)
                     .order('created_at', { ascending: false });
@@ -297,6 +301,10 @@ const AdminDB = {
                             full_name,
                             email,
                             phone
+                        ),
+                        staff (
+                            id,
+                            full_name
                         )
                     `)
                     .eq('id', ticketId)
@@ -676,6 +684,23 @@ const AdminDB = {
                 return result;
             } catch (error) {
                 console.error('Error rejecting cancellation request:', error);
+                return { success: false, error: error.message };
+            }
+        }
+    },
+
+    staff: {
+        async getAll() {
+            try {
+                const { data, error } = await supabase
+                    .from('admin_users')
+                    .select('id, full_name, email, role')
+                    .order('full_name', { ascending: true });
+                
+                if (error) throw error;
+                return { success: true, data };
+            } catch (error) {
+                console.error('Error getting staff:', error);
                 return { success: false, error: error.message };
             }
         }

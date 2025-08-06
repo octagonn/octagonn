@@ -397,6 +397,33 @@
             font-size: 1.2rem;
         }
 
+        .tickets-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 0.5rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        
         /* Tickets List */
         .tickets-section {
             max-width: 1000px;
@@ -407,7 +434,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem; /* Reduced margin */
+            flex-wrap: wrap;
         }
 
         .tickets-search {
@@ -437,7 +465,7 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 1rem;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr 1fr;
+            grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr 1fr; /* Adjusted for new columns */
             gap: 1rem;
             font-weight: 600;
             color: #ffffff;
@@ -447,7 +475,7 @@
         .ticket-row {
             padding: 1rem;
             display: grid;
-            grid-template-columns: 1fr 2fr 1fr 1fr;
+            grid-template-columns: 1fr 2fr 1fr 1fr 1fr 1fr 1fr; /* Adjusted for new columns */
             gap: 1rem;
             align-items: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -481,6 +509,11 @@
         .status-in-progress { background: rgba(0, 123, 255, 0.2); color: #007bff; }
         .status-awaiting { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
         .status-resolved { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+
+        .priority-low { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .priority-medium { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .priority-high { background: rgba(255, 107, 107, 0.2); color: #ff6b6b; }
+        .priority-critical { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
 
         .ticket-date {
             color: rgba(255, 255, 255, 0.7);
@@ -780,8 +813,39 @@
             <!-- My Tickets Section -->
             <section id="my-tickets-section" class="content-section tickets-section">
                 <div class="tickets-header">
-                    <h2 class="section-title">My Support Tickets</h2>
+                    <h2 class="section-title" style="margin-bottom: 0;">My Support Tickets</h2>
                     <input type="text" class="tickets-search" placeholder="Search tickets..." id="ticketsSearch">
+                </div>
+
+                <div class="tickets-controls">
+                    <div class="control-group">
+                        <label for="statusFilter" class="control-label">Filter by Status</label>
+                        <select id="statusFilter" class="filter-select">
+                            <option value="all">All Statuses</option>
+                            <option value="new">New</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="sortBy" class="control-label">Sort By</label>
+                        <select id="sortBy" class="filter-select">
+                            <option value="created_at_desc">Newest First</option>
+                            <option value="created_at_asc">Oldest First</option>
+                            <option value="updated_at_desc">Last Updated</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="priorityFilter" class="control-label">Filter by Priority</label>
+                        <select id="priorityFilter" class="filter-select">
+                            <option value="all">All Priorities</option>
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="critical">Critical</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="tickets-table">
@@ -789,7 +853,10 @@
                         <div>Ticket #</div>
                         <div>Subject</div>
                         <div>Status</div>
-                        <div>Date</div>
+                        <div>Priority</div>
+                        <div>Assigned To</div>
+                        <div>Date Created</div>
+                        <div>Last Updated</div>
                     </div>
                     <div id="ticketsList">
                         <div class="loading">Loading your tickets...</div>

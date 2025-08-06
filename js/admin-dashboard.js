@@ -196,15 +196,20 @@ function setupFilterListeners() {
     const appointmentSortBy = document.getElementById('appointmentSortBy');
     const appointmentSearch = document.getElementById('appointmentSearch');
     const webformStatusFilter = document.getElementById('webformStatusFilter');
+    const ticketSearch = document.getElementById('ticketSearch');
     
     if (statusFilter) statusFilter.addEventListener('change', () => filterTickets());
     if (priorityFilter) priorityFilter.addEventListener('change', () => filterTickets());
     if (sortBy) sortBy.addEventListener('change', () => filterTickets());
+    if (document.getElementById('assigneeFilter')) document.getElementById('assigneeFilter').addEventListener('change', () => filterTickets());
+    if (document.getElementById('dateStartFilter')) document.getElementById('dateStartFilter').addEventListener('change', () => filterTickets());
+    if (document.getElementById('dateEndFilter')) document.getElementById('dateEndFilter').addEventListener('change', () => filterTickets());
     if (contactStatusFilter) contactStatusFilter.addEventListener('change', () => filterContacts());
     if (appointmentStatusFilter) appointmentStatusFilter.addEventListener('change', () => filterAppointments());
     if (appointmentSortBy) appointmentSortBy.addEventListener('change', () => filterAppointments());
     if (appointmentSearch) appointmentSearch.addEventListener('input', () => filterAppointments());
     if (webformStatusFilter) webformStatusFilter.addEventListener('change', () => filterWebforms());
+    if (ticketSearch) ticketSearch.addEventListener('input', () => filterTickets());
 }
 
 /**
@@ -534,6 +539,7 @@ async function loadTickets() {
         if (result.success) {
             allTickets = result.data || [];
             displayTickets(allTickets);
+            populateAssigneeFilter();
         } else {
             throw new Error(result.error);
         }
@@ -546,6 +552,23 @@ async function loadTickets() {
                 Error loading tickets: ${error.message}
             </div>
         `;
+    }
+}
+
+async function populateAssigneeFilter() {
+    const assigneeFilter = document.getElementById('assigneeFilter');
+    if (!assigneeFilter) return;
+
+    const staffResult = await AdminDB.staff.getAll();
+    if (staffResult.success) {
+        const staff = staffResult.data || [];
+        assigneeFilter.innerHTML = '<option value="">All Staff</option>';
+        staff.forEach(member => {
+            const option = document.createElement('option');
+            option.value = member.id;
+            option.textContent = member.full_name;
+            assigneeFilter.appendChild(option);
+        });
     }
 }
 
@@ -577,13 +600,19 @@ function displayTickets(tickets) {
             customerName = ticket.customer_name;
         }
         
+        let assigneeName = 'Unassigned';
+        if (ticket.assigned_to && ticket.staff && ticket.staff.full_name) {
+            assigneeName = ticket.staff.full_name;
+        }
+
         return `
-            <div class="table-row" ${!ticketsEditMode ? `onclick=\"openTicketDetail('${ticket.id}')\"` : ''}>
+            <div class="table-row" ${!ticketsEditMode ? `onclick="openTicketDetail('${ticket.id}')"` : ''}>
                 ${ticketsEditMode ? `<div class="table-cell"><input type="checkbox" class="ticket-checkbox" value="${ticket.id}" onclick="updateSelectAllState('ticket-checkbox','selectAllTickets')"></div>` : ''}
                 <div class="table-cell"><span class="status-badge status-${ticket.status.replace(/_/g, '_')}">${formatStatus(ticket.status)}</span></div>
                 <div class="table-cell">#${ticket.ticket_number || ticket.id.substring(0, 8)}</div>
                 <div class="table-cell subject">${escapeHtml(ticket.title)}</div>
                 <div class="table-cell priority priority-${ticket.priority}">${formatPriority(ticket.priority)}</div>
+                <div class="table-cell">${assigneeName}</div>
                 <div class="table-cell">${customerName}</div>
                 <div class="table-cell">${formatDate(ticket.created_at)}</div>
                     </div>
@@ -598,6 +627,10 @@ function filterTickets() {
     const statusFilter = document.getElementById('statusFilter').value;
     const priorityFilter = document.getElementById('priorityFilter').value;
     const sortBy = document.getElementById('sortBy').value;
+    const assigneeFilter = document.getElementById('assigneeFilter').value;
+    const dateStartFilter = document.getElementById('dateStartFilter').value;
+    const dateEndFilter = document.getElementById('dateEndFilter').value;
+    const searchQuery = document.getElementById('ticketSearch').value.toLowerCase();
     
     let filtered = [...allTickets];
     
@@ -608,6 +641,29 @@ function filterTickets() {
     
     if (priorityFilter) {
         filtered = filtered.filter(ticket => ticket.priority === priorityFilter);
+    }
+
+    if (assigneeFilter) {
+        filtered = filtered.filter(ticket => ticket.assigned_to === assigneeFilter);
+    }
+
+    if (dateStartFilter) {
+        filtered = filtered.filter(ticket => new Date(ticket.created_at) >= new Date(dateStartFilter));
+    }
+
+    if (dateEndFilter) {
+        filtered = filtered.filter(ticket => new Date(ticket.created_at) <= new Date(dateEndFilter));
+    }
+
+    if (searchQuery) {
+        filtered = filtered.filter(ticket =>
+            ticket.title.toLowerCase().includes(searchQuery) ||
+            ticket.description.toLowerCase().includes(searchQuery) ||
+            (ticket.customers?.full_name && ticket.customers.full_name.toLowerCase().includes(searchQuery)) ||
+            (ticket.customer_name && ticket.customer_name.toLowerCase().includes(searchQuery)) ||
+            (ticket.anonymous_name && ticket.anonymous_name.toLowerCase().includes(searchQuery)) ||
+            (ticket.ticket_number && ticket.ticket_number.toString().includes(searchQuery))
+        );
     }
     
     // Apply sorting
@@ -679,6 +735,10 @@ async function openTicketDetail(ticketId) {
         const attachmentsResult = await AdminDB.attachments.getByTicketId(ticketId);
         const attachments = attachmentsResult.success ? attachmentsResult.data : [];
         
+        // Get staff for assignee dropdown
+        const staffResult = await AdminDB.staff.getAll();
+        const staff = staffResult.success ? staffResult.data : [];
+
         // Add Edit button
         let editBtnHtml = `<button class="btn secondary" id="editTicketBtn" style="float:right; margin-bottom:1rem;">Edit</button>`;
         
@@ -699,6 +759,15 @@ async function openTicketDetail(ticketId) {
                 <div class="property-item">
                     <div class="property-label">Customer</div>
                     <div class="property-value">${customerInfo}</div>
+                </div>
+                <div class="property-item">
+                    <div class="property-label">Assigned To</div>
+                    <div class="property-value">
+                        <select id="assignee-dropdown" class="form-select" onchange="updateTicketAssignee('${ticket.id}')">
+                            <option value="">Unassigned</option>
+                            ${staff.map(member => `<option value="${member.id}" ${ticket.assigned_to === member.id ? 'selected' : ''}>${member.full_name}</option>`).join('')}
+                        </select>
+                    </div>
                 </div>
                 <div class="property-item">
                     <div class="property-label">Created</div>
@@ -1179,14 +1248,8 @@ function handleGlobalSearch(e) {
     const query = e.target.value.toLowerCase();
     
     if (currentSection === 'tickets') {
-        const filtered = allTickets.filter(ticket => 
-            ticket.title.toLowerCase().includes(query) ||
-            ticket.description.toLowerCase().includes(query) ||
-            (ticket.customers?.full_name && ticket.customers.full_name.toLowerCase().includes(query)) ||
-            (ticket.customer_name && ticket.customer_name.toLowerCase().includes(query)) ||
-            (ticket.anonymous_name && ticket.anonymous_name.toLowerCase().includes(query))
-        );
-        displayTickets(filtered);
+        document.getElementById('ticketSearch').value = query;
+        filterTickets();
     } else if (currentSection === 'contacts') {
         const filtered = allContacts.filter(contact => 
             contact.subject.toLowerCase().includes(query) ||
@@ -2363,6 +2426,22 @@ function testNavigation() {
 
 // Make test function globally available
 window.testNavigation = testNavigation;
+
+async function updateTicketAssignee(ticketId) {
+    const assigneeId = document.getElementById('assignee-dropdown').value;
+    const updates = {
+        assigned_to: assigneeId || null
+    };
+
+    const result = await AdminDB.tickets.update(ticketId, updates);
+
+    if (result.success) {
+        showNotification('Ticket assignee updated!', 'success');
+        await loadTickets();
+    } else {
+        showNotification('Error updating assignee: ' + result.error, 'error');
+    }
+}
 
 /**
  * Test function to debug appointment creation

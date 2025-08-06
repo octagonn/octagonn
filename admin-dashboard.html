@@ -463,7 +463,7 @@
             background: rgba(255, 255, 255, 0.1);
             padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
             display: grid;
-            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
+            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
             gap: 1rem;
             font-weight: 600;
             color: #ffffff;
@@ -519,7 +519,7 @@
 
         .table-row {
             display: grid;
-            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
+            grid-template-columns: minmax(80px, 1fr) minmax(120px, 1.2fr) minmax(200px, 2.5fr) minmax(100px, 1fr) minmax(120px, 1.2fr) minmax(150px, 1.5fr) minmax(120px, 1fr);
             gap: 1rem;
             padding: 0.5rem 0.75rem; /* Further reduced from 0.75rem 1rem */
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -641,6 +641,16 @@
         .property-value {
             color: #ffffff;
             font-weight: 500;
+        }
+        
+        #assignee-dropdown {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            padding: 0.5rem;
+            color: #ffffff;
+            font-size: 0.75rem;
         }
 
         .conversation {
@@ -2126,6 +2136,7 @@
                     <div class="table-header">
                         <h2 class="section-title">Support Tickets</h2>
                         <div class="table-controls">
+                            <input type="text" id="ticketSearch" class="global-search" placeholder="Search tickets...">
                             <select class="filter-dropdown" id="statusFilter">
                                 <option value="">All Statuses</option>
                                 <option value="new">New</option>
@@ -2146,6 +2157,11 @@
                                 <option value="priority">Priority</option>
                                 <option value="status">Status</option>
                             </select>
+                            <select class="filter-dropdown" id="assigneeFilter">
+                                <option value="">All Staff</option>
+                            </select>
+                            <input type="date" class="filter-dropdown" id="dateStartFilter">
+                            <input type="date" class="filter-dropdown" id="dateEndFilter">
                         </div>
                     </div>
                     <div class="table-content" id="ticketsTable">
@@ -2169,6 +2185,7 @@
                             <div>Ticket #</div>
                             <div>Subject</div>
                             <div>Priority</div>
+                            <div>Assigned To</div>
                             <div>Name</div>
                             <div>Date Created</div>
                         </div>
