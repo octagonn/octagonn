@@ -275,7 +275,7 @@ const AdminDB = {
                             email,
                             phone
                         ),
-                        staff (
+                        admin_users (
                             id,
                             full_name
                         )
@@ -302,7 +302,7 @@ const AdminDB = {
                             email,
                             phone
                         ),
-                        staff (
+                        admin_users (
                             id,
                             full_name
                         )

@@ -601,8 +601,8 @@ function displayTickets(tickets) {
         }
         
         let assigneeName = 'Unassigned';
-        if (ticket.assigned_to && ticket.staff && ticket.staff.full_name) {
-            assigneeName = ticket.staff.full_name;
+        if (ticket.assigned_to && ticket.admin_users && ticket.admin_users.full_name) {
+            assigneeName = ticket.admin_users.full_name;
         }
 
         return `
