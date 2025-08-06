@@ -419,7 +419,7 @@ async function handleCreateTicket(e) {
         if (selectedFiles.length > 0) {
             submitBtn.innerHTML = '<i class="ph-light ph-spinner"></i> Uploading files...';
             for (const file of selectedFiles) {
-                const filePath = `${currentCustomer.id}/${submissionId}/${file.name}`;
+                const filePath = `${currentUser.id}/${submissionId}/${file.name}`;
                 const uploadResult = await storage.uploadFile('ticket-attachments', filePath, file);
                 
                 if (uploadResult.success) {
